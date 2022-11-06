@@ -99,8 +99,8 @@ export default function ToggleToolbar({ onPin, getAppHistory, current, getFavori
     {buttons.map((btn => <MenuDrawer report={onPin} key={btn.label} {...btn} />))}
     <Box sx={{flexGrow: 1}} /> 
     <Box sx={{mr: 2}}>
-      {!!current?.title && <Chip label={current.title} color="success" variant="filled"
-        sx={{minWidth: 120}}
+      {!!current?.title && <Chip label={current.title} color="success" size="small" variant="filled"
+        sx={{minWidth: 120, border: 'solid 1px white'}}
               onDelete={() => {
                 setFavorite (current.path);
                 window.location.reload()
