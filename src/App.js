@@ -102,13 +102,14 @@ function QueryGrid () {
   }
 
 
-  const loadPage = React.useCallback (async (pg, sql) => { 
+  const loadPage = React.useCallback (async (pg, sql) => {  
     const f = await execQuery(configs[configKey], sql || queryText, pg); 
     setPage(pg);
     setData(f); 
   }, [configs, configKey, queryText])
 
   const execQueryText = (text) => { 
+    setData(null); 
     setQueryText(text)
     setEdit(false);
     loadPage(1, text);
