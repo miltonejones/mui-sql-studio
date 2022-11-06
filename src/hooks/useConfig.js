@@ -1,11 +1,16 @@
 import * as React from 'react';
 
+
+
+const COOKIE = 'mysql-configs'
+
+
 export const useConfig = () => {
   const [items, setItems] = React.useState({})
   
-  const getConfigs = () => JSON.parse(localStorage.getItem('mysql-configs') ?? '{}');
+  const getConfigs = () => JSON.parse(localStorage.getItem(COOKIE) ?? '{}');
 
-  const setConfigs = (json) => localStorage.setItem('mysql-configs', JSON.stringify(json));
+  const setConfigs = (json) => localStorage.setItem(COOKIE, JSON.stringify(json));
 
   const saveConfig = (input) => {
     const { title, connect, ...config } = input;

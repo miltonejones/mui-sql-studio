@@ -1,5 +1,9 @@
 import React from 'react';
 
+import { 
+  BrowserRouter,   
+} from "react-router-dom";
+
 import ToggleToolbar from './ToggleToolbar';
  
 export default {
@@ -7,6 +11,11 @@ export default {
   component: ToggleToolbar, 
 };
  
-const Template = (args) => <ToggleToolbar {...args} />;
+const Template = (args) => <BrowserRouter><ToggleToolbar {...args} /></BrowserRouter>;
 
 export const Primary = Template.bind({});
+
+Primary.args = {
+  getAppHistory: () => [],
+  getFavorites: () => [],
+}

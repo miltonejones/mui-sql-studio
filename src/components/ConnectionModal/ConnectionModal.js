@@ -9,7 +9,9 @@ import {
   Button , 
   Dialog, 
   DialogActions, 
+  DialogTitle,
   DialogContent, 
+  Divider,
   styled} from '@mui/material';
 
 import { execQuery } from '../../connector/dbConnector';
@@ -65,6 +67,8 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
   const isValid = () => !!connection && !Object.keys(connection).some(f => !connection[f])
  
   return <Dialog open={open}>
+    <DialogTitle>Connection Setup</DialogTitle>
+    <Divider />
     <DialogContent>
     <Grid container spacing={2}>
 
@@ -103,6 +107,7 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
 
   </Grid></DialogContent>
   
+  <Divider />
   <DialogActions sx={{pr: 3}}>
     <Button sx={{mr: 1}} variant="outlined" onClick={() => onClose(false)}>close</Button>
     <Button

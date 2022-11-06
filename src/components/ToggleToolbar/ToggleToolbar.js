@@ -1,8 +1,8 @@
 import * as React from 'react';
 import {  Box, Chip, styled} from '@mui/material';
-import MenuDrawer, { Logo } from '../MenuDrawer/MenuDrawer';
-import ConnectionModal from '../ConnectionModal/ConnectionModal';
+import MenuDrawer, { Logo } from '../MenuDrawer/MenuDrawer'; 
 import { useConfig } from '../../hooks/useConfig';
+import { useSaveQuery } from '../../hooks/useSaveQuery';
 import {  
   useNavigate 
 } from "react-router-dom";
@@ -25,23 +25,43 @@ const Navbar = styled(Box)(({ theme }) => ({
 
 const formatConnectName = name => name.toLowerCase().replace(/\s/g, '_');
   
-export default function ToggleToolbar({ onPin, getAppHistory, current, getFavorite, getFavorites, setFavorite }) {
+export default function ToggleToolbar({ 
+    onPin, 
+    getAppHistory, 
+    current, 
+    getFavorite, 
+    getFavorites, 
+    setFavorite ,
+    setModalState
+  }) {
   const navigate = useNavigate();
   const { getConfigs, saveConfig  } = useConfig()
   const configs = getConfigs();
+  const { getQueries } = useSaveQuery();
 
   const past = getAppHistory();
   const guys = getFavorites();
+  const asks = getQueries();
 
-  const [modalState, setModalState] = React.useState({
-    open: false,
-    connection: {  }, 
-  });
+  console.log ({ asks })
+
+  const queryNode = Object.keys(asks).length ? [{
+    title: 'Lists',
+    descendants:  Object.keys(asks).map(title => {
+      const { schema, tablename, connectionID } = asks[title];
+      return {
+        title,
+        active: current?.title?.indexOf(title) > -1,
+        action: () => navigate(`/lists/${connectionID}/${schema}/${tablename}/${formatConnectName(title)}`)
+      }
+    })
+  }] : []
 
   const buttons = [
     { 
       label: 'All',
-      options: [
+      options: queryNode.concat([
+
         {
           title: 'Connections',
           descendants:  Object.keys(configs).map(title => ({
@@ -50,6 +70,8 @@ export default function ToggleToolbar({ onPin, getAppHistory, current, getFavori
             action: () => navigate(`/connection/${formatConnectName(title)}`)
           }))
         }, 
+
+
         {
           title: 'New Connection...',
           action: () => {
@@ -63,7 +85,7 @@ export default function ToggleToolbar({ onPin, getAppHistory, current, getFavori
             })
           }
         }
-      ]
+      ])
     },
     { 
       label: 'Favorites',
@@ -109,12 +131,12 @@ export default function ToggleToolbar({ onPin, getAppHistory, current, getFavori
     </Box>
   </Navbar>
   
-  <ConnectionModal onChange={(key, val) => {
+  {/* <ConnectionModal onChange={(key, val) => {
     setModalState({ ...modalState, connection: {
       ...modalState.connection,
       [key]: val
     }})
-  }} {...modalState} />
+  }} {...modalState} /> */}
   
   </>
 

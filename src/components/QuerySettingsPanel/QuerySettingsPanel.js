@@ -1,17 +1,13 @@
 import * as React from 'react';
 import { describeTable, connectToDb } from '../../connector/dbConnector';
+import { AppStateContext } from '../../hooks/AppStateContext';
 import { Divider, Box, FormControlLabel, Switch, Menu, Collapse, MenuItem, TextField, Stack, Button, IconButton, Typography, styled} from '@mui/material';
 import { Add, Delete, ExpandMore, PlayArrow, Close } from '@mui/icons-material';
 
 const QuerySettingsContext = React.createContext({});
 const uniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
-
-const EMPTY_CONFIGURATION = {
-  tables: [],
-  wheres: [],
-  orders: [],
-};
+ 
 
 
 const AU = styled('u')(({ active, error }) => ({
@@ -24,13 +20,20 @@ const AU = styled('u')(({ active, error }) => ({
 }))
 
 
-export default function QuerySettingsPanel({ config, tablename, onCommit, onCancel }) {
-  const [loaded, setLoaded] = React.useState(false) ;
-  const [configuration, setConfiguration] = React.useState(EMPTY_CONFIGURATION);
+export default function QuerySettingsPanel({ 
+    config, 
+    tablename, 
+    configuration, 
+    setConfiguration, 
+    onCommit, 
+    onCancel 
+  }) {
+  const [loaded, setLoaded] = React.useState(false) ; 
   const [tableNames, setTableNames] = React.useState([]);
   const [showTableNames, setShowTableNames] = React.useState(false);
   const [showFieldNames, setShowFieldNames] = React.useState(false);
   const [showSQL, setShowSQL] = React.useState(false);
+  const { Prompt, Confirm } = React.useContext(AppStateContext);
 
   const findTable = React.useCallback((name) => configuration.tables.find((n) => n.name === name), [configuration.tables]);
   const findAlias = React.useCallback((name) => !findTable(name) ? name : findTable(name).alias, [findTable]);
@@ -51,7 +54,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
       from.push(
         i === 0
           ? `${table.name} as ${table.alias}\n`
-          : `JOIN ${table.name} as ${table.alias} ON \n ${table.alias}.${srcCol} = ${findAlias(destTable)}.${destCol}`
+          : `\n JOIN ${table.name} as ${table.alias} ON \n ${table.alias}.${srcCol} = ${findAlias(destTable)}.${destCol}`
       );
     });
 
@@ -60,16 +63,25 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
     })
 
     orders.map((by, i) => {
-      order.push (` ${by.fieldName} ${by.direction}\n`)
+      order.push (`${by.fieldName} ${by.direction}\n`)
     })
 
     const core = [...sql, '\n', cols.length ? cols.join(', ') : '*', '\n', 'FROM', '\n', ...from];
-    wheres.length && core.push('\n', 'WHERE\n', ...where);
-    orders.length && core.push('\n', 'ORDER BY\n', ...order);
+    wheres.length && core.push('\n', '\n WHERE\n', ...where);
+    orders.length && core.push('\n', 'ORDER BY\n', order.join(', '));
 
     const o = core.join(' ');
     return o;
   }, [configuration, findAlias]);
+
+  const dropTable = React.useCallback(async(ID) => {
+    const ok = await Confirm(`Remove table?`);
+    if (!ok) return;
+    setConfiguration(f => ({
+      ...f,
+      tables: f.tables.filter(e => e.ID !== ID)
+    }))
+  }, [Confirm, setConfiguration])
 
   const addTable = React.useCallback(async (name, loading) => {
     const { rows } = await describeTable(config, name);
@@ -77,7 +89,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
       name: col.COLUMN_NAME,
       alias: col.COLUMN_NAME 
     }));
-    const table = { name, alias: name, columns };
+    const table = { ID: uniqueId(), name, alias: name, columns };
 
     setConfiguration((f) => {
       if (f.tables.find(f => f.name === name) && loading) { 
@@ -92,7 +104,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
             : f.tables.concat(table),
       }
     });
-  }, [config]);
+  }, [config, setConfiguration]);
 
   const decodeClause = (key, value) => {
     const clause = predicates.find(f => f.name === key)
@@ -147,7 +159,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
   
   const setTableAlias = (name) => {
     editTable(name, async (table) => {
-      const alias = window.prompt(
+      const alias = await Prompt(
         `Enter an alias for ${name}`,
         table.alias
       );
@@ -158,7 +170,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
 
   const setColumnAlias = (name, field) => {
     editColumn(name, field, async (col) => {
-      const alias = window.prompt(
+      const alias = await Prompt(
         `Enter an alias for ${col.name}`,
         col.alias
       );
@@ -232,13 +244,17 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
     }));
   }
 
-  const dropClause = (ID) => {
+  const dropClause = async (ID) => {
+    const ok = await Confirm(`Remove clause?`);
+    if (!ok) return;
     setConfiguration((f) => ({
       ...f,
       wheres: f.wheres.filter(c => c.index !== ID)
     }));
   }
-  const dropOrderBy = (ID) => {
+  const dropOrderBy = async (ID) => {
+    const ok = await Confirm(`Remove order by?`);
+    if (!ok) return;
     setConfiguration((f) => ({
       ...f,
       orders: f.orders.filter(c => c.index !== ID)
@@ -260,6 +276,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
     setTableJoin,
     addClause,
     addOrderBy,
+    dropTable,
     dropClause,
     dropOrderBy,
     ...configuration
@@ -384,9 +401,16 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
 
     <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
 
-    {!!onCommit && <Button onClick={() => onCommit(createTSQL())} variant="contained"
+    {!!onCommit && <Button sx={{mr: 1}} onClick={() => onCommit(createTSQL())} variant="contained"
       size="small" endIcon={<PlayArrow />}
     >run</Button>}
+
+
+<Button size="small" endIcon={ <Close />} onClick={() => onCancel && onCancel()}
+       variant="outlined">
+     close
+    </Button>
+
 
   </Collapse>
   
@@ -532,7 +556,7 @@ function WhereItem ({ index }) {
 
   const label = fieldName || 'choose column';
 
-  return <Stack direction="row" sx={{mb: 1, alignItems: 'center', minHeight: 32}}>
+  return <Stack direction="row" sx={{mb: 1, alignItems: 'center', minHeight: 24}}>
    <IconButton  onClick={() => dropClause(index)}>
     <Delete />
    </IconButton>
@@ -574,6 +598,7 @@ const QuickMenu = ({ label, error, options, onChange }) => {
 
 
 function TableItem ({ first, table, comma , addTable, setTableAlias}) {
+  const { dropTable } = React.useContext(QuerySettingsContext);
   const { destTable, srcCol, destCol } = table.join ?? {}; 
   if (first) {
     return <>
@@ -582,10 +607,13 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
     </AU> as <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
     </>
   }
-  return <Box sx={{ml: 1}}>
-  
+  return <Box >
+    <IconButton  onClick={() => dropTable(table.ID)}>
+    <Delete />
+   </IconButton>
+
   {" "}JOIN <AU active onClick={() => addTable(table.name)}>
-    {table.name}
+    {table.name} 
   </AU> as <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
   {" "}ON {table.alias}.<ColumnMenu fieldname="srcCol" source={table.name} tablename={table.name} columnname={srcCol} /> 
   {" "}={" "} 

@@ -37,10 +37,10 @@ const Panel = styled(Box)(({ theme }) => ({
   left: 0,
   height: '100vh',
   minWidth: 300,
-  boxShadow: `
-    0px 5px 5px -3px rgb(0 0 0 / 20%), 
-    0px 8px 10px 1px rgb(0 0 0 / 14%), 
-    0px 3px 14px 2px rgb(0 0 0 / 12%)`,
+  // boxShadow: `
+  //   0px 5px 5px -3px rgb(0 0 0 / 20%), 
+  //   0px 8px 10px 1px rgb(0 0 0 / 14%), 
+  //   0px 3px 14px 2px rgb(0 0 0 / 12%)`,
 }))
 
 
@@ -158,7 +158,7 @@ const MenuTree = ({options, spaces = 0, pinned, handleClose, filterText}) => {
   .filter(opt => !filterText || opt.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
   .map((opt, i) => <>
     <MenuItem key={i} sx={{ml: spaces, borderLeft }} onClick={e => execClose(e, opt)}>
-      <Stack sx={{alignItems: 'center' }} direction="row">
+      <Stack sx={{ width: '100%', alignItems: 'center' }} direction="row">
         {opt.active && <Box sx={{mr: 1}}>&bull;</Box>}
         <Typography sx={{ fontWeight: opt.active ? 600 : 400}}>
           {opt.title}

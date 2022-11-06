@@ -1,7 +1,9 @@
 import * as React from 'react';
+import './ListGrid.css';
 
 import { styled, Box, Typography, Divider, Stack, Breadcrumbs, Pagination, Link} from '@mui/material';
 
+import { Sync } from '@mui/icons-material';
 
 const Cell = styled('td')(({theme, active}) => ({ 
   padding: theme.spacing(1, 2),
@@ -32,9 +34,9 @@ function ListCell({ value, type, icon, action }) {
   //   ? JSON.stringify(value)
   //   : value
   return <Cell active={!!action}>
-    <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
+    <Stack onClick={() => action && action ()} direction="row" spacing={1} sx={{alignItems: 'center'}}> 
       {icon}
-      <Typography onClick={() => action && action ()} variant={type === 'header' ? 'caption' : 'body2'}>
+      <Typography variant={type === 'header' ? 'caption' : 'body2'}>
       {type === 'password' ? '********' : text}
       </Typography>
     </Stack>
@@ -50,7 +52,7 @@ function ListRow({ row }) {
 
 
 export default function ListGrid({title, count = 0, page = 1, setPage, buttons, breadcrumbs, rows = []}) {
-  if (!rows?.length) return <>Loading...</>
+  if (!rows?.length) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
   const headers = [rows[0].map(row => ({value: row.field, type: 'header'}))]
   const pageCount = Math.ceil(count / 100);
 
