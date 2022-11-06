@@ -18,7 +18,8 @@ const AU = styled('u')(({ active, error }) => ({
   cursor: 'pointer',
   color: error ? 'red' : (active ? '#37a' : 'gray'), 
   '&:hover': {
-    textDecoration: 'underlined'
+    textDecoration: 'underlined',
+    color: '#73a'
   }
 }))
 
@@ -348,7 +349,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
     <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
 
     <Stack direction="row" sx={{alignItems: 'center'}}>
-      <Typography> WHERE </Typography>
+      <Typography sx={{color: configuration.wheres.length ? 'black' : 'gray'}}> WHERE </Typography>
       <Box  sx={{flexGrow: 1}}/>
     {!configuration.wheres.length && <IconButton  
         onClick={() => newClause({index: uniqueId()})}
@@ -367,7 +368,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
     <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
 
     <Stack direction="row" sx={{alignItems: 'center'}}>
-      <Typography> ORDER BY </Typography>
+      <Typography sx={{color: configuration.orders.length ? 'black' : 'gray'}}> ORDER BY </Typography>
       <Box  sx={{flexGrow: 1}}/>
       <IconButton  
         onClick={() => newSort({index: uniqueId(), direction: 'ASC'})}
@@ -581,17 +582,17 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
     </AU> as <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
     </>
   }
-  return <>
-  {/* <pre>{JSON.stringify(table.join, 0, 2)} </pre> */}
+  return <Box sx={{ml: 1}}>
+  
   {" "}JOIN <AU active onClick={() => addTable(table.name)}>
     {table.name}
-  </AU> as <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU> {comma && <>,{" "}</>}
+  </AU> as <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
   {" "}ON {table.alias}.<ColumnMenu fieldname="srcCol" source={table.name} tablename={table.name} columnname={srcCol} /> 
   {" "}={" "} 
   <TableMenu fieldname="destTable" tablename={table.name} name={destTable} />
   .
   <ColumnMenu fieldname="destCol" source={destTable} tablename={table.name} columnname={destCol} /> 
-  </>
+  </Box>
 }
 
 

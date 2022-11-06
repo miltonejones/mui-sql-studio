@@ -23,6 +23,8 @@ const Navbar = styled(Box)(({ theme }) => ({
 }));
 
 
+const formatConnectName = name => name.toLowerCase().replace(/\s/g, '_');
+  
 export default function ToggleToolbar({ onPin, getAppHistory, current, getFavorite, getFavorites, setFavorite }) {
   const navigate = useNavigate();
   const { getConfigs, saveConfig  } = useConfig()
@@ -43,7 +45,9 @@ export default function ToggleToolbar({ onPin, getAppHistory, current, getFavori
         {
           title: 'Connections',
           descendants:  Object.keys(configs).map(title => ({
-            title
+            title,
+            active: current?.title?.indexOf(title) > -1,
+            action: () => navigate(`/connection/${formatConnectName(title)}`)
           }))
         }, 
         {
@@ -65,6 +69,7 @@ export default function ToggleToolbar({ onPin, getAppHistory, current, getFavori
       label: 'Favorites',
       options: guys.length ? guys.map(p => ({
         title: p.title,
+        active: p.path === current?.path,
         action: () => navigate(p.path)
       })) : [
         {
@@ -76,6 +81,7 @@ export default function ToggleToolbar({ onPin, getAppHistory, current, getFavori
       label: 'History',
       options: past.length ? past.map(p => ({
         title: p.title,
+        active: p.path === current?.path,
         action: () => navigate(p.path)
       })) : [
         {

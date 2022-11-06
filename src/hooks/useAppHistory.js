@@ -1,15 +1,16 @@
 import * as React from 'react';
 
+const COOKIE = 'mysql-history-exper'
 
 export const useAppHistory = () => {
   const [current, setCurrent] = React.useState(null)
   
-  const getAppHistory = () => JSON.parse(localStorage.getItem('mysql-history.') ?? '[]');
+  const getAppHistory = () => JSON.parse(localStorage.getItem(COOKIE) ?? '[]');
 
   const setFavorite = path => { 
     const old = getAppHistory();
     const add = old.map(h => h.path === path ? {...h, favorite: !h.favorite} : h)
-    localStorage.setItem('mysql-history.', JSON.stringify(add));
+    localStorage.setItem(COOKIE, JSON.stringify(add));
   }
 
   const getFavorite = path => {
@@ -26,9 +27,11 @@ export const useAppHistory = () => {
     const old = getAppHistory();
     const ex = old.find (f => f.path === node.path);
     const rep = !ex ? node : {...node, favorite: ex.favorite}
-    const add = old.filter(h => h.path !== node.path).concat(rep);
+    const add = old.find(h => h.path === node.path) 
+      ? old.map(f => f.path === node.path ? rep : f)
+      : old.concat(rep);
     setCurrent(rep);
-    localStorage.setItem('mysql-history.', JSON.stringify(add));
+    localStorage.setItem(COOKIE, JSON.stringify(add));
   }
  
   return { getAppHistory, setAppHistory, getFavorite, getFavorites, setFavorite, current }

@@ -19,6 +19,12 @@ export const Logo = ({ short }) =>{
   </Stack>
 }
 
+const FilterBox = styled(TextField)(({ white }) => ({
+  '& .MuiFormLabel-root': {
+    color: white ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
+  }
+}))
+
 const RotateButton = styled(IconButton)(({ deg = 90 }) => ({
   transition: 'transform 0.2s linear', 
   transform: `rotate(${deg}deg)`
@@ -121,7 +127,7 @@ export default function MenuDrawer({ label = 'Dashboard', report, options = []})
      
         <MenuItem >
           <Stack spacing={2} direction="row">
-            <TextField size="small" label="Filter" value={filterText} autoComplete="off"
+            <FilterBox white={pinned} size="small" label="Filter" value={filterText} autoComplete="off"
               onChange={e => setFilterText(e.target.value)} 
               InputProps={adornment}/>
             <RotateButton color="inherit" onClick={() => pinMenu()} deg={pinned ? 45 : 0}>
@@ -151,9 +157,10 @@ const MenuTree = ({options, spaces = 0, pinned, handleClose, filterText}) => {
   {options
   .filter(opt => !filterText || opt.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
   .map((opt, i) => <>
-    <MenuItem key={i} sx={{ml: spaces, borderLeft, }} onClick={e => execClose(e, opt)}>
+    <MenuItem key={i} sx={{ml: spaces, borderLeft }} onClick={e => execClose(e, opt)}>
       <Stack sx={{alignItems: 'center' }} direction="row">
-        <Typography>
+        {opt.active && <Box sx={{mr: 1}}>&bull;</Box>}
+        <Typography sx={{ fontWeight: opt.active ? 600 : 400}}>
           {opt.title}
         </Typography>
         <Box sx={{flexGrow: 1}} />
