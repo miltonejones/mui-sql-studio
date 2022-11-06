@@ -17,7 +17,7 @@ import { useAppHistory } from './hooks/useAppHistory';
 import { AppStateContext } from './hooks/AppStateContext';
 import { execQuery } from './connector/dbConnector';
 
-import { Add, Launch, Key, Close, Edit, SaveAs, Save } from '@mui/icons-material';
+import { Add, Launch, Key, Close, FilterAlt, SaveAs, Save } from '@mui/icons-material';
  
 
 const formatConnectName = name => name.toLowerCase().replace(/\s/g, '_');
@@ -168,8 +168,11 @@ function QueryGrid () {
   </IconButton>] : []
 
   const buttons = saveBtn.concat([
-    <IconButton onClick={() => setEdit(!edit)}>
-      <Edit />
+    <IconButton onClick={() => {
+      // setData(null);
+      setEdit(!edit)
+    }}>
+      <FilterAlt />
     </IconButton>, 
     <IconButton onClick={() => navigate(`/table/${connectionID}/${schema}/${tablename}`)}>
       <Close />
@@ -203,6 +206,7 @@ function QueryGrid () {
 }
  
 function TableGrid () {
+  const [loaded, setLoaded] = React.useState(false) ;
   const navigate = useNavigate();
   const [data, setData] = React.useState(null)
   const { schema,  tablename, connectionID } = useParams();
@@ -233,6 +237,7 @@ function TableGrid () {
       {
         field: 'Nullable',
         value: conf.IS_NULLABLE, 
+        types: ['YES', 'NO']
       },
       {
         field: 'Type',
@@ -285,6 +290,7 @@ function TableGrid () {
   ]
 
   React.useEffect(() => {
+    if(loaded) return
     setAppHistory({
       title: `${configKey} | ${tablename} | Columns`,
       path: `/table/${connectionID}/${schema}/${tablename}`,
@@ -292,8 +298,8 @@ function TableGrid () {
       schema,
       tablename
     });
-
-  }, [configKey, connectionID, schema, tablename, setAppHistory])
+    setLoaded(true)
+  }, [configKey, loaded, connectionID, schema, tablename, setAppHistory])
 
   return <ListGrid buttons={buttons} breadcrumbs={breadcrumbs} title={`Columns in "${tablename}"`} 
       rows={data?.rows?.map(configRow)} />  
@@ -301,6 +307,7 @@ function TableGrid () {
 }
 
 function ConnectionGrid () {
+  const [loaded, setLoaded] = React.useState(false) ;
   const [data, setData] = React.useState(null)
   const { connectionID } = useParams();
   const { getConfigs  } = useConfig()
@@ -313,14 +320,15 @@ function ConnectionGrid () {
   
   React.useEffect(() => {
    
+    if(loaded) return
     setAppHistory({
       title: `Connections | ${configKey}`,
       path: `/connection/${connectionID}`,
       connectionID, 
     });
-  
+    setLoaded(true)
 
-  }, [configKey, connectionID, setAppHistory])
+  }, [configKey, connectionID, loaded, setAppHistory])
   
 
   React.useEffect(() => {

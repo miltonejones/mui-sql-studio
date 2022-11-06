@@ -2,8 +2,8 @@ import * as React from 'react';
 import './ListGrid.css';
 
 import { styled, Box, Typography, Divider, Stack, Breadcrumbs, Pagination, Link} from '@mui/material';
-
-import { Sync } from '@mui/icons-material';
+import { QuickMenu } from '..';
+import { Sync, Save, Close } from '@mui/icons-material';
 
 const Cell = styled('td')(({theme, active}) => ({ 
   padding: theme.spacing(1, 2),
@@ -21,7 +21,7 @@ const Tiles = styled('table')(({theme}) => ({
   
 
 
-function ListCell({ value, type, icon, action }) {
+function ListCell({ value, type, icon, action, types, onChange }) {
   let text = value;
   if (typeof(value) === 'object') {
     try {
@@ -30,23 +30,38 @@ function ListCell({ value, type, icon, action }) {
       console.log (e)
     }
   }
-  // const text = typeof(value) === 'object' && !!value
-  //   ? JSON.stringify(value)
-  //   : value
+
+  //  <QuickMenu options={['ASC', 'DESC']} onChange={handleDirection}  label={direction}/>
+
+  const content = !types 
+    ?  <Typography variant={type === 'header' ? 'caption' : 'body2'}>
+      {type === 'password' ? '********' : text}
+    </Typography>
+    :  <QuickMenu options={types} onChange={(e) => onChange && onChange(e)}  label={text}/>
+ 
   return <Cell active={!!action}>
     <Stack onClick={() => action && action ()} direction="row" spacing={1} sx={{alignItems: 'center'}}> 
       {icon}
-      <Typography variant={type === 'header' ? 'caption' : 'body2'}>
-      {type === 'password' ? '********' : text}
-      </Typography>
+      {content}
     </Stack>
   </Cell>
 }
 
 function ListRow({ row }) {
+  const [data, setData] = React.useState(row)
+  const [dirty, setDirty] = React.useState(false);
+  
   return <tr>
-    {row.map((cell, i) => <ListCell key={i} {...cell} />)}
-    <Cell>&nbsp;</Cell>
+    {data.map((cell, i) => <ListCell key={i} onChange={(datum) => { 
+      setData((d) => d.map((r, k) => k === i ? {...r, value: datum} : r));
+      setDirty(true)
+    }} {...cell} />)}
+    <Cell>
+      {dirty ? <><Save /><Close onClick={() => {
+        setDirty(false);
+        setData(row)
+      }} /></> : <>&nbsp;</>}
+    </Cell>
   </tr>
 }
 

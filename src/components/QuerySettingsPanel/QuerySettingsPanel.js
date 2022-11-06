@@ -53,8 +53,8 @@ export default function QuerySettingsPanel({
         .map((col) => cols.push(`${table.alias}.${col.name} as ${col.alias}\n`));
       from.push(
         i === 0
-          ? `${table.name} as ${table.alias}\n`
-          : `\n JOIN ${table.name} as ${table.alias} ON \n ${table.alias}.${srcCol} = ${findAlias(destTable)}.${destCol}`
+          ? ` ${table.name} as ${table.alias}\n`
+          : `\n JOIN ${table.name} as ${table.alias} ON \n  ${table.alias}.${srcCol} = ${findAlias(destTable)}.${destCol}\n`
       );
     });
 
@@ -63,12 +63,12 @@ export default function QuerySettingsPanel({
     })
 
     orders.map((by, i) => {
-      order.push (`${by.fieldName} ${by.direction}\n`)
+      order.push (` ${by.fieldName} ${by.direction}\n`)
     })
 
     const core = [...sql, '\n', cols.length ? cols.join(', ') : '*', '\n', 'FROM', '\n', ...from];
     wheres.length && core.push('\n', '\n WHERE\n', ...where);
-    orders.length && core.push('\n', 'ORDER BY\n', order.join(', '));
+    orders.length && core.push('\n ORDER BY\n', order.join(', '));
 
     const o = core.join(' ');
     return o;
@@ -570,7 +570,7 @@ function WhereItem ({ index }) {
   </Stack>
 }
 
-const QuickMenu = ({ label, error, options, onChange }) => {
+export const QuickMenu = ({ label, error, options, onChange }) => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
