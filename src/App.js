@@ -56,7 +56,7 @@ function QueryGrid () {
   
   React.useEffect(() => {
    
-    if (!connectionID || !!loaded) return;
+    if (!!loaded) return;
 
     let props = {
       title: `${configKey} | ${tablename} | List`,
@@ -79,7 +79,7 @@ function QueryGrid () {
       tablename,
       listname
     });
-  
+   
 
   }, [configKey, loaded, getQueries, connectionID, tablename, schema, listname, setAppHistory])
   
@@ -217,6 +217,7 @@ function TableGrid () {
 
   const { Alert, setAppHistory} = React.useContext(AppStateContext);
   
+
   
   const configRow = (conf) => {
     const regex = /(\w+)\((\d+)\)/;
@@ -233,7 +234,8 @@ function TableGrid () {
       },
       {
         field: 'Default',
-        value: conf.COLUMN_DEFAULT
+        value: conf.COLUMN_DEFAULT,
+        edit: !0
       },
       {
         field: 'Nullable',
@@ -242,11 +244,13 @@ function TableGrid () {
       },
       {
         field: 'Type',
-        value: !parts ? conf.COLUMN_TYPE : parts[1]
+        value: !parts ? conf.COLUMN_TYPE : parts[1],
+        types: ['int', 'bit', 'bigint', 'text', 'mediumtext', 'varchar']
       }, 
       {
         field: 'Size',
-        value: !parts ? '' : parts[2]
+        value: !parts ? '' : parts[2],
+        edit: !0
       }, 
     ]
   }
@@ -257,7 +261,8 @@ function TableGrid () {
     (async() => {
       const f = await execQuery(configs[configKey], `SELECT
       u.CONSTRAINT_NAME, u.REFERENCED_TABLE_NAME, u.REFERENCED_COLUMN_NAME, 
-      t.COLUMN_NAME,	t.ORDINAL_POSITION,	t.COLUMN_DEFAULT,	t.IS_NULLABLE,t.COLUMN_TYPE	 
+      t.COLUMN_NAME,	t.ORDINAL_POSITION,	t.COLUMN_DEFAULT,	t.IS_NULLABLE,t.COLUMN_TYPE	 ,
+      t.DATA_TYPE
       FROM INFORMATION_SCHEMA.COLUMNS t LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE u 
       ON u.TABLE_NAME = t.TABLE_NAME and u.COLUMN_NAME = t.COLUMN_NAME
       WHERE t.TABLE_NAME = '${tablename}' 
@@ -289,7 +294,7 @@ function TableGrid () {
       <Launch />
     </IconButton>
   ]
-
+ 
   React.useEffect(() => {
     if(loaded) return
     setAppHistory({
@@ -301,9 +306,12 @@ function TableGrid () {
     });
     setLoaded(true)
   }, [configKey, loaded, connectionID, schema, tablename, setAppHistory])
+ 
 
-  return <ListGrid buttons={buttons} breadcrumbs={breadcrumbs} title={`Columns in "${tablename}"`} 
+  return <> 
+  <ListGrid buttons={buttons} breadcrumbs={breadcrumbs} title={`Columns in "${tablename}"`} 
       rows={data?.rows?.map(configRow)} />  
+  </>
 
 }
 

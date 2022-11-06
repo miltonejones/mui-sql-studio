@@ -148,8 +148,8 @@ const ModalHeader = ({ handleClose, title }) => (
  </Flex>
 );
  
-const ModalPrompt = ({ onChange, title, message }) => {
- const [value, setValue] = React.useState("");
+const ModalPrompt = ({ onChange, title, message, defaultValue = ''}) => {
+ const [value, setValue] = React.useState(defaultValue);
  const textProps = {
    ...modalTextProps,
    value,
@@ -209,7 +209,7 @@ export const useModal = () => {
    createModalMethod({
      message,
      title,
-     value,
+     defaultValue: value,
      component: ModalPrompt,
    });
  

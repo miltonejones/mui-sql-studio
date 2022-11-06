@@ -3,6 +3,7 @@ import './ListGrid.css';
 
 import { styled, Box, Typography, Divider, Stack, Breadcrumbs, Pagination, Link} from '@mui/material';
 import { QuickMenu } from '..';
+import { AppStateContext } from '../../hooks/AppStateContext';
 import { Sync, Save, Close } from '@mui/icons-material';
 
 const Cell = styled('td')(({theme, active}) => ({ 
@@ -21,7 +22,8 @@ const Tiles = styled('table')(({theme}) => ({
   
 
 
-function ListCell({ value, type, icon, action, types, onChange }) {
+function ListCell({ field, value, type, icon, action, types, edit, onChange }) {
+  const { Prompt } = React.useContext(AppStateContext);
   let text = value;
   if (typeof(value) === 'object') {
     try {
@@ -31,7 +33,15 @@ function ListCell({ value, type, icon, action, types, onChange }) {
     }
   }
 
-  //  <QuickMenu options={['ASC', 'DESC']} onChange={handleDirection}  label={direction}/>
+  const onClick = async () => {
+    if (edit) {
+       const ok = await Prompt(`Enter value for ${field}`, 'Set value', value);
+       if (!ok) return;
+       onChange && onChange(ok)
+       return
+    }
+    action && action ()
+  }
 
   const content = !types 
     ?  <Typography variant={type === 'header' ? 'caption' : 'body2'}>
@@ -39,8 +49,8 @@ function ListCell({ value, type, icon, action, types, onChange }) {
     </Typography>
     :  <QuickMenu options={types} onChange={(e) => onChange && onChange(e)}  label={text}/>
  
-  return <Cell active={!!action}>
-    <Stack onClick={() => action && action ()} direction="row" spacing={1} sx={{alignItems: 'center'}}> 
+  return <Cell active={edit || !!action}>
+    <Stack onClick={onClick} direction="row" spacing={1} sx={{alignItems: 'center'}}> 
       {icon}
       {content}
     </Stack>
