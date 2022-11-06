@@ -481,7 +481,7 @@ function HomePage ({ pinned }) {
 }
 
 const Area = styled(Box)(({ pinned }) => ({
-  height: 'calc(100vh - 128px)',
+  height: 'calc(100vh - 112px)',
   backgroundColor: 'white',
   outline: 'dotted 1px blue',
   position: 'absolute',
@@ -532,7 +532,7 @@ function App() {
             </Routes>
           </Area>
         </BrowserRouter>
-        <Stack spacing={1} direction="row" sx={{ alignItems: 'center', width: 'calc(100vw - 24px)', p: 1, position: "absolute", bottom: 0, color: 'white'}}>
+        <Stack spacing={1} direction="row" sx={{ alignItems: 'center', width: 'calc(100vw - 24px)', p: 0, position: "absolute", bottom: 0, color: 'white'}}>
           <Box sx={{flexGrow: 1}}/>
           <SaveAs />
           <Typography variant="caption"><b>MySQL Studio</b>.</Typography>
