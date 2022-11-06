@@ -9,12 +9,12 @@ import {
 } from "react-router-dom";
 import './App.css';
 import { ToggleToolbar, ListGrid, QuerySettingsPanel } from './components'
-import {  Box, Collapse, IconButton, Stack, styled } from '@mui/material';
+import { Alert, Box, Collapse, IconButton, Stack, Typography, styled } from '@mui/material';
 import { useConfig } from './hooks/useConfig';
 import { useAppHistory } from './hooks/useAppHistory';
 import { execQuery } from './connector/dbConnector';
 
-import { Add, Launch, Key, Close, Edit } from '@mui/icons-material';
+import { Add, Launch, Key, Close, Edit, SaveAs } from '@mui/icons-material';
 
 export const AppStateContext = React.createContext({});
 
@@ -139,9 +139,10 @@ function ColumnGrid () {
     const parts = regex.exec(conf.COLUMN_TYPE)
     return [ 
       {
-        field: 'Name',
-        value: <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}>{!!conf.CONSTRAINT_NAME ? <Key /> : ''} <Box>{conf.COLUMN_NAME}</Box></Stack>, 
-      },
+        field: 'Name', 
+        value: conf.COLUMN_NAME,
+        icon: !!conf.CONSTRAINT_NAME ? <Key color={ conf.CONSTRAINT_NAME === 'PRIMARY' ? "primary" : "warning"} /> : ''
+      }, 
       {
         field: 'Position',
         value: conf.ORDINAL_POSITION
@@ -366,11 +367,18 @@ function HomePage ({ pinned }) {
       <Add />
     </IconButton>
   ]
+
+  if (!rows.length) {
+    return <Alert severity="warning">
+      You do not have any connections created. Select All &gt; New Connection to create one.
+    </Alert>
+  }
+
   return <ListGrid breadcrumbs={breadcrumbs} title="Available Connections" buttons={buttons} rows={rows} />
 }
 
 const Area = styled(Box)(({ pinned }) => ({
-  height: 'calc(100vh - 120px)',
+  height: 'calc(100vh - 128px)',
   backgroundColor: 'white',
   outline: 'dotted 1px blue',
   position: 'absolute',
@@ -402,6 +410,12 @@ function App() {
             </Routes>
           </Area>
         </BrowserRouter>
+        <Stack spacing={1} direction="row" sx={{ alignItems: 'center', width: 'calc(100vw - 24px)', p: 1, position: "absolute", bottom: 0, color: 'white'}}>
+          <Box sx={{flexGrow: 1}}/>
+          <SaveAs />
+          <Typography variant="caption"><b>MySQL Studio</b>.</Typography>
+          <Typography variant="caption"><a style={{color: 'yellow'}} rel="noreferrer" href="https://github.com/miltonejones/mui-sql-studio" target="_blank">Check out the repo</a>.</Typography>
+        </Stack>
       </div>
     </AppStateContext.Provider>
   );

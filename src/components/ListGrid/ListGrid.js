@@ -3,7 +3,7 @@ import * as React from 'react';
 import { styled, Box, Typography, Divider, Stack, Breadcrumbs, Pagination, Link} from '@mui/material';
 
 
-const Cell = styled('td')(({theme, active}) => ({
+const Cell = styled('td')(({theme, active}) => ({ 
   padding: theme.spacing(1, 2),
   backgroundColor: 'white',
   color: !active ? 'black' : 'blue',
@@ -19,7 +19,7 @@ const Tiles = styled('table')(({theme}) => ({
   
 
 
-function ListCell({ value, type, action }) {
+function ListCell({ value, type, icon, action }) {
   let text = value;
   if (typeof(value) === 'object') {
     try {
@@ -32,9 +32,12 @@ function ListCell({ value, type, action }) {
   //   ? JSON.stringify(value)
   //   : value
   return <Cell active={!!action}>
-    <Typography onClick={() => action && action ()} variant={type === 'header' ? 'caption' : 'body2'}>
-     {type === 'password' ? '********' : text}
-    </Typography>
+    <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
+      {icon}
+      <Typography onClick={() => action && action ()} variant={type === 'header' ? 'caption' : 'body2'}>
+      {type === 'password' ? '********' : text}
+      </Typography>
+    </Stack>
   </Cell>
 }
 

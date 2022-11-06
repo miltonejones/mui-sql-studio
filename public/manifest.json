@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "MySQL Studio",
+  "name": "Work with remote MySQL Server instances",
   "icons": [
     {
       "src": "favicon.ico",
