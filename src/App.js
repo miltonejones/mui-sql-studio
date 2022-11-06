@@ -103,6 +103,7 @@ function QueryGrid () {
 
 
   const loadPage = React.useCallback (async (pg, sql) => {  
+    setData(null); 
     const f = await execQuery(configs[configKey], sql || queryText, pg); 
     setPage(pg);
     setData(f); 
@@ -406,24 +407,26 @@ function ConnectionGrid () {
 
 function HomePage ({ pinned }) {
   
+  const [loaded, setLoaded] = React.useState(false) ;
   const { getConfigs, saveConfig  } = useConfig()
   const configs = getConfigs();
   const navigate = useNavigate();
 
  
-  const {   setModalState } = React.useContext(AppStateContext);
+  const {  setAppHistory, setModalState } = React.useContext(AppStateContext);
  
   
-  // React.useEffect(() => {
+  React.useEffect(() => {
    
+    if (loaded) return;
+    setAppHistory({
+      title: `Home`,
+      path: `/` 
+    });
   
-  //   setAppHistory({
-  //     title: `Home`,
-  //     path: `/` 
-  //   });
-  
+    setLoaded(true)
 
-  // }, [ setAppHistory ])
+  }, [ setAppHistory, loaded ])
   
 
 
