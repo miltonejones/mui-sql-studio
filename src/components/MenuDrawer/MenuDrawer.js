@@ -2,12 +2,12 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import {   Box, Stack, Collapse, IconButton, TextField, Typography, styled} from '@mui/material';
+import {  InputAdornment, Box, Stack, Collapse, IconButton, TextField, Typography, styled} from '@mui/material';
 import {  
   useNavigate, 
 } from "react-router-dom";
 
-import { PushPin, ExpandMore } from '@mui/icons-material';
+import { PushPin, ExpandMore , Close} from '@mui/icons-material';
 
 export const LogoURL = 'https://associate-ui.s3.amazonaws.com/kisspng-mysql-relational-database-management-system-logo-m-mysql-instalaci%C3%B3n-y-creaci%C3%B3n-usuario-atrum-5b649e7bb60bf3.4045674715333208277457.png';
 
@@ -41,6 +41,7 @@ const Panel = styled(Box)(({ theme }) => ({
 
 export default function MenuDrawer({ label = 'Dashboard', report, options = []}) {
 
+  const [filterText, setFilterText] = React.useState('')
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [pinned, setPinned] = React.useState(false);
@@ -59,6 +60,15 @@ export default function MenuDrawer({ label = 'Dashboard', report, options = []})
 
   const Tag = pinned ? Panel : Menu;
 
+  const adornment = !filterText.length ? {} : {
+    endAdornment: <InputAdornment position="end">
+      <IconButton onClick={() => setFilterText('')}>
+        <Close />
+      </IconButton>
+    </InputAdornment>,
+  }
+
+  
   return (
     <div>
       <Collapse orientation="horizontal" in={!pinned}>
@@ -111,20 +121,22 @@ export default function MenuDrawer({ label = 'Dashboard', report, options = []})
      
         <MenuItem >
           <Stack spacing={2} direction="row">
-            <TextField size="small" label="Filter" />
+            <TextField size="small" label="Filter" value={filterText} autoComplete="off"
+              onChange={e => setFilterText(e.target.value)} 
+              InputProps={adornment}/>
             <RotateButton color="inherit" onClick={() => pinMenu()} deg={pinned ? 45 : 0}>
               <PushPin />
             </RotateButton>
-          </Stack>
+          </Stack> 
         </MenuItem>
-        <MenuTree pinned={pinned} options={options} handleClose={handleClose}/> 
+        <MenuTree filterText={filterText} pinned={pinned} options={options} handleClose={handleClose}/> 
       </Tag>
     </div>
   );
 }
 
 
-const MenuTree = ({options, spaces = 0, pinned, handleClose}) => {
+const MenuTree = ({options, spaces = 0, pinned, handleClose, filterText}) => {
   const [open, setOpen] = React.useState(true)
   const hue = pinned ? 'white' : 'gray';
   const borderLeft =  !spaces  ? '' : ('solid 1px ' + hue)
@@ -136,7 +148,9 @@ const MenuTree = ({options, spaces = 0, pinned, handleClose}) => {
     handleClose(e)
   } 
   return <>
-  {options.map((opt, i) => <>
+  {options
+  .filter(opt => !filterText || opt.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
+  .map((opt, i) => <>
     <MenuItem key={i} sx={{ml: spaces, borderLeft, }} onClick={e => execClose(e, opt)}>
       <Stack sx={{alignItems: 'center' }} direction="row">
         <Typography>
@@ -148,7 +162,7 @@ const MenuTree = ({options, spaces = 0, pinned, handleClose}) => {
         </RotateButton>}
       </Stack>
     </MenuItem>
-    {opt.descendants && <Collapse in={open}><MenuTree pinned={pinned} handleClose={handleClose} options={opt.descendants} spaces={spaces + 4}/></Collapse>}
+    {opt.descendants && <Collapse in={open}><MenuTree filterText={filterText} pinned={pinned} handleClose={handleClose} options={opt.descendants} spaces={spaces + 4}/></Collapse>}
   </>)} 
   </>
 }

@@ -40,7 +40,7 @@ function QueryGrid () {
    
   
     setAppHistory({
-      title: `${configKey} / ${tablename} / List`,
+      title: `${configKey} | ${tablename} | List`,
       path: `/query/${connectionID}/${schema}/${tablename}`,
       connectionID,
       schema,
@@ -207,7 +207,7 @@ function ColumnGrid () {
 
   React.useEffect(() => {
     setAppHistory({
-      title: `${configKey} / ${tablename} / Columns`,
+      title: `${configKey} | ${tablename} | Columns`,
       path: `/table/${connectionID}/${schema}/${tablename}`,
       connectionID,
       schema,
@@ -237,7 +237,7 @@ function ConnectionGrid () {
   React.useEffect(() => {
    
     setAppHistory({
-      title: `Connections / ${configKey}`,
+      title: `Connections | ${configKey}`,
       path: `/connection/${connectionID}`,
       connectionID, 
     });

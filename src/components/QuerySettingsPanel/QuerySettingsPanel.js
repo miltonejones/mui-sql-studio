@@ -62,7 +62,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
       order.push (` ${by.fieldName} ${by.direction}\n`)
     })
 
-    const core = [...sql, '\n', cols.join(', '), '\n', 'FROM', '\n', ...from];
+    const core = [...sql, '\n', cols.length ? cols.join(', ') : '*', '\n', 'FROM', '\n', ...from];
     wheres.length && core.push('\n', 'WHERE\n', ...where);
     orders.length && core.push('\n', 'ORDER BY\n', ...order);
 
@@ -72,10 +72,9 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
 
   const addTable = React.useCallback(async (name, loading) => {
     const { rows } = await describeTable(config, name);
-    const columns = rows.map((col) => ({
+    const columns = rows.map((col, i) => ({
       name: col.COLUMN_NAME,
-      alias: col.COLUMN_NAME,
-      selected: true
+      alias: col.COLUMN_NAME 
     }));
     const table = { name, alias: name, columns };
 
@@ -206,7 +205,7 @@ export default function QuerySettingsPanel({ config, tablename, onCommit, onCanc
           </>)
         }   
     )})
-    return p;
+    return p.length ? p : ['*'];
   }
 //  
   React.useEffect(() => { 
