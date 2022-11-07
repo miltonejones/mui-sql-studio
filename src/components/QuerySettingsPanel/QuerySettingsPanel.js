@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { describeTable, connectToDb } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
+import { useQueryTransform } from '../../hooks/useQueryTransform';
 import { Divider, Box, FormControlLabel, Switch, Menu, Collapse, MenuItem, TextField, Stack, Button, IconButton, Typography, styled} from '@mui/material';
 import { Add, Delete, ExpandMore, PlayArrow, Close } from '@mui/icons-material';
 
@@ -36,44 +37,13 @@ export default function QuerySettingsPanel({
   const [showSQL, setShowSQL] = React.useState(false);
   const { Prompt, Confirm } = React.useContext(AppStateContext);
 
-  const findTable = React.useCallback((name) => configuration.tables.find((n) => n.name === name), [configuration.tables]);
-  const findAlias = React.useCallback((name) => !findTable(name) ? name : findTable(name).alias, [findTable]);
+  const transformer = useQueryTransform()
 
-  const createTSQL = React.useCallback(() => {
-    const { tables, wheres, orders } = configuration;
-    const sql = ['SELECT'];
-    const cols = [];
-    const from = [];
-    const where = [];
-    const order = [];
+  const findTable = name => transformer.findTable(configuration.tables, name);  
+  // const findAlias = name => transformer.findAlias(configuration.tables, name); 
+  const createTSQL = () => transformer.createTSQL(configuration); 
 
-    tables.map((table, i) => {
-      const { destTable, srcCol, destCol } = table.join ?? {};
-      table.columns
-        .filter((f) => !!f.selected)
-        .map((col) => cols.push(`${table.alias}.${col.name} as ${col.alias}\n`));
-      from.push(
-        i === 0
-          ? ` ${table.name} as ${table.alias}\n`
-          : `\n JOIN ${table.name} as ${table.alias} ON \n  ${table.alias}.${srcCol} = ${findAlias(destTable)}.${destCol}\n`
-      );
-    });
 
-    wheres.map((clause, i) => {
-      where.push (`${clause.operator || ''} ${clause.fieldName} ${decodeClause(clause.predicate, clause.clauseProp)}\n`)
-    })
-
-    orders.map((by, i) => {
-      order.push (` ${by.fieldName} ${by.direction}\n`)
-    })
-
-    const core = [...sql, '\n', cols.length ? cols.join(', ') : '*', '\n', 'FROM', '\n', ...from];
-    wheres.length && core.push('\n', '\n WHERE\n', ...where);
-    orders.length && core.push('\n ORDER BY\n', order.join(', '));
-
-    const o = core.join(' ');
-    return o;
-  }, [configuration, findAlias]);
 
   const dropTable = React.useCallback(async(ID) => {
     const ok = await Confirm(`Remove table?`);
@@ -107,13 +77,13 @@ export default function QuerySettingsPanel({
     });
   }, [config, setConfiguration]);
 
-  const decodeClause = (key, value) => {
-    const clause = predicates.find(f => f.name === key)
-    if (clause) {
-      return clause.transform(value)
-    }
-    return value;
-  }
+  // const decodeClause = (key, value) => {
+  //   const clause = predicates.find(f => f.name === key)
+  //   if (clause) {
+  //     return clause.transform(value)
+  //   }
+  //   return value;
+  // }
 
   const updateTable = (table) =>
     setConfiguration((f) => ({

@@ -15,6 +15,7 @@ import { useConfig } from './hooks/useConfig';
 import { useSaveQuery } from './hooks/useSaveQuery';
 import { useAppHistory } from './hooks/useAppHistory';
 import { AppStateContext } from './hooks/AppStateContext';
+import { useQueryTransform } from './hooks/useQueryTransform';
 import { execQuery } from './connector/dbConnector';
 
 import { Add, Launch, Key, Close, FilterAlt, SaveAs, Save } from '@mui/icons-material';
@@ -34,7 +35,7 @@ function QueryGrid () {
   const navigate = useNavigate();
 
   const { schema, tablename, listname, connectionID } = useParams();
-
+  const { createTSQL } = useQueryTransform()
 
 
   const [configuration, setConfiguration] = React.useState(EMPTY_CONFIGURATION);
@@ -142,6 +143,72 @@ function QueryGrid () {
     field: key,
     value: conf[key]
   }));
+
+  const fieldByAlias = (alias) => {
+    let name = alias;
+    configuration.tables.map(t => {
+      const col = t.columns.find(c => c.alias === alias);
+      if (col) {
+        name = `${t.name}.${col.name}`
+      }
+    });
+    return name;
+  }
+
+  const adHocProp = prop => {
+    switch (true) {
+      case prop.indexOf('*') < 0:
+        return 'EQUALS'
+      case prop.startsWith('*') && prop.endsWith('*'):
+        return 'CONTAINS'
+      case prop.startsWith('*'):
+        return 'ENDS WITH'
+      case prop.endsWith('*'):
+        return 'STARTS WITH'
+      default: 
+        return 'CONTAINS'
+    } 
+  }
+
+  const createAdHoc = (fieldName, clauseProp) => {
+    const paramConf = {
+      ...configuration,
+      wheres: configuration.wheres
+      .filter(w => !(w.field === fieldName && w.temp) )
+      .concat({
+        fieldName: fieldByAlias(fieldName),
+        field: fieldName,
+        value: clauseProp,
+        clauseProp: clauseProp.replace(/\*/g, ''), 
+        predicate: adHocProp(clauseProp),
+        temp: !0
+      })
+    }
+    execAdHoc(paramConf); 
+  }
+ 
+  const dropAdHoc = (fieldName, clauseProp) => {
+    const paramConf = {
+      ...configuration,
+      wheres: configuration.wheres
+      .filter(w => !(w.field === fieldName && w.temp) ) 
+    }
+    execAdHoc(paramConf); 
+  }
+
+  const execAdHoc = async (conf) => {
+    conf.wheres.map((w, i) => !!w.temp && Object.assign(w, {operator: i === 0 ? null : 'AND'}))
+    setConfiguration(conf);
+    const sql = createTSQL(conf); 
+    // const ok = await Prompt (sql)
+    loadPage(1, sql) ;
+  }
+
+  const temps = configuration.wheres 
+  .filter(f => f.temp);
+  const queryDesc = temps
+    .map(f => `${f.field} ${adHocProp(f.value)} "${f.clauseProp}"`)
+    .join(' AND ');
  
   const breadcrumbs = [
     {
@@ -160,9 +227,16 @@ function QueryGrid () {
       text: 'List',
       href: saveEnabled ? `/query/${connectionID}/${schema}/${tablename}` : null
     }
-  ].concat(saveEnabled ? [
+  ]
+  .concat(saveEnabled ? [
     {
-      text: configuration.title || 'Unnamed Query'
+      text: configuration.title || 'Unnamed Query',
+      href: temps.length && configuration.title ? `/lists/${connectionID}/${schema}/${tablename}/${listname}` : null
+    }
+  ] : [])
+  .concat(temps.length ? [
+    {
+      text: queryDesc
     }
   ] : [])
 
@@ -186,14 +260,18 @@ function QueryGrid () {
   return <> 
   <Collapse in={!edit}>
     <ListGrid  
-        setPage={loadPage}
-        count={data?.count}
-        page={page}
-        buttons={buttons} 
-        title={`${tablename}`} 
-        breadcrumbs={breadcrumbs} 
-        rows={data?.rows?.map(configRow)} 
-      />  
+      onSearch={createAdHoc}
+      onClear={dropAdHoc}
+      searches={configuration.wheres}
+      searchable={saveEnabled}
+      setPage={loadPage}
+      count={data?.count}
+      page={page}
+      buttons={buttons} 
+      title={`${tablename}`} 
+      breadcrumbs={breadcrumbs} 
+      rows={data?.rows?.map(configRow)} 
+    />  
   </Collapse>
   <Collapse in={edit}> 
     {edit && <QuerySettingsPanel 

@@ -1,7 +1,9 @@
 import * as React from 'react';
 import './ListGrid.css';
 
-import { styled, Box, Typography, Divider, Stack, Breadcrumbs, Pagination, Link} from '@mui/material';
+import { styled, Box, Typography, Divider, 
+  IconButton, InputAdornment,
+  Stack, TextField, Breadcrumbs, Pagination, Link} from '@mui/material';
 import { QuickMenu } from '..';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { Sync, Save, Close } from '@mui/icons-material';
@@ -77,8 +79,35 @@ function ListRow({ row }) {
   </tr>
 }
 
+function SearchRow({ row , searches = [], onChange, onClear}) {
+  const params = {};
+  searches.map(s => Object.assign(params, {[s.field]: s.value}))
+  const [state, setState] = React.useState(params)
+  return <tr>
+    {row.map((cell, i) => {
+      
+      const adornment = !state[cell.value] ? {} : {
+        endAdornment: <InputAdornment position="end">
+          <IconButton onClick={() => {
+            setState(s => ({...s, [cell.value]: ''}))
+            onClear && onClear(cell.value, state[cell.value])
+          }}>
+            <Close />
+          </IconButton>
+        </InputAdornment>,
+      }
 
-export default function ListGrid({title, count = 0, page = 1, setPage, buttons, breadcrumbs, rows = []}) {
+  
+      return (<Cell>
+      <TextField autoComplete="off" size="small" value={state[cell.value]} onChange={(e) => setState(s => ({ ...s, [cell.value]: e.target.value }))} 
+        onKeyUp={e => e.keyCode === 13 && onChange && onChange(cell.value, state[cell.value])}
+        placeholder={cell.value} label="Search" InputProps={adornment}/>
+    </Cell>)})}
+    <Cell>&nbsp;</Cell>
+  </tr>
+}
+
+export default function ListGrid({title, searchable, searches, onClear, onSearch, count = 0, page = 1, setPage, buttons, breadcrumbs, rows = []}) {
   if (!rows?.length) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
   const headers = [rows[0].map(row => ({value: row.field, type: 'header'}))]
   const pageCount = Math.ceil(count / 100);
@@ -111,12 +140,15 @@ export default function ListGrid({title, count = 0, page = 1, setPage, buttons, 
       <Box sx={{flexGrow: 1}} />
       <Typography variant="caption">{desc}</Typography>
       </Stack>
-      }
+      } 
   </>}
-
-  
+ 
   <Tiles cellSpacing="1">
     {headers.map(row => <ListRow key={row.field} row={row} />)}
+    {!!searchable && <SearchRow searches={searches} 
+      onClear={(key, val) => onClear && onClear(key, val)} 
+      onChange={(key, val) => onSearch && onSearch(key, val)} 
+    row={headers[0]} />}
     {rows.map(row => <ListRow key={row.field} row={row} />)}
   </Tiles>
   
