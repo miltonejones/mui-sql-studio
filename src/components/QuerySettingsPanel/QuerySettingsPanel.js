@@ -541,7 +541,7 @@ function WhereItem ({ index }) {
   </Stack>
 }
 
-export const QuickMenu = ({ label, error, options, onChange }) => {
+export const QuickMenu = ({ label, error, value: selected, options, onChange }) => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -561,7 +561,8 @@ export const QuickMenu = ({ label, error, options, onChange }) => {
     open={open}
     onClose={() => handleClose()} 
   > 
-    {options?.map (option => <MenuItem key={option} onClick={() => handleClose(option)}>{option}</MenuItem>)} 
+    {options?.map (option => <MenuItem key={option} onClick={() => handleClose(option)}
+    >{selected === option && <>&bull;{" "}</>}{option}</MenuItem>)} 
   </Menu>
   </>
 

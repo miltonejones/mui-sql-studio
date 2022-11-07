@@ -51,7 +51,7 @@ function ListCell({ field, value, type, icon, action, types, edit, onChange }) {
     ?  <Typography variant={type === 'header' ? 'subtitle2' : 'body2'}>
       {type === 'password' ? '********' : text}
     </Typography>
-    : <QuickMenu options={types} onChange={(e) => onChange && onChange(e)}  label={text}/>
+    : <QuickMenu options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
  
   return <Cell header={type === 'header'} active={edit || !!action}>
     <Stack onClick={onClick} direction="row" spacing={1} sx={{alignItems: 'center'}}> 
@@ -61,7 +61,7 @@ function ListCell({ field, value, type, icon, action, types, edit, onChange }) {
   </Cell>
 }
 
-function ListRow({ row }) {
+function ListRow({ row, commitRow }) {
   const [data, setData] = React.useState(row)
   const [dirty, setDirty] = React.useState(false);
   
@@ -71,10 +71,17 @@ function ListRow({ row }) {
       setDirty(true)
     }} {...cell} />)}
     <Cell header>
-      {dirty ? <><Save /><Close onClick={() => {
+      {dirty ? <><IconButton onClick={() => {
+        commitRow && commitRow({data, row})
         setDirty(false);
         setData(row)
-      }} /></> : <>&nbsp;</>}
+      }} xs={{mr: 1}} size="small">
+        <Save />
+        </IconButton>
+        <IconButton size="small" onClick={() => {
+        setDirty(false);
+        setData(row)
+      }}><Close /></IconButton></> : <>&nbsp;</>}
     </Cell>
   </tr>
 }
@@ -107,7 +114,7 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
   </tr>
 }
 
-export default function ListGrid({title, searchable, searches, onClear, onSearch, count = 0, page = 1, setPage, buttons, breadcrumbs, rows = []}) {
+export default function ListGrid({title, searchable, searches, onClear, onSearch, commitRow, count = 0, page = 1, setPage, buttons, breadcrumbs, rows = []}) {
   if (!rows?.length) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
   const headers = [rows[0].map(row => ({value: row.field, type: 'header'}))]
   const pageCount = Math.ceil(count / 100);
@@ -149,7 +156,7 @@ export default function ListGrid({title, searchable, searches, onClear, onSearch
       onClear={(key, val) => onClear && onClear(key, val)} 
       onChange={(key, val) => onSearch && onSearch(key, val)} 
     row={headers[0]} />}
-    {rows.map(row => <ListRow key={row.field} row={row} />)}
+    {rows.map(row => <ListRow commitRow={commitRow} key={row.field} row={row} />)}
   </Tiles>
   
   {/* <pre>{JSON.stringify(rows,0,2)}</pre> */}

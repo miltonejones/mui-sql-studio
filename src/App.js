@@ -306,7 +306,8 @@ function TableGrid () {
       {
         field: 'Name', 
         value: conf.COLUMN_NAME,
-        icon: !!conf.CONSTRAINT_NAME ? <Key color={ conf.CONSTRAINT_NAME === 'PRIMARY' ? "primary" : "warning"} /> : ''
+        icon: !!conf.CONSTRAINT_NAME ? <Key color={ conf.CONSTRAINT_NAME === 'PRIMARY' ? "primary" : "warning"} /> : '',
+        edit: !0
       }, 
       {
         field: 'Position',
@@ -325,7 +326,7 @@ function TableGrid () {
       {
         field: 'Type',
         value: !parts ? conf.COLUMN_TYPE : parts[1],
-        types: ['int', 'bit', 'bigint', 'text', 'mediumtext', 'varchar']
+        types: ['int', 'bit', 'bigint', 'text', 'mediumtext', 'varchar', 'datetime']
       }, 
       {
         field: 'Size',
@@ -389,7 +390,7 @@ function TableGrid () {
  
 
   return <> 
-  <ListGrid buttons={buttons} breadcrumbs={breadcrumbs} title={`Columns in "${tablename}"`} 
+  <ListGrid buttons={buttons} breadcrumbs={breadcrumbs} commitRow={row => alert(JSON.stringify(row))} title={`Columns in "${tablename}"`} 
       rows={data?.rows?.map(configRow)} />  
   </>
 
