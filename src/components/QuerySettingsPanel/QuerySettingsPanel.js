@@ -212,7 +212,7 @@ export default function QuerySettingsPanel({
           {table.alias}.<AU active={col.selected} onClick={() => setColumnSelected(table.name, col.name)}>{col.name}</AU>
           
             {!small && <> 
-            {" "}as{" "}
+            {" "}<i>as</i>{" "}
             <AU active error={error} onClick={() => setColumnAlias(table.name, col.name)}>{col.alias}</AU>
             </>}, {" "}
           </>)
@@ -604,7 +604,7 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
     return <>
     <AU active onClick={() => addTable(table.name)}>
       {table.name}
-    </AU> as <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
+    </AU> <i>as</i> <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
     </>
   }
   return <Box >
@@ -612,10 +612,10 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
     <Delete />
    </IconButton>
 
-  {" "}JOIN <AU active onClick={() => addTable(table.name)}>
+  {" "}<i>JOIN</i> <AU active onClick={() => addTable(table.name)}>
     {table.name} 
-  </AU> as <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
-  {" "}ON {table.alias}.<ColumnMenu fieldname="srcCol" source={table.name} tablename={table.name} columnname={srcCol} /> 
+  </AU> <i>as</i> <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
+  {" "}<i>ON</i> {table.alias}.<ColumnMenu fieldname="srcCol" source={table.name} tablename={table.name} columnname={srcCol} /> 
   {" "}={" "} 
   <TableMenu fieldname="destTable" tablename={table.name} name={destTable} />
   .

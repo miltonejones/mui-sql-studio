@@ -12,12 +12,14 @@ const Cell = styled('td')(({theme, active}) => ({
   color: !active ? 'black' : 'blue',
   textDecoration: !active ? 'none' : 'underline',
   cursor: !active ? 'default' : 'pointer',
-  whiteSpace: 'nowrap'
+  whiteSpace: 'nowrap',
+  // borderRadius: 5
 }))
   
 const Tiles = styled('table')(({theme}) => ({ 
-  backgroundColor: 'gray',
-  minWidth: '80vw'
+  backgroundColor: '#d9d9d9',
+  minWidth: '80vw',
+  // borderRadius: 5
 }))
   
 
@@ -47,7 +49,7 @@ function ListCell({ field, value, type, icon, action, types, edit, onChange }) {
     ?  <Typography variant={type === 'header' ? 'caption' : 'body2'}>
       {type === 'password' ? '********' : text}
     </Typography>
-    :  <QuickMenu options={types} onChange={(e) => onChange && onChange(e)}  label={text}/>
+    : <QuickMenu options={types} onChange={(e) => onChange && onChange(e)}  label={text}/>
  
   return <Cell active={edit || !!action}>
     <Stack onClick={onClick} direction="row" spacing={1} sx={{alignItems: 'center'}}> 
@@ -85,6 +87,9 @@ export default function ListGrid({title, count = 0, page = 1, setPage, buttons, 
     setPage && setPage(value);
   };
 
+  const first = 1 + (100 * (page - 1));
+  const desc = `${first} to ${Math.min(first + 100, count)} of ${count} records`
+
   return <>
 
   {!!breadcrumbs && <>
@@ -101,7 +106,12 @@ export default function ListGrid({title, count = 0, page = 1, setPage, buttons, 
     </Stack>
     <Divider sx={{mb: 1}} />
  
-    {!!count && <Pagination sx={{mb: 1}}  onChange={handleChange} page={page} count={pageCount} />}
+    {!!count && <Stack direction="row" sx={{alignItems: 'center'}}>
+      <Pagination sx={{mb: 1}}  onChange={handleChange} page={page} count={pageCount} />
+      <Box sx={{flexGrow: 1}} />
+      <Typography variant="caption">{desc}</Typography>
+      </Stack>
+      }
   </>}
 
   
