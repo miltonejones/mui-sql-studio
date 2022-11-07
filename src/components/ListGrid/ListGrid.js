@@ -117,7 +117,7 @@ export default function ListGrid({title, searchable, searches, onClear, onSearch
   };
 
   const first = 1 + (100 * (page - 1));
-  const desc = `${first} to ${Math.min(first + 100, count)} of ${count} records`
+  const desc = `${first} to ${Math.min(first + 99, count)} of ${count} records`
 
   return <>
 

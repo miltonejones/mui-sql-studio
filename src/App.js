@@ -200,7 +200,7 @@ function QueryGrid () {
     conf.wheres.map((w, i) => !!w.temp && Object.assign(w, {operator: i === 0 ? null : 'AND'}))
     setConfiguration(conf);
     const sql = createTSQL(conf); 
-    // const ok = await Prompt (sql)
+    setQueryText(sql); 
     loadPage(1, sql) ;
   }
 
