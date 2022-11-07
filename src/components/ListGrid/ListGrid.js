@@ -6,9 +6,9 @@ import { QuickMenu } from '..';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { Sync, Save, Close } from '@mui/icons-material';
 
-const Cell = styled('td')(({theme, active}) => ({ 
+const Cell = styled('td')(({theme, header, active}) => ({ 
   padding: theme.spacing(1, 2),
-  backgroundColor: 'white',
+  backgroundColor: header ? 'rgb(250, 250, 250)' : 'white', 
   color: !active ? 'black' : 'blue',
   textDecoration: !active ? 'none' : 'underline',
   cursor: !active ? 'default' : 'pointer',
@@ -46,12 +46,12 @@ function ListCell({ field, value, type, icon, action, types, edit, onChange }) {
   }
 
   const content = !types 
-    ?  <Typography variant={type === 'header' ? 'caption' : 'body2'}>
+    ?  <Typography variant={type === 'header' ? 'subtitle2' : 'body2'}>
       {type === 'password' ? '********' : text}
     </Typography>
     : <QuickMenu options={types} onChange={(e) => onChange && onChange(e)}  label={text}/>
  
-  return <Cell active={edit || !!action}>
+  return <Cell header={type === 'header'} active={edit || !!action}>
     <Stack onClick={onClick} direction="row" spacing={1} sx={{alignItems: 'center'}}> 
       {icon}
       {content}
@@ -68,7 +68,7 @@ function ListRow({ row }) {
       setData((d) => d.map((r, k) => k === i ? {...r, value: datum} : r));
       setDirty(true)
     }} {...cell} />)}
-    <Cell>
+    <Cell header>
       {dirty ? <><Save /><Close onClick={() => {
         setDirty(false);
         setData(row)

@@ -15,7 +15,7 @@ export const Logo = ({ short }) =>{
   const navigate = useNavigate()
   return <Stack onClick={() => navigate('/')} sx={{cursor: 'pointer', ml: 2, mr: 4, width: short ? 154 : 300 , alignItems: 'center'}} spacing={1} direction="row" >
     <img alt="logo" src={LogoURL} style={{height:  32, width: 'auto'}}/>
-    <Typography>MySQL Studio</Typography>
+    <Typography>MySQLNow</Typography>
   </Stack>
 }
 

@@ -547,7 +547,7 @@ function App() {
         <Stack spacing={1} direction="row" sx={{ alignItems: 'center', width: 'calc(100vw - 24px)', p: 0, position: "absolute", bottom: 0, color: 'white'}}>
           <Box sx={{flexGrow: 1}}/>
           <SaveAs />
-          <Typography variant="caption"><b>MySQL Studio</b>.</Typography>
+          <Typography variant="caption"><b>MySQLNow</b>.</Typography>
           <Typography variant="caption"><a style={{color: 'yellow'}} rel="noreferrer" href="https://github.com/miltonejones/mui-sql-studio" target="_blank">Check out the repo</a>.</Typography>
         </Stack>
         <Modal {...modalProps} />
