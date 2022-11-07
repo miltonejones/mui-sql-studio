@@ -10,7 +10,7 @@ import { Sync, Save, Close } from '@mui/icons-material';
 
 const Cell = styled('td')(({theme, header, active}) => ({ 
   padding: theme.spacing(1, 2),
-  backgroundColor: header ? 'rgb(250, 250, 250)' : 'white', 
+  backgroundColor: header ? 'rgb(240, 240, 240)' : 'white', 
   color: !active ? 'black' : 'blue',
   textDecoration: !active ? 'none' : 'underline',
   cursor: !active ? 'default' : 'pointer',
@@ -100,10 +100,10 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
   
       return (<Cell>
       <TextField autoComplete="off" size="small" value={state[cell.value]} onChange={(e) => setState(s => ({ ...s, [cell.value]: e.target.value }))} 
-        onKeyUp={e => e.keyCode === 13 && onChange && onChange(cell.value, state[cell.value])}
+        sx={{minWidth: 100}} onKeyUp={e => e.keyCode === 13 && onChange && onChange(cell.value, state[cell.value])}
         placeholder={cell.value} label="Search" InputProps={adornment}/>
     </Cell>)})}
-    <Cell>&nbsp;</Cell>
+    <Cell header>&nbsp;</Cell>
   </tr>
 }
 
