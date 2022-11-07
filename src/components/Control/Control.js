@@ -45,9 +45,9 @@ export const Tooltag = ({
  children,
  ...props
 }) => (
- <HtmlTooltip arrow title={title}>
+ <Tooltip arrow title={title}>
    <Component {...props}>{children}</Component>
- </HtmlTooltip>
+ </Tooltip>
 );
  
 export const Spacer = styled(Box)(() => ({

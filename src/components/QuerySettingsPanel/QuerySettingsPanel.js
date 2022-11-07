@@ -4,6 +4,7 @@ import { AppStateContext } from '../../hooks/AppStateContext';
 import { Divider, Box, FormControlLabel, Switch, Menu, Collapse, MenuItem, TextField, Stack, Button, IconButton, Typography, styled} from '@mui/material';
 import { Add, Delete, ExpandMore, PlayArrow, Close } from '@mui/icons-material';
 
+import { Tooltag  } from '..'
 const QuerySettingsContext = React.createContext({});
 const uniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
@@ -295,20 +296,20 @@ export default function QuerySettingsPanel({
         />}
       />
      
-    <IconButton  onClick={() => onCommit && onCommit(createTSQL())}
+    <Tooltag component={IconButton}  title="Run" onClick={() => onCommit && onCommit(createTSQL())}
       >
       <PlayArrow />
-    </IconButton>
+    </Tooltag>
     
-    <IconButton  onClick={() => onCancel && onCancel()}
-      >
-      <Close />
-    </IconButton>
-    
-    {!!columns.length && <IconButton  onClick={() => setShowFieldNames(!showFieldNames)}
+    {!!columns.length && <Tooltag title="Show available fields"  component={IconButton}  onClick={() => setShowFieldNames(!showFieldNames)}
       >
       <ExpandMore />
-    </IconButton>}
+    </Tooltag>}
+    
+    <Tooltag title="Return to list"  component={IconButton}  onClick={() => onCancel && onCancel()}
+      >
+      <Close />
+    </Tooltag>
     
   </Stack>
     
@@ -334,10 +335,10 @@ export default function QuerySettingsPanel({
     <Stack direction="row" sx={{alignItems: 'center'}}>
       <Typography> FROM </Typography>
       <Box  sx={{flexGrow: 1}}/>
-      <IconButton  onClick={() => setShowTableNames(!showTableNames)}
+      <Tooltag title="Show available tables" component={IconButton} onClick={() => setShowTableNames(!showTableNames)}
         >
         <ExpandMore />
-      </IconButton>
+      </Tooltag>
     </Stack>
     
 
@@ -368,11 +369,11 @@ export default function QuerySettingsPanel({
     <Stack direction="row" sx={{alignItems: 'center'}}>
       <Typography sx={{color: configuration.wheres.length ? 'black' : 'gray'}}> WHERE </Typography>
       <Box  sx={{flexGrow: 1}}/>
-    {!configuration.wheres.length && <IconButton  
+    {!configuration.wheres.length && <Tooltag title="Add where clause"  component={IconButton}
         onClick={() => newClause({index: uniqueId()})}
         >
         <Add />
-      </IconButton>}
+      </Tooltag>}
     </Stack>
 
     {configuration.wheres.map((where) => <WhereItem key={where.index} {...where} />)}
@@ -387,11 +388,11 @@ export default function QuerySettingsPanel({
     <Stack direction="row" sx={{alignItems: 'center'}}>
       <Typography sx={{color: configuration.orders.length ? 'black' : 'gray'}}> ORDER BY </Typography>
       <Box  sx={{flexGrow: 1}}/>
-      <IconButton  
+      <Tooltag title="Add order by"  component={IconButton}
         onClick={() => newSort({index: uniqueId(), direction: 'ASC'})}
         >
         <Add />
-      </IconButton>
+      </Tooltag>
     </Stack>
 
 
@@ -498,9 +499,9 @@ function OrderItem ({ index }) {
 
   return <Stack direction="row" sx={{mb: 1, alignItems: 'center'}} spacing={1}>
 
-    <IconButton  onClick={() => dropOrderBy(index)}>
+    <Tooltag  component={IconButton} title="Delete order by" onClick={() => dropOrderBy(index)}>
     <Delete />
-   </IconButton>
+   </Tooltag>
  
     <QuickMenu options={columns} onChange={handleColumn} error={!fieldName} label={label}/>
     <QuickMenu options={['ASC', 'DESC']} onChange={handleDirection}  label={direction}/>
@@ -557,9 +558,9 @@ function WhereItem ({ index }) {
   const label = fieldName || 'choose column';
 
   return <Stack direction="row" sx={{mb: 1, alignItems: 'center', minHeight: 24}}>
-   <IconButton  onClick={() => dropClause(index)}>
+   <Tooltag title="Delete where clause" component={IconButton} onClick={() => dropClause(index)}>
     <Delete />
-   </IconButton>
+   </Tooltag>
  
     {!!operator && <QuickMenu options={['OR', 'AND']} onChange={handleOperator}  label={operator}/>}
   <QuickMenu options={columns} onChange={handleClose} error={!fieldName} label={label}/>
@@ -608,9 +609,9 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
     </>
   }
   return <Box >
-    <IconButton  onClick={() => dropTable(table.ID)}>
+    <Tooltag  component={IconButton} title="Delete table join"  onClick={() => dropTable(table.ID)}>
     <Delete />
-   </IconButton>
+   </Tooltag>
 
   {" "}<i>JOIN</i> <AU active onClick={() => addTable(table.name)}>
     {table.name} 

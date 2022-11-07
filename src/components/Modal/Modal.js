@@ -8,7 +8,7 @@ import {
  Box,
 } from "@mui/material";
 import { Flex, Tooltag, Spacer, TextBtn } from "..";
-import { Business, Close } from "@mui/icons-material";
+import { Business, Close, Announcement , Help, Info  } from "@mui/icons-material";
  
 // global style for Modal TextFields
 // TODO: this should be in a styled component
@@ -27,7 +27,7 @@ const Modal = ({
  open,
  
  // title to display in Modal header
- title,
+//  title,
  
  // component to display in the Modal
  component:
@@ -81,7 +81,7 @@ const Modal = ({
      <Stack sx={{ maxWidth, minWidth, height: "100%" }}>
        {/* modal header */}
  
-       <HeaderComponent {...props} handleClose={handleClose} />
+       <HeaderComponent  {...props} handleClose={handleClose} />
  
        {/* modal injected component */}
        {!!Component && (
@@ -135,10 +135,10 @@ const ModalFooter = ({
  </Flex>
 );
  
-const ModalHeader = ({ handleClose, title }) => (
+const ModalHeader = ({ handleClose, title, icon: Icon = Business }) => (
  <Flex sx={{ pl: 1, pr: 1, mb: 1, borderBottom: "solid 1px #cdcdcd" }}>
    <IconButton>
-     <Business />
+     <Icon />
    </IconButton>
    <Typography variant="subtitle2">{title}</Typography>
    <Spacer />
@@ -160,7 +160,7 @@ const ModalPrompt = ({ onChange, title, message, defaultValue = ''}) => {
    },
  };
  return (
-   <Stack>
+   <Stack> 
      <Typography>{message}</Typography>
      <TextField {...textProps} />
    </Stack>
@@ -180,6 +180,7 @@ export const useModal = () => {
    createModalMethod({
      message,
      title,
+     icon: Info,
  
      // for Alert Modals, no "submitClicked" hides the Okay button
      submitClicked: null,
@@ -194,6 +195,7 @@ export const useModal = () => {
    createModalMethod({
      message,
      title,
+     icon: Help,
  
      // for Confirm Modals, Okay is enabled by default and always means TRUE
      // TODO: this should really be 2 properties. for now they happen to mean the same thing
@@ -208,7 +210,8 @@ export const useModal = () => {
  const Prompt = (message, title, value) =>
    createModalMethod({
      message,
-     title,
+     title, 
+     icon: Announcement,
      defaultValue: value,
      component: ModalPrompt,
    });
@@ -240,7 +243,7 @@ export const useModal = () => {
        // when Cancel is clicked, return FALSE and close the Modal
        closeClicked: () => {
          resolve(false);
-         setModelProps({ open: false });
+         setModelProps({ open: false, message: 'Okay be that way!' });
        },
  
        // User-provided props

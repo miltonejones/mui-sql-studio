@@ -9,7 +9,7 @@ import {
 } from "react-router-dom";
 import './App.css';
 import Modal, { useModal } from './components/Modal/Modal';
-import { ToggleToolbar, ListGrid, ConnectionModal, QuerySettingsPanel } from './components'
+import { ToggleToolbar, ListGrid, ConnectionModal, Tooltag, QuerySettingsPanel } from './components'
 import { Alert,  Box, Button, Collapse, IconButton, Stack, Typography, styled } from '@mui/material';
 import { useConfig } from './hooks/useConfig';
 import { useSaveQuery } from './hooks/useSaveQuery';
@@ -86,6 +86,7 @@ function QueryGrid () {
   const savePage = async () => { 
     const title = await Prompt (
       `Enter a name for your query` ,
+      'Save query',
       configuration.title
     );
     if (!title) return;
@@ -165,20 +166,20 @@ function QueryGrid () {
     }
   ] : [])
 
-  const saveBtn = saveEnabled ? [<IconButton onClick={savePage}>
+  const saveBtn = saveEnabled ? [<Tooltag title="Save List" component={IconButton} onClick={savePage}>
     <Save />
-  </IconButton>] : []
+  </Tooltag>] : []
 
   const buttons = saveBtn.concat([
-    <IconButton onClick={() => {
+    <Tooltag title="Set list filters" component={IconButton} onClick={() => {
       // setData(null);
       setEdit(!edit)
     }}>
       <FilterAlt />
-    </IconButton>, 
-    <IconButton onClick={() => navigate(`/table/${connectionID}/${schema}/${tablename}`)}>
+    </Tooltag>, 
+    <Tooltag  title="Close" component={IconButton} onClick={() => navigate(`/table/${connectionID}/${schema}/${tablename}`)}>
       <Close />
-    </IconButton>, 
+    </Tooltag>, 
   ]);
 
 
