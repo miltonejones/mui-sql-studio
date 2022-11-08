@@ -227,7 +227,7 @@ function QueryGrid () {
   const temps = configuration.wheres 
   .filter(f => f.temp);
   const queryDesc = temps
-    .map(f => `${f.field} ${adHocProp(f.value)} "${f.clauseProp}"`)
+    .map(f => `${f.field} ${adHocProp(f.value).toLowerCase()} "${f.clauseProp}"`)
     .join(' AND ');
  
   const breadcrumbs = [

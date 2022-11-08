@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-const COOKIE = 'mysql-history-exper'
+const COOKIE = 'mysql-history-items'
 
 export const useAppHistory = () => {
   const [current, setCurrent] = React.useState(null)
@@ -26,11 +26,12 @@ export const useAppHistory = () => {
   const setAppHistory = (node) => {
     const old = getAppHistory();
     const ex = old.find (f => f.path === node.path);
-    const rep = !ex ? node : {...node, favorite: ex.favorite}
+    const rep = !ex ? node : {...node, favorite: ex.favorite};
+    const item = {...rep, when: new Date().toString()}
     const add = old.find(h => h.path === node.path) 
-      ? old.map(f => f.path === node.path ? rep : f)
-      : old.concat(rep);
-    setCurrent(rep);
+      ? old.map(f => f.path === node.path ? item : f)
+      : old.concat(item);
+    setCurrent(item);
     localStorage.setItem(COOKIE, JSON.stringify(add));
   }
  

@@ -3,9 +3,9 @@ import {  Box, Chip, styled} from '@mui/material';
 import MenuDrawer, { Logo } from '../MenuDrawer/MenuDrawer'; 
 import { useConfig } from '../../hooks/useConfig';
 import { useSaveQuery } from '../../hooks/useSaveQuery';
- 
-
 import { Star, StarBorder } from '@mui/icons-material';
+import moment from 'moment';
+
 
 
 const Navbar = styled(Box)(({ theme }) => ({
@@ -55,6 +55,11 @@ export default function ToggleToolbar({
     })
   }] : []
 
+  const humanize = time => { 
+    var duration = moment.duration(new Date().getTime() - new Date(time).getTime());
+    return duration.humanize() + ' ago'
+  }
+
   const buttons = [
     { 
       label: 'All',
@@ -99,9 +104,10 @@ export default function ToggleToolbar({
     },
     { 
       label: 'History',
-      options: past.length ? past.map(p => ({
+      options: past.filter(f => !!f.when).length ? past.filter(f => !!f.when).map(p => ({
         title: p.title,
         active: p.path === current?.path,
+        subtext: humanize(p.when),
         action: () => navigate(p.path)
       })) : [
         {

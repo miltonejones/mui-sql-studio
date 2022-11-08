@@ -7,13 +7,13 @@ import {
   useNavigate, 
 } from "react-router-dom";
 
-import { PushPin, ExpandMore , Close} from '@mui/icons-material';
+import { PushPin, ExpandMore , Close, FilterAlt} from '@mui/icons-material';
 
 export const LogoURL = 'https://associate-ui.s3.amazonaws.com/kisspng-mysql-relational-database-management-system-logo-m-mysql-instalaci%C3%B3n-y-creaci%C3%B3n-usuario-atrum-5b649e7bb60bf3.4045674715333208277457.png';
 
 export const Logo = ({ short }) =>{ 
   const navigate = useNavigate()
-  return <Stack onClick={() => navigate('/')} sx={{cursor: 'pointer', ml: 2, mr: 4, width: short ? 154 : 300 , alignItems: 'center'}} spacing={1} direction="row" >
+  return <Stack onClick={() => navigate('/')} sx={{cursor: 'pointer', ml: 2, mr: 4, width: short ? 104 : 300 , alignItems: 'center'}} spacing={1} direction="row" >
     <img alt="logo" src={LogoURL} style={{height:  32, width: 'auto'}}/>
     <Typography>MySQLNow</Typography>
   </Stack>
@@ -65,10 +65,17 @@ export default function MenuDrawer({ label = 'Dashboard', report, options = []})
   }
 
   const Tag = pinned ? Panel : Menu;
+ 
+  const startAdornment = pinned ? null  : <InputAdornment position="start">
+  <IconButton size="small">
+    <FilterAlt />
+  </IconButton>
+</InputAdornment>
 
-  const adornment = !filterText.length ? {} : {
+  const adornment = !filterText.length ? {startAdornment} : {
+    startAdornment,
     endAdornment: <InputAdornment position="end">
-      <IconButton onClick={() => setFilterText('')}>
+      <IconButton size="small" onClick={() => setFilterText('')}>
         <Close />
       </IconButton>
     </InputAdornment>,
@@ -158,15 +165,18 @@ const MenuTree = ({options, spaces = 0, pinned, handleClose, filterText}) => {
   .filter(opt => !filterText || opt.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
   .map((opt, i) => <>
     <MenuItem key={i} sx={{ml: spaces, borderLeft }} onClick={e => execClose(e, opt)}>
-      <Stack sx={{ width: '100%', alignItems: 'center' }} direction="row">
-        {opt.active && <Box sx={{mr: 1}}>&bull;</Box>}
-        <Typography sx={{ fontWeight: opt.active ? 600 : 400}}>
-          {opt.title}
-        </Typography>
-        <Box sx={{flexGrow: 1}} />
-       {!!opt.descendants &&  <RotateButton deg={open ? 180 : 0} onClick={() => setOpen(!open)} >
-          <ExpandMore />
-        </RotateButton>}
+      <Stack>
+        <Stack sx={{ width: '100%', alignItems: 'center' }} direction="row">
+          {opt.active && <Box sx={{mr: 1}}>&bull;</Box>}
+          <Typography sx={{ fontWeight: opt.active ? 600 : 400}}>
+            {opt.title}
+          </Typography>
+          <Box sx={{flexGrow: 1}} />
+        {!!opt.descendants &&  <RotateButton deg={open ? 180 : 0} onClick={() => setOpen(!open)} >
+            <ExpandMore />
+          </RotateButton>}
+        </Stack>
+        {!!opt.subtext && <Typography sx={{ml: opt.active ? 2 : 0}} variant="caption">{opt.subtext}</Typography>}
       </Stack>
     </MenuItem>
     {opt.descendants && <Collapse in={open}><MenuTree filterText={filterText} pinned={pinned} handleClose={handleClose} options={opt.descendants} spaces={spaces + 4}/></Collapse>}

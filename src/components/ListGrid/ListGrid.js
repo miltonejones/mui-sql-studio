@@ -95,7 +95,7 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
       
       const adornment = !state[cell.value] ? {} : {
         endAdornment: <InputAdornment position="end">
-          <IconButton onClick={() => {
+          <IconButton size="small" onClick={() => {
             setState(s => ({...s, [cell.value]: ''}))
             onClear && onClear(cell.value, state[cell.value])
           }}>
@@ -106,9 +106,10 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
 
   
       return (<Cell>
-      <TextField fullWidth autoComplete="off" size="small" value={state[cell.value]} onChange={(e) => setState(s => ({ ...s, [cell.value]: e.target.value }))} 
+      <TextField fullWidth autoComplete="off" size="small" 
+        value={state[cell.value]} onChange={(e) => setState(s => ({ ...s, [cell.value]: e.target.value }))} 
         sx={{minWidth: 100}} onKeyUp={e => e.keyCode === 13 && onChange && onChange(cell.value, state[cell.value])}
-        placeholder={cell.value} label="Search" InputProps={adornment}/>
+        placeholder={`"${cell.value}" Filter`} label="Search" InputProps={adornment}/>
     </Cell>)})}
     <Cell header>&nbsp;</Cell>
   </tr>
@@ -131,7 +132,9 @@ export default function ListGrid({title, empty, searchable, searches, onClear, o
 
   {!!breadcrumbs && <>
     <Breadcrumbs separator="›" aria-label="breadcrumb">
-      {breadcrumbs.map(crumb => crumb.href ? <Link href={crumb.href}>{crumb.text}</Link> : <Typography>{crumb.text}</Typography>)}
+      {breadcrumbs.map(crumb => crumb.href 
+        ? <Link href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
+        : <Typography variant="body2">{crumb.text}</Typography>)}
     </Breadcrumbs>
   </>}
 
