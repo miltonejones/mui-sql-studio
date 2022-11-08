@@ -13,9 +13,10 @@ export const LogoURL = 'https://associate-ui.s3.amazonaws.com/kisspng-mysql-rela
 
 export const Logo = ({ short }) =>{ 
   const navigate = useNavigate()
-  return <Stack onClick={() => navigate('/')} sx={{cursor: 'pointer', ml: 2, mr: 4, width: short ? 104 : 300 , alignItems: 'center'}} spacing={1} direction="row" >
+  return <Stack onClick={() => navigate('/')} sx={{
+      cursor: 'pointer', ml: 2, mr: 4, width: short ? 104 : 300 , alignItems: 'center'}} spacing={1} direction="row" >
     <img alt="logo" src={LogoURL} style={{height:  32, width: 'auto'}}/>
-    <Typography>MySQLNow</Typography>
+    <Box sx={{fontFamily: 'Play'}}>MySQL<b style={{color: 'orange'}}>Now</b></Box>
   </Stack>
 }
 

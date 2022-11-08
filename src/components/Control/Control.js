@@ -16,29 +16,6 @@ export const Pane = styled(Card)(({ collapsed, theme }) => ({
  transition: "width 0.3s ease-in",
 }));
  
-// const HtmlTooltip = styled(({ className, ...props }) => (
-//  <Tooltip {...props} classes={{ popper: className }} />
-// ))(({ theme }) => ({
-//  [`& .${tooltipClasses.tooltip}`]: {
-//    display: "flex",
-//    alignItems: "center",
-//    backgroundColor: theme.palette.primary.background,
-//    color: theme.palette.primary.dark,
-//    border: "solid 1px " + theme.palette.primary.dark,
-//    maxWidth: 220,
-//    overflow: "hidden",
-//    fontSize: theme.typography.pxToRem(12),
-//  },
-//  [`& .arrow`]: {
-//    color: theme.palette.primary.background,
-//    "&::before": {
-//      border: "1px solid " + theme.palette.primary.dark,
-//      backgroundColor: "#fff",
-//      boxSizing: "border-box",
-//    },
-//  },
-// }));
- 
 export const Tooltag = ({
  component: Component,
  title,

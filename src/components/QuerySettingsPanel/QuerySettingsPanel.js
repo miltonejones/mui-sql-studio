@@ -3,7 +3,7 @@ import { describeTable, connectToDb } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
 import { Divider, Box, FormControlLabel, Switch, Menu, Collapse, MenuItem, TextField, Stack, Button, IconButton, Typography, styled} from '@mui/material';
-import { Add, Delete, ExpandMore, PlayArrow, Close } from '@mui/icons-material';
+import { Add, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
 
 import { Tooltag  } from '..'
 const QuerySettingsContext = React.createContext({});
@@ -20,6 +20,37 @@ const AU = styled('u')(({ active, error }) => ({
     color: '#73a'
   }
 }))
+
+const CL = styled(AU)(({ active, error }) => ({
+  position: 'relative',
+  '& .cl': {  
+    display: 'none'
+  },
+  // '&:hover': {
+  //   display: 'none',
+  //   '& .cl': { 
+  //     display: 'block'
+  //   }, ArrowBack, ArrowForward
+  // }
+}))
+
+const CLink = ({children, onClick, onMove, ...props}) => {
+  return <Tooltag title={
+    <>
+    <IconButton onClick={onClick}>
+      <Delete />
+    </IconButton>
+    <IconButton onClick={() => onMove && onMove(false)}>
+      <ArrowBack />
+    </IconButton>
+    <IconButton onClick={() => onMove && onMove(true)}>
+      <ArrowForward />
+    </IconButton>
+    </>
+  } component={AU} {...props}>
+    {children} 
+  </Tooltag>
+}
 
 
 export default function QuerySettingsPanel({ 
@@ -116,9 +147,10 @@ export default function QuerySettingsPanel({
     editTable(name, async (table) => {
       const column = table.columns.find((c) => c.name === field);
       await edit(column, table);
-      table.columns = table.columns.map((c) =>
-        c.name === column.name ? column : c
-      );
+      table.columns = table.columns.map((c) => {
+        c.index = c.index === undefined ? table.columns.filter(f => f.selected).length : c.index;
+        return c.name === column.name ? column : c
+      });
     });
   };
   
@@ -160,6 +192,23 @@ export default function QuerySettingsPanel({
     });
   };
 
+  function array_move(arr, old_index, new_index) {
+      if (new_index >= arr.length) {
+          var k = new_index - arr.length + 1;
+          while (k--) {
+              arr.push(undefined);
+          }
+      }
+      arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
+      return arr; // for testing
+  };
+
+  const moveColumn = (name, col) => {
+    editTable(name, (table) => {
+     alert (col)
+    });
+  }
+
   
   const openDb = async (s) => { 
     const res = await connectToDb(s);
@@ -168,7 +217,7 @@ export default function QuerySettingsPanel({
   };
 
 
-  const columnList = (filter, small) => {
+  const columnList = (filter, small, Tag = CLink) => {
     const p = [];
     const names = [];
 
@@ -180,8 +229,11 @@ export default function QuerySettingsPanel({
       table.columns.filter(filter).map((col, i) => {
         const error = names.filter(n => n === col.alias).length > 1;
         p.push(<>
-          {table.alias}.<AU active={col.selected} onClick={() => setColumnSelected(table.name, col.name)}>{col.name}</AU>
-          
+          {table.alias}.<Tag 
+            onMove={fwd => moveColumn(table.name, col.index)} 
+            active={col.selected} 
+            onClick={() => setColumnSelected(table.name, col.name)}>{col.name}</Tag>
+            
             {!small && <> 
             {" "}<i>as</i>{" "}
             <AU active error={error} onClick={() => setColumnAlias(table.name, col.name)}>{col.alias}</AU>
@@ -294,7 +346,7 @@ export default function QuerySettingsPanel({
       {!!columns.length && <>
         <Typography variant="caption">Available fields</Typography>
         <Box>
-        {columnList(z => !z.selected, !0)}
+        {columnList(z => !z.selected, !0, AU)}
         </Box>
       </>}
 
