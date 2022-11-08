@@ -3,9 +3,7 @@ import {  Box, Chip, styled} from '@mui/material';
 import MenuDrawer, { Logo } from '../MenuDrawer/MenuDrawer'; 
 import { useConfig } from '../../hooks/useConfig';
 import { useSaveQuery } from '../../hooks/useSaveQuery';
-import {  
-  useNavigate 
-} from "react-router-dom";
+ 
 
 import { Star, StarBorder } from '@mui/icons-material';
 
@@ -34,7 +32,7 @@ export default function ToggleToolbar({
     setFavorite ,
     setModalState
   }) {
-  const navigate = useNavigate();
+  const navigate = (href) => window.location.replace(href); // useNavigate();
   const { getConfigs, saveConfig  } = useConfig()
   const configs = getConfigs();
   const { getQueries } = useSaveQuery();

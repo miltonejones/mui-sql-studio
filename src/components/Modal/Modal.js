@@ -207,12 +207,13 @@ export const useModal = () => {
   * @param {string} message - message to display in the dialog
   * @param {string} title - dialog title
   */
- const Prompt = (message, title, value) =>
+ const Prompt = (message, title, value, enableSave) =>
    createModalMethod({
      message,
      title, 
      icon: Announcement,
      defaultValue: value,
+     enableSave,
      component: ModalPrompt,
    });
  

@@ -16,9 +16,9 @@ import { useSaveQuery } from './hooks/useSaveQuery';
 import { useAppHistory } from './hooks/useAppHistory';
 import { AppStateContext } from './hooks/AppStateContext';
 import { useQueryTransform } from './hooks/useQueryTransform';
-import { execQuery } from './connector/dbConnector';
+import { execQuery  } from './connector/dbConnector';
 
-import { Add, Launch, Key, Close, FilterAlt, SaveAs, Save } from '@mui/icons-material';
+import { Add, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
  
 
 const formatConnectName = name => name.toLowerCase().replace(/\s/g, '_');
@@ -39,7 +39,8 @@ function QueryGrid () {
 
 
   const [configuration, setConfiguration] = React.useState(EMPTY_CONFIGURATION);
-  const [queryText, setQueryText] = React.useState(`SELECT * FROM ${tablename}`)
+  const [queryText, setQueryText] = React.useState(`SELECT * FROM ${tablename}`);
+  const [empty, setEmpty] = React.useState(false);
   const [data, setData] = React.useState(null);
   const [page, setPage] = React.useState(1) ;
   const [edit, setEdit] = React.useState(false) ;
@@ -49,10 +50,10 @@ function QueryGrid () {
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID);
 
 
-  const { setAppHistory, Prompt } = React.useContext(AppStateContext);
+  const { setAppHistory, Prompt, Confirm } = React.useContext(AppStateContext);
   const saveEnabled = !!configuration.tables.length
 
-  const { saveQuery, getQueries } = useSaveQuery();
+  const { saveQuery, deleteQuery, getQueries } = useSaveQuery();
  
   
   React.useEffect(() => {
@@ -84,6 +85,14 @@ function QueryGrid () {
 
   }, [configKey, loaded, getQueries, connectionID, tablename, schema, listname, setAppHistory])
   
+
+  const deletePage = async (key) => {
+    const ok = await Confirm(`Delete saved query "${key}"?`);
+    if (!ok) return;
+    deleteQuery(key);
+    window.location.replace(`/query/${connectionID}/${schema}/${tablename}`)
+  }
+
   const savePage = async () => { 
     const title = await Prompt (
       `Enter a name for your query` ,
@@ -106,9 +115,12 @@ function QueryGrid () {
 
   const loadPage = React.useCallback (async (pg, sql) => {  
     setData(null); 
+    setEmpty(false);
     const f = await execQuery(configs[configKey], sql || queryText, pg); 
     setPage(pg);
     setData(f); 
+    setEmpty(!f?.rows?.length)
+  
   }, [configs, configKey, queryText])
 
   const execQueryText = (text) => { 
@@ -188,6 +200,14 @@ function QueryGrid () {
   }
  
   const dropAdHoc = (fieldName, clauseProp) => {
+    if (!fieldName) {
+      const paramConf = {
+        ...configuration,
+        wheres: configuration.wheres
+        .filter(w => !w.temp ) 
+      }
+      return execAdHoc(paramConf); 
+    }
     const paramConf = {
       ...configuration,
       wheres: configuration.wheres
@@ -240,7 +260,11 @@ function QueryGrid () {
     }
   ] : [])
 
-  const saveBtn = saveEnabled ? [<Tooltag title="Save List" component={IconButton} onClick={savePage}>
+  const saveBtn = saveEnabled ? [
+  <Tooltag title="Delete List" component={IconButton} onClick={() => deletePage(configuration.title)}>
+    <Delete />
+  </Tooltag>,
+  <Tooltag title="Save List" component={IconButton} onClick={savePage}>
     <Save />
   </Tooltag>] : []
 
@@ -258,7 +282,7 @@ function QueryGrid () {
 
 
   return <> 
-  <Collapse in={!edit}>
+  <Collapse in={!edit}> 
     <ListGrid  
       onSearch={createAdHoc}
       onClear={dropAdHoc}
@@ -271,6 +295,7 @@ function QueryGrid () {
       title={`${tablename}`} 
       breadcrumbs={breadcrumbs} 
       rows={data?.rows?.map(configRow)} 
+      empty={empty}
     />  
   </Collapse>
   <Collapse in={edit}> 
@@ -295,7 +320,7 @@ function TableGrid () {
   const configs = getConfigs();
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID)
 
-  const { Alert, setAppHistory} = React.useContext(AppStateContext);
+  const { Alert, Confirm, setAppHistory} = React.useContext(AppStateContext);
   
 
   
@@ -335,22 +360,43 @@ function TableGrid () {
       }, 
     ]
   }
+
+  const commitRow = async ({ data: new_def, row: old_def}) => {  
+    const locate = (row, key) => row.find(f => f.field === key).value;
+    const command = [`ALTER TABLE ${tablename}`];
+    command.push (
+      locate(old_def, "Name") === locate(new_def, "Name") 
+        ? `MODIFY COLUMN ${locate(old_def, "Name")}`
+        : `CHANGE COLUMN ${locate(old_def, "Name")} ${locate(new_def, "Name")}`,
+      locate(new_def, "Type")
+    );
+    !!locate(new_def, "Size") && !!locate(new_def, "Size").trim() && 
+      command.push(`(${locate(new_def, "Size")})`);
+    command.push(locate(new_def, "Nullable") === 'YES' ? "NULL" : "NOT NULL");
+    !!locate(new_def, "Default") && command.push (`DEFAULT "${locate(new_def, "Default")}"`);
+    const sql = command.join(' ');
+    await Confirm(sql);
+    // if (!ok) return;
+    // await execCommand(configs[configKey], sql);
+    // await loadTable();
+  }
   
+  const loadTable = React.useCallback(async() => {
+    const f = await execQuery(configs[configKey], `SELECT
+    u.CONSTRAINT_NAME, u.REFERENCED_TABLE_NAME, u.REFERENCED_COLUMN_NAME, 
+    t.COLUMN_NAME,	t.ORDINAL_POSITION,	t.COLUMN_DEFAULT,	t.IS_NULLABLE,t.COLUMN_TYPE	 ,
+    t.DATA_TYPE
+    FROM INFORMATION_SCHEMA.COLUMNS t LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE u 
+    ON u.TABLE_NAME = t.TABLE_NAME and u.COLUMN_NAME = t.COLUMN_NAME
+    WHERE t.TABLE_NAME = '${tablename}' 
+    GROUP BY t.ORDINAL_POSITION ORDER BY t.ORDINAL_POSITION `)
+    setData(f);
+  }, [configs, configKey, tablename]);
 
   React.useEffect(() => {
     if (!!data) return;
-    (async() => {
-      const f = await execQuery(configs[configKey], `SELECT
-      u.CONSTRAINT_NAME, u.REFERENCED_TABLE_NAME, u.REFERENCED_COLUMN_NAME, 
-      t.COLUMN_NAME,	t.ORDINAL_POSITION,	t.COLUMN_DEFAULT,	t.IS_NULLABLE,t.COLUMN_TYPE	 ,
-      t.DATA_TYPE
-      FROM INFORMATION_SCHEMA.COLUMNS t LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE u 
-      ON u.TABLE_NAME = t.TABLE_NAME and u.COLUMN_NAME = t.COLUMN_NAME
-      WHERE t.TABLE_NAME = '${tablename}' 
-      GROUP BY t.ORDINAL_POSITION ORDER BY t.ORDINAL_POSITION `)
-      setData(f);
-    })()
-  }, [configs, configKey, data, tablename, setAppHistory])
+    loadTable();
+  }, [ data, loadTable ])
  
 
   const breadcrumbs = [
@@ -390,7 +436,7 @@ function TableGrid () {
  
 
   return <> 
-  <ListGrid buttons={buttons} breadcrumbs={breadcrumbs} commitRow={row => alert(JSON.stringify(row))} title={`Columns in "${tablename}"`} 
+  <ListGrid buttons={buttons} breadcrumbs={breadcrumbs} commitRow={commitRow} title={`Columns in "${tablename}"`} 
       rows={data?.rows?.map(configRow)} />  
   </>
 

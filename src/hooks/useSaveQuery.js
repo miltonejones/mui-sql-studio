@@ -20,6 +20,13 @@ export const useSaveQuery = () => {
     console.log({ queries }); 
   };
 
+  const deleteQuery = (key) => { 
+    const queries = getQueries(); 
+    delete queries[key]
+    setQueries(queries);
+    console.log({ queries }); 
+  };
 
-  return { getQueries, saveQuery }
+
+  return { getQueries, saveQuery, deleteQuery }
 }

@@ -39,8 +39,8 @@ function ListCell({ field, value, type, icon, action, types, edit, onChange }) {
 
   const onClick = async () => {
     if (edit) {
-       const ok = await Prompt(`Enter value for ${field}`, 'Set value', value);
-       if (!ok) return;
+       const ok = await Prompt(`Enter value for ${field}`, 'Set value', value );
+       if (!ok) return; 
        onChange && onChange(ok)
        return
     }
@@ -106,7 +106,7 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
 
   
       return (<Cell>
-      <TextField autoComplete="off" size="small" value={state[cell.value]} onChange={(e) => setState(s => ({ ...s, [cell.value]: e.target.value }))} 
+      <TextField fullWidth autoComplete="off" size="small" value={state[cell.value]} onChange={(e) => setState(s => ({ ...s, [cell.value]: e.target.value }))} 
         sx={{minWidth: 100}} onKeyUp={e => e.keyCode === 13 && onChange && onChange(cell.value, state[cell.value])}
         placeholder={cell.value} label="Search" InputProps={adornment}/>
     </Cell>)})}
@@ -114,9 +114,10 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
   </tr>
 }
 
-export default function ListGrid({title, searchable, searches, onClear, onSearch, commitRow, count = 0, page = 1, setPage, buttons, breadcrumbs, rows = []}) {
-  if (!rows?.length) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
-  const headers = [rows[0].map(row => ({value: row.field, type: 'header'}))]
+export default function ListGrid({title, empty, searchable, searches, onClear, onSearch, commitRow, count = 0, page = 1, setPage, buttons, breadcrumbs, rows = []}) {
+  // if (empty) return <Box onClick={() => onClear && onClear()}>Query returned no results. Click here to clear filter.</Box>
+  if (!rows?.length && !empty) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
+  const headers = empty ? [] : [rows[0].map(row => ({value: row.field, type: 'header'}))]
   const pageCount = Math.ceil(count / 100);
 
   const handleChange = (event, value) => {
@@ -150,14 +151,16 @@ export default function ListGrid({title, searchable, searches, onClear, onSearch
       } 
   </>}
  
-  <Tiles cellSpacing="1">
+  {empty && <Box sx={{cursor: 'pointer'}} onClick={() => onClear && onClear()}>Query returned no results. <u>Click here to clear filter</u>.</Box>}
+
+  {!empty && <Tiles cellSpacing="1">
     {headers.map(row => <ListRow key={row.field} row={row} />)}
     {!!searchable && <SearchRow searches={searches} 
       onClear={(key, val) => onClear && onClear(key, val)} 
       onChange={(key, val) => onSearch && onSearch(key, val)} 
     row={headers[0]} />}
     {rows.map(row => <ListRow commitRow={commitRow} key={row.field} row={row} />)}
-  </Tiles>
+  </Tiles>}
   
   {/* <pre>{JSON.stringify(rows,0,2)}</pre> */}
  
