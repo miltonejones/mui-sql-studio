@@ -137,6 +137,19 @@ function QueryGrid () {
       const lists = getQueries();
       const title = Object.keys(lists).find(f => formatConnectName(f) === listname);
       const conf = lists[title];
+      let i = 0;
+      const fixed = {
+        ...conf,
+        tables: conf.tables.map(t => {
+          t.columns = t.columns.map(c => {
+            if (c.selected) {
+              c.index = i++;
+            }
+            return c;
+          })
+          return t;
+        })
+      }
  
       setConfiguration({
         title,
@@ -182,6 +195,23 @@ function QueryGrid () {
     } 
   }
 
+  const orderAdHoc = async (fieldName, direction = 'ASC') => {
+    const orders =  configuration.orders
+    .filter(w => !(w.field === fieldName && w.temp) )
+    .concat({
+      fieldName: fieldByAlias(fieldName),
+      field: fieldName, 
+      direction,
+      temp: !0
+    })
+    //  await Confirm (JSON.stringify(orders))
+    const paramConf = {
+      ...configuration,
+      orders
+    }
+    execAdHoc(paramConf); 
+  }
+ 
   const createAdHoc = (fieldName, clauseProp) => {
     const paramConf = {
       ...configuration,
@@ -212,6 +242,17 @@ function QueryGrid () {
       ...configuration,
       wheres: configuration.wheres
       .filter(w => !(w.field === fieldName && w.temp) ) 
+    }
+    execAdHoc(paramConf); 
+  }
+
+  const dropOrder =async  (fieldName) => { 
+    const orders =  configuration.orders
+    .filter(w => !(w.field === fieldName || w.fieldName.indexOf(fieldName) > -1) ) ;
+      // await Confirm (JSON.stringify(orders))
+    const paramConf = {
+      ...configuration,
+      orders 
     }
     execAdHoc(paramConf); 
   }
@@ -284,8 +325,12 @@ function QueryGrid () {
   return <> 
   <Collapse in={!edit}> 
     <ListGrid  
+      dense
       onSearch={createAdHoc}
-      onClear={dropAdHoc}
+      onSort={orderAdHoc}
+      onClear={dropAdHoc} 
+      dropOrder={dropOrder}
+      sorts={configuration.orders}
       searches={configuration.wheres}
       searchable={saveEnabled}
       setPage={loadPage}

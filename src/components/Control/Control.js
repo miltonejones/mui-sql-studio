@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Card, styled } from "@mui/material";
+import { Box, Button, Card, IconButton, styled } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip"; 
 import { ExpandMore } from "@mui/icons-material";
  
@@ -90,3 +90,8 @@ export function useClipboard() {
  // return method and state
  return { copy, copied };
 }
+
+export const RotateButton = styled(IconButton)(({ deg = 90 }) => ({
+  transition: 'transform 0.2s linear', 
+  transform: `rotate(${deg}deg)`
+}));

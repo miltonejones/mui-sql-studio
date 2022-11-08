@@ -4,7 +4,7 @@ import ToggleToolbar from "./ToggleToolbar/ToggleToolbar";
 import ListGrid from "./ListGrid/ListGrid";
 import QuerySettingsPanel, { QuickMenu } from "./QuerySettingsPanel/QuerySettingsPanel";
 
-import { Flex, Tooltag, Spacer, TextBtn } from './Control/Control';
+import { Flex, Tooltag, Spacer, TextBtn, RotateButton } from './Control/Control';
 
 
 
@@ -14,6 +14,7 @@ export {
   QuerySettingsPanel,
   ToggleToolbar,
   ListGrid,
+  RotateButton,
   QuickMenu,
   Flex, 
   Tooltag, 
