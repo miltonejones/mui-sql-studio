@@ -42,7 +42,7 @@ function ListCell({
     sorts = [],
     dropOrder
   }) {
-  const sortProp = sorts.find(s => s.fieldName.indexOf(value) > -1 || s.field.indexOf(value) > -1);
+  const sortProp = sorts.find(s => s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
   const { Prompt } = React.useContext(AppStateContext);
   let text = value;
   if (typeof(value) === 'object') {
