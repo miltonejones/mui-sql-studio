@@ -292,7 +292,7 @@ function QueryGrid () {
   .concat(saveEnabled ? [
     {
       text: configuration.title || 'Unnamed Query',
-      href: temps.length && configuration.title ? `/lists/${connectionID}/${schema}/${tablename}/${listname}` : null
+      href: (temps.length && configuration.title) || edit ? `/lists/${connectionID}/${schema}/${tablename}/${listname}` : null
     }
   ] : [])
   .concat(temps.length ? [
@@ -345,6 +345,9 @@ function QueryGrid () {
   </Collapse>
   <Collapse in={edit}> 
     {edit && <QuerySettingsPanel 
+    breadcrumbs={breadcrumbs.concat({
+      text: `Edit ${tablename} SQL`
+    })}
       onCommit={execQueryText} 
       onCancel={() => setEdit(false)} 
       config={configs[configKey]} 
@@ -420,10 +423,10 @@ function TableGrid () {
     command.push(locate(new_def, "Nullable") === 'YES' ? "NULL" : "NOT NULL");
     !!locate(new_def, "Default") && command.push (`DEFAULT "${locate(new_def, "Default")}"`);
     const sql = command.join(' ');
-    await Confirm(sql);
-    // if (!ok) return;
-    // await execCommand(configs[configKey], sql);
-    // await loadTable();
+    const ok = await Confirm(sql);
+    if (!ok) return;
+    await execQuery(configs[configKey], sql);
+    await loadTable();
   }
   
   const loadTable = React.useCallback(async() => {
@@ -459,11 +462,14 @@ function TableGrid () {
   ] 
 
   const buttons = [
+    <IconButton onClick={() => navigate(`/query/${connectionID}/${schema}/${tablename}`)}>
+      <Launch />
+    </IconButton>,
     <IconButton onClick={() => Alert('Add column not implemented')}>
       <Add />
     </IconButton>,
-    <IconButton onClick={() => navigate(`/query/${connectionID}/${schema}/${tablename}`)}>
-      <Launch />
+    <IconButton onClick={() => navigate(`/connection/${connectionID}`)}>
+      <Close />
     </IconButton>
   ]
  
@@ -570,6 +576,9 @@ function ConnectionGrid () {
   const buttons = [
     <IconButton onClick={() => Alert('Add table not implemented')}>
       <Add />
+    </IconButton>,
+    <IconButton onClick={() => navigate('/')}>
+      <Close />
     </IconButton>
   ]
   return <ListGrid breadcrumbs={breadcrumbs} title={`Tables in "${configKey}"`} buttons={buttons} rows={data?.rows?.map(configRow)} /> 
@@ -599,8 +608,7 @@ function HomePage ({ pinned }) {
 
   }, [ setAppHistory, loaded ])
   
-
-
+ 
   const configRow = (conf) => [
     {
       field: 'title',
@@ -625,7 +633,7 @@ function HomePage ({ pinned }) {
       value: conf.database,
       type: 'password'
     },
-  ]
+  ]  
  
   const breadcrumbs = [
     {

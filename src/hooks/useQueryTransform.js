@@ -56,7 +56,7 @@ export const useQueryTransform = () => {
   const createTSQL = React.useCallback((configuration) => {
     const { tables, wheres, orders } = configuration;
     const sql = ['SELECT'];
-    const cols = [];
+    const columns = [];
     const from = [];
     const where = [];
     const order = [];
@@ -65,7 +65,7 @@ export const useQueryTransform = () => {
       const { destTable, srcCol, destCol } = table.join ?? {};
       table.columns
         .filter((f) => !!f.selected)
-        .map((col) => cols.push(`${table.alias}.${col.name} as ${col.alias}\n`));
+        .map((col) => columns.push(`${table.alias}.${col.name} as ${col.alias}\n`));
       from.push(
         i === 0
           ? ` ${table.name} as ${table.alias}\n`
@@ -81,7 +81,7 @@ export const useQueryTransform = () => {
       order.push (` ${by.fieldName} ${by.direction}\n`)
     })
 
-    const core = [...sql, '\n', cols.length ? cols.join(', ') : '*', '\n', 'FROM', '\n', ...from];
+    const core = [...sql, '\n', columns.length ? columns.join(', ') : '*', '\n', 'FROM', '\n', ...from];
     wheres.length && core.push('\n', '\n WHERE\n', ...where);
     orders.length && core.push('\n ORDER BY\n', order.join(', '));
 

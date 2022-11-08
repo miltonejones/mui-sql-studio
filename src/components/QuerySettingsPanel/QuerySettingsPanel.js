@@ -2,10 +2,11 @@ import * as React from 'react';
 import { describeTable, connectToDb } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
-import { Divider, Box, FormControlLabel, Switch, Menu, Collapse, MenuItem, TextField, Stack, Button, IconButton, Typography, styled} from '@mui/material';
-import { Add, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
+import { Divider, Box, Breadcrumbs,
+  Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, TextField, Stack, Button, IconButton, Typography, styled} from '@mui/material';
+import { Add, Remove, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
 
-import { Tooltag  } from '..'
+import { Tooltag, RotateButton  } from '..'
 const QuerySettingsContext = React.createContext({});
 const uniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
@@ -57,6 +58,7 @@ export default function QuerySettingsPanel({
     config, 
     tablename, 
     configuration, 
+    breadcrumbs,
     setConfiguration, 
     onCommit, 
     onCancel 
@@ -71,7 +73,7 @@ export default function QuerySettingsPanel({
   const transformer = useQueryTransform()
 
   const findTable = name => transformer.findTable(configuration.tables, name);  
-  // const findAlias = name => transformer.findAlias(configuration.tables, name); 
+ 
   const createTSQL = () => transformer.createTSQL(configuration); 
 
 
@@ -106,15 +108,7 @@ export default function QuerySettingsPanel({
             : f.tables.concat(table),
       }
     });
-  }, [config, setConfiguration]);
-
-  // const decodeClause = (key, value) => {
-  //   const clause = predicates.find(f => f.name === key)
-  //   if (clause) {
-  //     return clause.transform(value)
-  //   }
-  //   return value;
-  // }
+  }, [config, setConfiguration]); 
 
   const updateTable = (table) =>
     setConfiguration((f) => ({
@@ -304,34 +298,49 @@ export default function QuerySettingsPanel({
     dropOrderBy,
     ...configuration
   }}>
-
-
+  {!!breadcrumbs && <>
+    <Breadcrumbs separator="›" aria-label="breadcrumb">
+      {breadcrumbs.map(crumb => crumb.href 
+        ? <Link href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
+        : <Typography variant="body2">{crumb.text}</Typography>)}
+    </Breadcrumbs>
+  </>}
   <Stack direction="row" sx={{alignItems: 'center'}}>
-    <Typography> {showSQL ? "SQL" : "SELECT"} </Typography>
-    <Box  sx={{flexGrow: 1}}/>
+  <Typography variant="h6">Edit query for "{tablename}"</Typography>
+      <Box sx={{flexGrow: 1}} />
 
+    <Tooltag sx={{mr: 2}} color="warning" component={IconButton}  title="Run" onClick={() => onCommit && onCommit(createTSQL())}
+      >
+      <PlayArrow />
+    </Tooltag>
+    
     <FormControlLabel
-        label="SQL"
+        label="Show SQL"
         control={ <Switch 
         checked={showSQL}
         onChange={handleChange} 
         />}
       />
      
-    <Tooltag component={IconButton}  title="Run" onClick={() => onCommit && onCommit(createTSQL())}
-      >
-      <PlayArrow />
-    </Tooltag>
-    
-    {!!columns.length && <Tooltag title="Show available fields"  component={IconButton}  onClick={() => setShowFieldNames(!showFieldNames)}
-      >
-      <ExpandMore />
-    </Tooltag>}
-    
+
     <Tooltag title="Return to list"  component={IconButton}  onClick={() => onCancel && onCancel()}
       >
       <Close />
     </Tooltag>
+    
+  </Stack>
+
+  <Divider sx={{mb: 1}} />
+
+  <Stack direction="row" sx={{alignItems: 'center'}}>
+    <Typography> {showSQL ? "SQL" : "SELECT"} </Typography>
+    <Box  sx={{flexGrow: 1}}/>
+
+    {!!columns.length && !showSQL && <Tooltag title="Add fields"  
+      component={RotateButton} deg={ showFieldNames ? 0 : 360 } onClick={() => setShowFieldNames(!showFieldNames)}
+      >
+      {showFieldNames ? <Remove /> : <Add />}
+    </Tooltag>}
     
   </Stack>
     
@@ -357,9 +366,10 @@ export default function QuerySettingsPanel({
     <Stack direction="row" sx={{alignItems: 'center'}}>
       <Typography> FROM </Typography>
       <Box  sx={{flexGrow: 1}}/>
-      <Tooltag title="Show available tables" component={IconButton} onClick={() => setShowTableNames(!showTableNames)}
+      <Tooltag title="Add tables" deg={ showTableNames ? 0 : 180 }
+         component={RotateButton} onClick={() => setShowTableNames(!showTableNames)}
         >
-        <ExpandMore />
+        {showTableNames ? <Remove /> : <Add />}
       </Tooltag>
     </Stack>
     
@@ -424,16 +434,18 @@ export default function QuerySettingsPanel({
 
     <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
 
-    {!!onCommit && <Button sx={{mr: 1}} onClick={() => onCommit(createTSQL())} variant="contained"
-      size="small" endIcon={<PlayArrow />}
-    >run</Button>}
+    <Stack direction="row" sx={{alignItems: 'center'}}>
+      <Box  sx={{flexGrow: 1}}/>
 
-
-<Button size="small" endIcon={ <Close />} onClick={() => onCancel && onCancel()}
+<Button size="small" sx={{mr: 1}} endIcon={ <Close />} onClick={() => onCancel && onCancel()}
        variant="outlined">
      close
     </Button>
+    {!!onCommit && <Button color="warning" onClick={() => onCommit(createTSQL())} variant="contained"
+      size="small" endIcon={<PlayArrow />}
+    >run</Button>}
 
+</Stack>
 
   </Collapse>
   
