@@ -10,7 +10,7 @@ import { Sync, Save, Close, ExpandMore } from '@mui/icons-material';
 
 const Cell = styled('td')(({theme, header, odd, dense, active}) => ({ 
   padding: theme.spacing(dense ? 0.5 : 1, 2),
-  backgroundColor: header ? 'rgb(240, 240, 240)' : `rgb(${odd ? 245 : 255}, 255, 255)`, 
+  backgroundColor: header ? 'rgb(240, 240, 240)' : `rgb(${odd ? 250 : 255}, 255, 255)`, 
   color: !active ? 'black' : 'blue',
   textDecoration: !active ? 'none' : 'underline',
   cursor: !active ? 'default' : 'pointer',
