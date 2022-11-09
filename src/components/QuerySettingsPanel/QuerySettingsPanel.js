@@ -158,6 +158,7 @@ export default function QuerySettingsPanel({
     editTable(name, async (table) => {
       const alias = await Prompt(
         `Enter an alias for ${name}`,
+        table.alias,
         table.alias
       );
       if (!alias) return;
@@ -169,6 +170,7 @@ export default function QuerySettingsPanel({
     editColumn(name, field, async (col) => {
       const alias = await Prompt(
         `Enter an alias for ${col.name}`,
+        col.alias,
         col.alias
       );
       if (!alias) return;
