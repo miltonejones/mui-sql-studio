@@ -642,10 +642,10 @@ export const QuickSelect = ({
     value={label} 
     onChange={handleChange} 
   > 
-    <MenuItem>
+    <Box sx={{p: 1}}>
       <SearchBox onChange={e => setFilterText(e.target.value)} placeholder="Filter options"
          onClose={() => setFilterText('')} value={filterText} label="filter" size="small" fullWidth />
-    </MenuItem>
+    </Box>
 
     {options
       .filter(f => !filterText || f.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
