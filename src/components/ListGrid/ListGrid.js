@@ -8,9 +8,9 @@ import { QuickMenu, RotateButton, Tooltag } from '..';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { Sync, Save, Close, ExpandMore } from '@mui/icons-material';
 
-const Cell = styled('td')(({theme, header, dense, active}) => ({ 
+const Cell = styled('td')(({theme, header, odd, dense, active}) => ({ 
   padding: theme.spacing(dense ? 0.5 : 1, 2),
-  backgroundColor: header ? 'rgb(240, 240, 240)' : 'white', 
+  backgroundColor: header ? 'rgb(240, 240, 240)' : `rgb(${odd ? 245 : 255}, 255, 255)`, 
   color: !active ? 'black' : 'blue',
   textDecoration: !active ? 'none' : 'underline',
   cursor: !active ? 'default' : 'pointer',
@@ -29,8 +29,10 @@ const Tiles = styled('table')(({theme}) => ({
 function ListCell({ 
     field, 
     value, 
+    alias,
     type, 
     icon, 
+    odd,
     action, 
     sortable, 
     sorted, 
@@ -42,7 +44,7 @@ function ListCell({
     sorts = [],
     dropOrder
   }) {
-  const sortProp = sorts.find(s => s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
+  const sortProp = sorts.find(s => s.fieldName === alias || s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
   const { Prompt } = React.useContext(AppStateContext);
   let text = value;
   if (typeof(value) === 'object') {
@@ -79,10 +81,12 @@ function ListCell({
     </Typography>
     : <QuickMenu options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
  
-  return <Cell dense={dense} header={type === 'header'} active={edit || !!action}>
+  return <Cell odd={odd} dense={dense} header={type === 'header'} active={edit || !!action}>
     <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
 
      <Stack direction="row" spacing={1} sx={{alignItems: 'center'}} onClick={onClick}>
+ {/* [{JSON.stringify(sorts)}]
+ [{JSON.stringify({field, alias, value})}] */}
         {icon}
         {content}
         {sortable && <RotateButton size="small" deg={deg}> 
@@ -97,12 +101,13 @@ function ListCell({
   </Cell>
 }
 
-function ListRow({ row, sortable, onSort, dense, dropOrder, sorts = [], commitRow }) {
+function ListRow({ row, sortable, odd, onSort, dense, dropOrder, sorts = [], commitRow }) {
   const [data, setData] = React.useState(row)
   const [dirty, setDirty] = React.useState(false);
   
   return <tr>
-    {data.map((cell, i) => <ListCell dense={dense} dropOrder={dropOrder} sorts={sorts} onSort={onSort} sortable={sortable} key={i} onChange={(datum) => { 
+    {data.map((cell, i) => <ListCell odd={odd} dense={dense} dropOrder={dropOrder} 
+      sorts={sorts} onSort={onSort} sortable={sortable} key={i} onChange={(datum) => { 
       setData((d) => d.map((r, k) => k === i ? {...r, value: datum} : r));
       setDirty(true)
     }} {...cell} />)}
@@ -158,7 +163,7 @@ export default function ListGrid({
   setPage, buttons, onSort, dropOrder,
   breadcrumbs, rows = []}) { 
   if (!rows?.length && !empty) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
-  const headers = empty ? [] : [rows[0].map(row => ({value: row.field, type: 'header'}))]
+  const headers = empty ? [] : [rows[0].map(row => ({value: row.field, alias: row.alias, type: 'header'}))]
   const pageCount = Math.ceil(count / 100);
 
   const handleChange = (event, value) => {
@@ -197,12 +202,20 @@ export default function ListGrid({
   {empty && <Box sx={{cursor: 'pointer'}} onClick={() => onClear && onClear()}>Query returned no results. <u>Click here to clear filter</u>.</Box>}
 
   {!empty && <Tiles cellSpacing="1">
-    {headers.map(row => <ListRow dense={dense} dropOrder={dropOrder} sorts={sorts} onSort={onSort} sortable={searchable} key={row.field} row={row} />)}
+    {headers.map(row => <ListRow 
+    dense={dense} 
+    dropOrder={dropOrder} 
+    sorts={sorts} 
+    onSort={onSort} 
+    sortable={searchable} 
+    key={row.field} 
+    row={row} 
+    />)}
     {!!searchable && <SearchRow searches={searches} 
       onClear={(key, val) => onClear && onClear(key, val)} 
       onChange={(key, val) => onSearch && onSearch(key, val)} 
     row={headers[0]} />}
-    {rows.map(row => <ListRow dense={dense} commitRow={commitRow} key={row.field} row={row} />)}
+    {rows.map((row, i) => <ListRow odd={i % 2 === 0} dense={dense} commitRow={commitRow} key={row.field} row={row} />)}
   </Tiles>}
   
   {/* <pre>{JSON.stringify(rows,0,2)}</pre> */}

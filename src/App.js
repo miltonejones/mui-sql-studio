@@ -164,9 +164,15 @@ function QueryGrid () {
     setLoaded(true)
   }, [data, loaded, loadPage, getQueries, listname]);
 
-  const configRow = (conf) => Object.keys(conf).map(key => ({
+  const configRow = (conf, fields) => Object.keys(conf).map(key => ({
     field: key,
-    value: conf[key]
+    value: conf[key],
+    alias: (() => {
+      const field = fields.find(f => f.name === key);
+      if (!field) return key;
+      const {orgTable, orgName} = field;
+      return `${orgTable}.${orgName}`;
+    })()
   }));
 
   const fieldByAlias = (alias) => {
@@ -324,6 +330,16 @@ function QueryGrid () {
 
   return <> 
   <Collapse in={!edit}> 
+  {/* <pre>
+    {JSON.stringify(data?.fields,0,2)}
+  </pre>
+  <pre>
+    {JSON.stringify(configuration.orders,0,2)}
+  </pre>
+  <pre>
+    {JSON.stringify(data?.rows,0,2)}
+  </pre> */}
+
     <ListGrid  
       dense
       onSearch={createAdHoc}
@@ -339,7 +355,7 @@ function QueryGrid () {
       buttons={buttons} 
       title={`${tablename}`} 
       breadcrumbs={breadcrumbs} 
-      rows={data?.rows?.map(configRow)} 
+      rows={data?.rows?.map(row => configRow(row, data?.fields))} 
       empty={empty}
     />  
   </Collapse>

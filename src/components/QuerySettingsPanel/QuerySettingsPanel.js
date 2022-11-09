@@ -548,7 +548,7 @@ function OrderItem ({ index }) {
 }
 
 function collateColumns(total, num) {
-  num.columns.map(col => total.push(`${num.alias}.${col.alias}`))
+  num.columns.map(col => total.push(`${num.name}.${col.name}`))
   return total
 }
 
