@@ -1,7 +1,7 @@
 import React from "react";
-import { Box, Button, Card, IconButton, styled } from "@mui/material";
+import { Box, Button, Card, TextField, IconButton, InputAdornment, styled } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip"; 
-import { ExpandMore } from "@mui/icons-material";
+import { ExpandMore, FilterAlt, Close } from "@mui/icons-material";
  
 export const Flex = styled(Box)(({ baseline, wrap }) => ({
  display: "flex",
@@ -95,3 +95,26 @@ export const RotateButton = styled(IconButton)(({ deg = 90 }) => ({
   transition: 'transform 0.2s linear', 
   transform: `rotate(${deg}deg)`
 }));
+
+
+export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}) => {
+
+  const startAdornment = !startIcon ? null  : <InputAdornment position="start">
+    <IconButton size="small">
+      <FilterAlt />
+    </IconButton>
+  </InputAdornment>
+
+  const adornment = !value?.length ? {startAdornment} : {
+    startAdornment,
+    endAdornment: <InputAdornment position="end">
+      <IconButton size="small" onClick={onClose}>
+        <Close />
+      </IconButton>
+    </InputAdornment>,
+  }
+
+  return  <TextField size="small" {...props} value={value} autoComplete="off" onChange={onChange} 
+  InputProps={adornment} autoFocus/>
+
+}

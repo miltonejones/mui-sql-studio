@@ -2,11 +2,11 @@ import * as React from 'react';
 import { describeTable, connectToDb } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
-import { Divider, Box, Breadcrumbs,
+import { Divider, Box, Breadcrumbs,Select,
   Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, TextField, Stack, Button, IconButton, Typography, styled} from '@mui/material';
 import { Add, Remove, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
 
-import { Tooltag, RotateButton  } from '..'
+import { Tooltag, RotateButton, SearchBox  } from '..'
 const QuerySettingsContext = React.createContext({});
 const uniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
@@ -232,7 +232,7 @@ export default function QuerySettingsPanel({
           {table.alias}.<Tag 
             onMove={fwd => moveColumn(table.name, col.name)} 
             active={col.selected} 
-            onClick={() => setColumnSelected(table.name, col.name)}>{col.name}[{col.index}]</Tag>
+            onClick={() => setColumnSelected(table.name, col.name)}>{col.name}</Tag>
             
             {!small && <> 
             {" "}<i>as</i>{" "}
@@ -543,8 +543,8 @@ function OrderItem ({ index }) {
     <Delete />
    </Tooltag>
  
-    <QuickMenu options={columns} onChange={handleColumn} error={!fieldName} label={label}/>
-    <QuickMenu options={['ASC', 'DESC']} onChange={handleDirection}  label={direction}/>
+    <QuickSelect options={columns} onChange={handleColumn} error={!fieldName} label={label}/>
+    <QuickSelect options={['ASC', 'DESC']} onChange={handleDirection}  label={direction}/>
 
   </Stack>
 
@@ -607,14 +607,55 @@ function WhereItem ({ index }) {
     <Delete />
    </Tooltag>
  
-    {!!operator && <QuickMenu options={['OR', 'AND']} onChange={handleOperator}  label={operator}/>}
-  <QuickMenu options={columns} onChange={handleClose} error={!fieldName} label={label}/>
+    {!!operator && <QuickSelect options={['OR', 'AND']} onChange={handleOperator}  label={operator}/>}
+  <QuickSelect options={columns} onChange={handleClose} error={!fieldName} label={label}/>
     {" "}
-    <QuickMenu options={predicates.map(e => e.name)} onChange={handlePredicate} error={!predicate} label={predicate || 'predicate'}/>
+    <QuickSelect options={predicates.map(e => e.name)} onChange={handlePredicate} error={!predicate} label={predicate || 'predicate'}/>
   {predicate?.indexOf('NULL') < 0 &&  <TextField autoComplete="off" value={clauseProp}  onChange={handleProp} size="small" label="Compare to" placeholder="Enter value"/>}
   
   </Stack>
 }
+
+
+export const QuickSelect = ({ 
+  label, 
+  error, 
+  value: selected, 
+  options = [], 
+  onChange 
+}) => {
+
+  const [filterText, setFilterText] = React.useState(null); 
+  
+ 
+  const handleChange = (event) => {
+    onChange && onChange(event.target.value);
+    setFilterText('')
+  };
+
+  return <>
+  {/* <AU style={{marginRight: 8}} active error={error} onClick={handleClick}>{label}</AU> */}
+  
+  <Select 
+    sx={{mr: 1, minWidth: 220}}
+    size="small"
+    value={label} 
+    onChange={handleChange} 
+  > 
+    <MenuItem>
+      <SearchBox onChange={e => setFilterText(e.target.value)} placeholder="Filter options"
+         onClose={() => setFilterText('')} value={filterText} label="filter" size="small" fullWidth />
+    </MenuItem>
+
+    {options
+      .filter(f => !filterText || f.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
+      .map (option => <MenuItem key={option} 
+     value={option}>{selected === option && <>&bull;{" "}</>}{option}</MenuItem>)} 
+  </Select>
+  </>
+
+}
+
 
 export const QuickMenu = ({ label, error, value: selected, options, onChange }) => {
 
