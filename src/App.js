@@ -17,6 +17,7 @@ import { useAppHistory } from './hooks/useAppHistory';
 import { AppStateContext } from './hooks/AppStateContext';
 import { useQueryTransform } from './hooks/useQueryTransform';
 import { execQuery  } from './connector/dbConnector';
+import {Helmet} from "react-helmet";
 
 import { Add, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
  
@@ -714,6 +715,7 @@ function App() {
   } = useModal()
 
   const props = useAppHistory(); 
+  const { current } = props;
 
   const [pinned, setPinned] = React.useState(false);
  
@@ -726,6 +728,10 @@ function App() {
         setModalState 
       }}>
       <div className="App">
+        {current?.title && <Helmet> 
+            <title>MySQLNow | {current.title}</title> 
+        </Helmet>}
+
         <BrowserRouter>
           <ToggleToolbar setModalState={setModalState} {...props} onPin={t => setPinned(!!pinned ? null : t)}/>
           <Area pinned={pinned}> 

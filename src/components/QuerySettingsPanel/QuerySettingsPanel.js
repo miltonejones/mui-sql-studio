@@ -89,9 +89,11 @@ export default function QuerySettingsPanel({
 
   const addTable = React.useCallback(async (name, loading) => {
     const { rows } = await describeTable(config, name);
+    const maxIndex = configuration.tables.reduce(columnIndex, 0) || 0;
     const columns = rows.map((col, i) => ({
       name: col.COLUMN_NAME,
-      alias: col.COLUMN_NAME 
+      alias: col.COLUMN_NAME ,
+      index: i + maxIndex + 1
     }));
     const table = { ID: uniqueId(), name, alias: name, columns };
 
@@ -178,30 +180,30 @@ export default function QuerySettingsPanel({
     });
   };
 
-
-
   const setTableJoin = (name, field, value) => {
     editTable(name, (table) => {
       const join = table.join ?? {};
       Object.assign(join, { [field]: value });
       Object.assign(table, { join });
     });
-  };
-
-  function array_move(arr, old_index, new_index) {
-      if (new_index >= arr.length) {
-          var k = new_index - arr.length + 1;
-          while (k--) {
-              arr.push(undefined);
-          }
-      }
-      arr.splice(new_index, 0, arr.splice(old_index, 1)[0]);
-      return arr; // for testing
-  };
+  }; 
 
   const moveColumn = (name, col) => {
     editTable(name, (table) => {
-     alert (col)
+     const column = table.columns.find (f => f.name === col);
+     const tables = configuration.tables.map(t => {
+      const tgt = t.columns.filter(c => c.index > column.index);
+      if (!tgt.length) return t;
+      const target = tgt[0]
+      t.columns = t.columns.map(b => b.name === target.name ? {...b, index: column.index} : b)
+      table.columns = table.columns.map(b => b.name === col ? {...b, index: target.index} : b)
+      return t;
+     })
+     setConfiguration((f) => ({
+       ...f,
+       tables 
+     }));
+     alert (column.index)
     });
   }
 
@@ -222,13 +224,15 @@ export default function QuerySettingsPanel({
     });
 
     configuration.tables.map(table => {
-      table.columns.filter(filter).map((col, i) => {
+      table.columns
+      .sort((a,b) => a.index - b.index)
+      .filter(filter).map((col, i) => {
         const error = names.filter(n => n === col.alias).length > 1;
         p.push(<>
           {table.alias}.<Tag 
-            onMove={fwd => moveColumn(table.name, col.index)} 
+            onMove={fwd => moveColumn(table.name, col.name)} 
             active={col.selected} 
-            onClick={() => setColumnSelected(table.name, col.name)}>{col.name}</Tag>
+            onClick={() => setColumnSelected(table.name, col.name)}>{col.name}[{col.index}]</Tag>
             
             {!small && <> 
             {" "}<i>as</i>{" "}
@@ -547,14 +551,19 @@ function OrderItem ({ index }) {
 
 }
 
-function collateColumns(total, num) {
-  num.columns.map(col => total.push(`${num.name}.${col.name}`))
+function columnIndex(total, table) { 
+  table.columns.map(col => total = Math.max(total, col.index || 1));
   return total
 }
 
-function selectedColumns(total, num) {
-  num.columns.filter(f => !f.selected).map(col => total.push(`${num.alias}.${col.alias}`))
-  return total
+function collateColumns(columns, table) {
+  table.columns.map(col => columns.push(`${table.name}.${col.name}`))
+  return columns
+}
+
+function selectedColumns(columns, table) {
+  table.columns.filter(f => !f.selected).map(col => columns.push(`${table.alias}.${col.alias}`))
+  return columns
 }
 
 function WhereItem ({ index }) {
