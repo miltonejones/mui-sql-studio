@@ -24,6 +24,11 @@ const Tiles = styled('table')(({theme}) => ({
   // borderRadius: 5
 }))
   
+const CellText = styled(Typography)(({theme, clickable, active}) => ({ 
+   cursor: clickable ? 'pointer' : 'default',
+   color: active ? theme.palette.primary.main : '#222'
+}))
+  
 
 
 function ListCell({ 
@@ -74,11 +79,13 @@ function ListCell({
   }
 
   const deg = ask ? 180 : 0;
+  const arrow = !ask ? <>&#9650;</> : <>&#9660;</>
 
   const content = !types 
-    ?  <Typography variant={type === 'header' ? 'subtitle2' : 'body2'}>
-      {type === 'password' ? '********' : text}
-    </Typography>
+    ?  <CellText active={!!sortProp?.direction} clickable={type === 'header'} 
+        variant={type === 'header' ? 'subtitle2' : 'body2'}>
+      {type === 'password' ? '********' : text} {sortable && arrow}
+    </CellText>
     : <QuickMenu options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
  
   return <Cell odd={odd} dense={dense} header={type === 'header'} active={edit || !!action}>
@@ -89,13 +96,15 @@ function ListCell({
  [{JSON.stringify({field, alias, value})}] */}
         {icon}
         {content}
-        {sortable && <RotateButton size="small" deg={deg}> 
+        {/* {sortable && <RotateButton size="small" deg={deg}> 
           <ExpandMore />
-        </RotateButton>} 
+        </RotateButton>}  */}
      </Stack>
+        <Box sx={{flexGrow: 1}} />
 
-      {sortProp?.direction && <Tooltag onClick={() => dropOrder(text)} component={IconButton} title="Remove column sort" size="small">
-          <Close />
+      {sortProp?.direction && <Tooltag onClick={() => dropOrder(text)} 
+        component={Box} title="Remove column sort" sx={{ cursor: 'pointer' }}>
+         &times;
         </Tooltag>} 
     </Stack>
   </Cell>

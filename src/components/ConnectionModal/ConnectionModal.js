@@ -11,6 +11,7 @@ import {
   DialogActions, 
   DialogTitle,
   DialogContent, 
+  Typography,
   Divider,
   styled} from '@mui/material';
 
@@ -43,7 +44,8 @@ const fields = [
   
   {
     field: 'password',
-    label: "Password"
+    label: "Password",
+    type: "password"
   },
   
 ]
@@ -67,15 +69,17 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
   const isValid = () => !!connection && !Object.keys(connection).some(f => !connection[f])
  
   return <Dialog open={open}>
-    <DialogTitle>Connection Setup</DialogTitle>
+    <DialogTitle>
+      <Typography sx={{mb: 0}} variant="h6">Connection Setup</Typography> 
+    </DialogTitle>
     <Divider />
     <DialogContent>
     <Grid container spacing={2}>
 
   {!!connection && fields.map(field => <Grid xs={12} item  key={field.label}>
     <TextField autoComplete="off" value={connection[field.field]} onChange={(e) => {
-      onChange && onChange(field.field,  e.target.value)
-    } } fullWidth size="small" label={field.label} />
+      onChange && onChange(field.field,  e.target.value) 
+    } } fullWidth size="small" label={field.label} type={field.type}/>
   </Grid>)}
 
     <Grid item xs={5}>
