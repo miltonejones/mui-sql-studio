@@ -54,7 +54,7 @@ export const useQueryTransform = () => {
 
 
   const createTSQL = React.useCallback((configuration) => {
-    const { tables, wheres, orders, groups } = configuration;
+    const { tables, wheres, orders, groups, fields } = configuration;
     const sql = ['SELECT'];
     const columns = [];
     const from = [];
@@ -63,16 +63,18 @@ export const useQueryTransform = () => {
     const group = [];
 
     tables.map((table, i) => {
-      const { destTable, srcCol, destCol } = table.join ?? {};
+      const { destTable, srcCol, destCol, type = 'JOIN' } = table.join ?? {};
       table.columns
         .filter((f) => !!f.selected)
         .map((col) => columns.push(`${table.alias}.${col.name} as ${col.alias}\n`));
       from.push(
         i === 0
           ? ` ${table.name} as ${table.alias}\n`
-          : `\n JOIN ${table.name} as ${table.alias} ON \n  ${table.alias}.${srcCol} = ${findAlias(configuration.tables, destTable)}.${destCol}\n`
+          : `\n ${type} ${table.name} as ${table.alias} ON \n  ${table.alias}.${srcCol} = ${findAlias(configuration.tables, destTable)}.${destCol}\n`
       );
     });
+
+    fields.map(f => columns.push(`${f.expression} as ${f.name}\n`))
 
     wheres.map((clause, i) => {
       where.push (`${clause.operator || ''} ${clause.fieldName} ${decodeClause(clause.predicate, clause.clauseProp)}\n`)

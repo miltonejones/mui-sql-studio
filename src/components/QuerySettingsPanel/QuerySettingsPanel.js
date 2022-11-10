@@ -71,7 +71,7 @@ export default function QuerySettingsPanel({
   const [showTableNames, setShowTableNames] = React.useState(false);
   const [showFieldNames, setShowFieldNames] = React.useState(false);
   const [showSQL, setShowSQL] = React.useState(false);
-  const { Prompt, Confirm } = React.useContext(AppStateContext);
+  const { Prompt, Confirm, ExpressionModal } = React.useContext(AppStateContext);
 
   const transformer = useQueryTransform()
 
@@ -302,6 +302,19 @@ export default function QuerySettingsPanel({
     }));
   }
 
+  const addExpression = (field) => {
+    if (field.index) {
+      return setConfiguration((f) => ({
+        ...f,
+        fields: (f.fields||[]).map((t) => (t.index === field.index ? field : t)),
+      }));
+    }
+    setConfiguration((f) => ({
+      ...f,
+      fields: (f.fields||[]).concat({...field, index: uniqueId()})
+    }));
+  }
+
   const dropClause = async (ID) => {
     const ok = await Confirm(`Remove clause?`);
     if (!ok) return;
@@ -352,7 +365,7 @@ export default function QuerySettingsPanel({
     <Tooltag title="Return to list"  component={IconButton}  onClick={() => onCancel && onCancel()}
       >
       <Close />
-    </Tooltag>
+    </Tooltag> 
     
   </Stack>
 
@@ -377,6 +390,11 @@ export default function QuerySettingsPanel({
     
     <Box sx={{m: theme => theme.spacing(1, 0)}}>
     {columnList(z => !!z.selected)}
+        {configuration.fields?.map(f => <>{f.expression} as <AU active onClick={async () => {
+          const b = await ExpressionModal(f)
+          if (!b) return;  
+          addExpression({...f, ...b})
+        }}>{f.name}</AU></>)}
     </Box> 
 
     <Collapse in={showFieldNames}>
@@ -388,6 +406,15 @@ export default function QuerySettingsPanel({
         </Box>
       </>}
 
+      <Button endIcon={<Add />} size="small" variant="outlined"  
+        onClick={async () => {
+          const b = await ExpressionModal({})
+          if (!b) return; 
+          addExpression(b)
+        }}
+        sx={{mr: 1, mt: 1}}
+        >add expression</Button>
+     
     </Collapse> 
 
     <SectionHeader expanded={showTableNames}
@@ -719,8 +746,7 @@ export const QuickSelect = ({
   const selections = options
   .filter(f => !filterText || f.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
 
-  return <>
-  {/* <AU style={{marginRight: 8}} active error={error} onClick={handleClick}>{label}</AU> */}
+  return <> 
   
   <Autocomplete  
     disablePortal
@@ -731,15 +757,7 @@ export const QuickSelect = ({
     options={selections}
     onChange={handleChange} 
     renderInput={(params) => <TextField {...params} label={label} placeholder="Filter options" size="small" />}
-  > 
-    {/* <Box sx={{p: 1}}>
-      <SearchBox onChange={e => setFilterText(e.target.value)} placeholder="Filter options" size="small"
-         onClose={() => setFilterText('')} value={filterText} label="filter" fullWidth />
-    </Box>
-
-    {selections.map (option => <MenuItem key={option} 
-     value={option}>{selected === option && <>&bull;{" "}</>}{option}</MenuItem>)}  */}
-  </Autocomplete>
+ />
   </>
 
 }
@@ -756,9 +774,9 @@ export const QuickMenu = ({ label, error, value: selected, options, onChange }) 
     onChange && onChange(value)
     setAnchorEl(null);
   };
- 
+  // const arrow = open ? <>&#9650;</> : <>&#9660;</>
   return <>
-  <AU style={{marginRight: 8}} active error={error} onClick={handleClick}>{label}</AU>
+  <AU style={{marginRight: 4}} active error={error} onClick={handleClick}>{label}</AU> 
  
   <Menu 
     anchorEl={anchorEl}
@@ -774,8 +792,15 @@ export const QuickMenu = ({ label, error, value: selected, options, onChange }) 
 
 
 function TableItem ({ first, table, comma , addTable, setTableAlias}) {
-  const { dropTable } = React.useContext(QuerySettingsContext);
-  const { destTable, srcCol, destCol } = table.join ?? {}; 
+  const { dropTable, setTableJoin } = React.useContext(QuerySettingsContext);
+  const { destTable, srcCol, destCol, type = 'JOIN' } = table.join ?? {}; 
+
+  const handleType = (e) => {  
+    if (!e) return;
+    setTableJoin(table.name, 'type', e) 
+  };
+ 
+
   if (first) {
     return <>
     <AU active onClick={() => addTable(table.name)}>
@@ -788,7 +813,10 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
     <Delete />
    </Tooltag>
 
-  {" "}<i>JOIN</i> <AU active onClick={() => addTable(table.name)}>
+  {" "}<QuickMenu options={['JOIN', 'LEFT JOIN']} 
+      onChange={handleType} value={type} label={type}/>
+  {" "}
+  <AU active onClick={() => addTable(table.name)}>
     {table.name} 
   </AU> <i>as</i> <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
   {" "}<i>ON</i> {table.alias}.<ColumnMenu fieldname="srcCol" source={table.name} tablename={table.name} columnname={srcCol} /> 

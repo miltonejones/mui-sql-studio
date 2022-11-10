@@ -149,24 +149,45 @@ const ModalHeader = ({ handleClose, title, icon: Icon = Business }) => (
 );
  
 const ModalPrompt = ({ onChange, title, message, defaultValue = ''}) => {
- const [value, setValue] = React.useState(defaultValue);
- const textProps = {
-   ...modalTextProps,
-   value,
-   label: title,
-   onChange: (e) => {
-     setValue(e.target.value);
-     onChange(e.target.value);
-   },
+  const [value, setValue] = React.useState(defaultValue);
+  const textProps = {
+    ...modalTextProps,
+    value,
+    label: title,
+    onChange: (e) => {
+      setValue(e.target.value);
+      onChange(e.target.value);
+    },
+  };
+  return (
+    <Stack> 
+      <Typography>{message}</Typography>
+      <TextField {...textProps} />
+    </Stack>
+  );
  };
- return (
-   <Stack> 
-     <Typography>{message}</Typography>
-     <TextField {...textProps} />
-   </Stack>
- );
-};
  
+const ExpressionPrompt = ({ onChange, title, message, defaultValue = {} }) => {
+  const [value, setValue] = React.useState(defaultValue); 
+  const { name, expression } = value;
+  return (
+    <Stack> 
+      {/* <Typography>Name</Typography> */}
+      <TextField {...modalTextProps} value={name} onChange={e => {
+        const val = { ...value, name: e.target.value }
+        setValue(val);
+        onChange(val);
+      }} label="Name" placeholder="Alias name"/>
+      {/* <Typography>Expression </Typography> */}
+      <TextField label="Expression" placeholder="Type an SQL expression" {...modalTextProps} value={expression} onChange={e => { 
+        const val = { ...value, expression: e.target.value }
+        setValue(val);
+        onChange(val);
+      }} multiline rows={4}/>
+    </Stack>
+  );
+ };
+   
 export const useModal = () => {
  // Modal Methods
  // ------------------------------------------------------------------- *
@@ -217,6 +238,15 @@ export const useModal = () => {
      component: ModalPrompt,
    });
  
+ const ExpressionModal = (value) => 
+  createModalMethod({
+    message: 'Expression Setup',
+    title: 'Expression Setup',
+    icon: Announcement,
+    defaultValue: value, 
+    component: ExpressionPrompt,
+  });
+
  const [modalProps, setModelProps] = React.useState({ open: false });
  
  /**
@@ -257,6 +287,7 @@ export const useModal = () => {
    Alert,
    Confirm,
    Prompt,
+   ExpressionModal,
    createModalMethod,
    modalProps,
  };

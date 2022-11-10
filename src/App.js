@@ -29,6 +29,7 @@ const EMPTY_CONFIGURATION = {
   wheres: [],
   orders: [],
   groups: [],
+  fields: []
 };
 
 function QueryGrid () {
@@ -711,6 +712,7 @@ function App() {
     Alert,
     Confirm,
     Prompt, 
+    ExpressionModal,
     modalProps,
   } = useModal()
 
@@ -725,6 +727,7 @@ function App() {
         Alert,
         Confirm,
         Prompt,
+        ExpressionModal,
         setModalState 
       }}>
       <div className="App">
