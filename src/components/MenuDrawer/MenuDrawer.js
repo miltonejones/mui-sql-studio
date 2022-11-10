@@ -173,7 +173,7 @@ const MenuTree = ({options, spaces = 0, pinned, handleClose, filterText}) => {
             {opt.title}
           </Typography>
           <Box sx={{flexGrow: 1}} />
-        {!!opt.descendants &&  <RotateButton deg={open ? 180 : 0} onClick={() => setOpen(!open)} >
+        {   !!opt.descendants &&  <RotateButton deg={open ? 180 : 0} onClick={() => setOpen(!open)} >
             <ExpandMore />
           </RotateButton>}
         </Stack>

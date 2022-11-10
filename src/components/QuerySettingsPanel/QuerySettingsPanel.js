@@ -16,6 +16,8 @@ const uniqueId = () => Date.now().toString(36) + Math.random().toString(36).subs
 
 const AU = styled('u')(({ active, error }) => ({
   cursor: 'pointer',
+  fontWeight: 600,
+  fontStyle: 'italic',
   color: error ? 'red' : (active ? '#37a' : 'gray'), 
   '&:hover': {
     textDecoration: 'underlined',
