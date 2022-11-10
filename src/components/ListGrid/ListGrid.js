@@ -25,7 +25,7 @@ const Tiles = styled('table')(({theme}) => ({
 }))
   
 const CellText = styled(Typography)(({theme, clickable, active}) => ({ 
-   cursor: clickable ? 'pointer' : 'default',
+   cursor: clickable || active ? 'pointer' : 'default',
    color: active ? theme.palette.primary.main : '#222'
 }))
   
@@ -91,21 +91,16 @@ function ListCell({
   return <Cell odd={odd} dense={dense} header={type === 'header'} active={edit || !!action}>
     <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
 
-     <Stack direction="row" spacing={1} sx={{alignItems: 'center'}} onClick={onClick}>
- {/* [{JSON.stringify(sorts)}]
- [{JSON.stringify({field, alias, value})}] */}
+     <Stack direction="row" spacing={1} sx={{alignItems: 'center'}} onClick={onClick}> 
         {icon}
-        {content}
-        {/* {sortable && <RotateButton size="small" deg={deg}> 
-          <ExpandMore />
-        </RotateButton>}  */}
+        {content} 
      </Stack>
-        <Box sx={{flexGrow: 1}} />
+      <Box sx={{flexGrow: 1}} />
 
       {sortProp?.direction && <Tooltag onClick={() => dropOrder(text)} 
         component={Box} title="Remove column sort" sx={{ cursor: 'pointer' }}>
-         &times;
-        </Tooltag>} 
+        &times;
+      </Tooltag>} 
     </Stack>
   </Cell>
 }

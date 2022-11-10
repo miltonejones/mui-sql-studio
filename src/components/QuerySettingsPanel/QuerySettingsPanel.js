@@ -2,8 +2,9 @@ import * as React from 'react';
 import { describeTable, connectToDb } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
-import { Divider, Box, Breadcrumbs,Select,
-  Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, TextField, Stack, Button, IconButton, Typography, styled} from '@mui/material';
+import { Divider, Box, Breadcrumbs,Select, Autocomplete, Card,
+  Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, 
+  TextField, Stack, Button, ToggleButtonGroup, ToggleButton, IconButton, Typography, styled} from '@mui/material';
 import { Add, Remove, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
 
 import { Tooltag, RotateButton, SearchBox  } from '..'
@@ -132,6 +133,31 @@ export default function QuerySettingsPanel({
       orders: f.orders.map((t) => (t.index === order.index ? order : t)),
     }));
 
+  const addGroupBy = (group) =>
+    setConfiguration((f) => ({
+      ...f,
+      groups: f.groups.map((t) => (t.index === group.index ? group : t)),
+    }));
+
+
+  const dropOrderBy = async (ID) => {
+    const ok = await Confirm(`Remove order by?`);
+    if (!ok) return;
+    setConfiguration((f) => ({
+      ...f,
+      orders: f.orders.filter(c => c.index !== ID)
+    }));
+  }
+
+  
+  const dropGroupBy = async (ID) => {
+    const ok = await Confirm(`Remove group by?`);
+    if (!ok) return;
+    setConfiguration((f) => ({
+      ...f,
+      groups: f.groups.filter(c => c.index !== ID)
+    }));
+  }
 
   const editTable = async (name, edit) => {
     const table = findTable(name);
@@ -267,20 +293,19 @@ export default function QuerySettingsPanel({
     }));
   }
 
+  const newGroup = (group) => {
+    setConfiguration((f) => ({
+      ...f,
+      groups: f.groups.concat(group)
+    }));
+  }
+
   const dropClause = async (ID) => {
     const ok = await Confirm(`Remove clause?`);
     if (!ok) return;
     setConfiguration((f) => ({
       ...f,
       wheres: f.wheres.filter(c => c.index !== ID)
-    }));
-  }
-  const dropOrderBy = async (ID) => {
-    const ok = await Confirm(`Remove order by?`);
-    if (!ok) return;
-    setConfiguration((f) => ({
-      ...f,
-      orders: f.orders.filter(c => c.index !== ID)
     }));
   }
   
@@ -299,6 +324,8 @@ export default function QuerySettingsPanel({
     setTableJoin,
     addClause,
     addOrderBy,
+    addGroupBy,
+    dropGroupBy,
     dropTable,
     dropClause,
     dropOrderBy,
@@ -319,15 +346,6 @@ export default function QuerySettingsPanel({
       >
       <PlayArrow />
     </Tooltag>
-    
-    <FormControlLabel
-        label="Show SQL"
-        control={ <Switch 
-        checked={showSQL}
-        onChange={handleChange} 
-        />}
-      />
-     
 
     <Tooltag title="Return to list"  component={IconButton}  onClick={() => onCancel && onCancel()}
       >
@@ -336,19 +354,22 @@ export default function QuerySettingsPanel({
     
   </Stack>
 
-  <Divider sx={{mb: 1}} />
+  <Divider >
+    <ToggleButtonGroup exclusive value={showSQL ? "yes" : "no"} 
+      color="primary"
+      onChange={(e, n) =>  setShowSQL(n === 'yes')} size="small">
+      <ToggleButton value="no">
+        form
+      </ToggleButton>
+      <ToggleButton value="yes">
+        sql
+      </ToggleButton>
+    </ToggleButtonGroup>  
+  </Divider>
 
-  <Stack direction="row" sx={{alignItems: 'center'}}>
-    <Typography> {showSQL ? "SQL" : "SELECT"} </Typography>
-    <Box  sx={{flexGrow: 1}}/>
-
-    {!!columns.length && !showSQL && <Tooltag title="Add fields"  
-      component={RotateButton} deg={ showFieldNames ? 0 : 360 } onClick={() => setShowFieldNames(!showFieldNames)}
-      >
-      {showFieldNames ? <Remove /> : <Add />}
-    </Tooltag>}
-    
-  </Stack>
+  <SectionHeader expanded={showFieldNames} blank actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
+    { showSQL ? "SQL" : "SELECT" } 
+  </SectionHeader> 
     
   <Collapse in={!showSQL}>
     
@@ -365,20 +386,13 @@ export default function QuerySettingsPanel({
         </Box>
       </>}
 
-    </Collapse>
-    <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
+    </Collapse> 
 
-
-    <Stack direction="row" sx={{alignItems: 'center'}}>
-      <Typography> FROM </Typography>
-      <Box  sx={{flexGrow: 1}}/>
-      <Tooltag title="Add tables" deg={ showTableNames ? 0 : 180 }
-         component={RotateButton} onClick={() => setShowTableNames(!showTableNames)}
-        >
-        {showTableNames ? <Remove /> : <Add />}
-      </Tooltag>
-    </Stack>
-    
+    <SectionHeader expanded={showTableNames}
+      actionText="Add tables" onAdd={() => setShowTableNames(!showTableNames)}>
+      FROM
+    </SectionHeader>
+ 
 
     <Stack>
       
@@ -402,17 +416,11 @@ export default function QuerySettingsPanel({
 
     </Stack>
     
-    <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
 
-    <Stack direction="row" sx={{alignItems: 'center'}}>
-      <Typography sx={{color: configuration.wheres.length ? 'black' : 'gray'}}> WHERE </Typography>
-      <Box  sx={{flexGrow: 1}}/>
-    {!configuration.wheres.length && <Tooltag title="Add where clause"  component={IconButton}
-        onClick={() => newClause({index: uniqueId()})}
-        >
-        <Add />
-      </Tooltag>}
-    </Stack>
+    <SectionHeader disabled={configuration.wheres.length}  inactive={!configuration.wheres.length}
+      actionText="Add where clause" onAdd={() => newClause({index: uniqueId()})}>
+      WHERE
+    </SectionHeader> 
 
     {configuration.wheres.map((where) => <WhereItem key={where.index} {...where} />)}
 
@@ -421,29 +429,36 @@ export default function QuerySettingsPanel({
       <Button endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</Button>
     </>}
 
-    <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
+    <Collapse in={configuration.orders.filter(f => !!f.fieldName).length}>
+      
 
-    <Stack direction="row" sx={{alignItems: 'center'}}>
-      <Typography sx={{color: configuration.orders.length ? 'black' : 'gray'}}> ORDER BY </Typography>
-      <Box  sx={{flexGrow: 1}}/>
-      <Tooltag title="Add order by"  component={IconButton}
-        onClick={() => newSort({index: uniqueId(), direction: 'ASC'})}
-        >
-        <Add />
-      </Tooltag>
-    </Stack>
+      <SectionHeader inactive={!configuration.groups.length} actionText="Add group by" onAdd={() => newGroup({index: uniqueId()})}>
+        GROUP BY
+      </SectionHeader> 
+
+
+      {configuration.groups.map((group) => <GroupItem key={group.index} {...group} />)}
+
+
+    </Collapse>
+
+
+    <SectionHeader inactive={!configuration.orders.length} actionText="Add order by" onAdd={() => newSort({index: uniqueId(), direction: 'ASC'})}>
+      ORDER BY
+    </SectionHeader> 
+ 
 
 
     {configuration.orders.map((order) => <OrderItem key={order.index} {...order} />)}
 
 
-
+{/* footer  */}
     <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
 
     <Stack direction="row" sx={{alignItems: 'center'}}>
       <Box  sx={{flexGrow: 1}}/>
 
-<Button size="small" sx={{mr: 1}} endIcon={ <Close />} onClick={() => onCancel && onCancel()}
+      <Button size="small" sx={{mr: 1}} endIcon={ <Close />} onClick={() => onCancel && onCancel()}
        variant="outlined">
      close
     </Button>
@@ -459,9 +474,13 @@ export default function QuerySettingsPanel({
   <Collapse in={showSQL}>
 
   <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
-    <pre>
+  <Card sx={{p: 2, maxWidth: 400 }}>
+
+  <pre>
     {createTSQL()}
     </pre>
+
+  </Card>
 
   </Collapse>
 
@@ -508,6 +527,68 @@ const predicates = [
   },
 ]
 
+function SectionHeader({ children, inactive, blank, actionText, expanded, disabled, onAdd}) {
+
+  const sx = inactive 
+    ? {color: 'gray'}
+    : {fontWeight: 600}
+  return <>
+  
+  {!blank && <Divider sx={{m: theme => theme.spacing(1, 0)}}/>}
+
+  <Stack direction="row" sx={{alignItems: 'center'}}>
+    <Typography sx={sx}> {children} </Typography>
+    <Box sx={{ flexGrow: 1 }}/>
+    <Tooltag title={actionText} deg={ expanded ? 0 : 180 }
+      component={RotateButton} onClick={onAdd} disabled={disabled}
+      >
+      {expanded ? <Remove /> : <Add />}
+    </Tooltag>
+  </Stack>
+
+  </>
+}
+ 
+
+function GroupItem ({ index }) {
+  const { tables, groups, orders, addGroupBy, dropGroupBy } = React.useContext(QuerySettingsContext);
+
+
+  const thisGroupBy = groups.find(w => w.index === index);
+
+  const setGroupBy = (name, value) => {
+    const group = {
+      ...thisGroupBy,
+      [name]: value
+    }
+    addGroupBy(group)
+  }
+
+  const handleColumn = (clausecol) => {  
+    setGroupBy('fieldName', clausecol) 
+  };
+  
+  const { fieldName } = thisGroupBy;
+
+  const label = fieldName || 'choose column';
+
+
+  const columns = orders.map(f => f.fieldName); //tables.reduce(collateColumns, [])
+
+  return <Stack direction="row" sx={{mb: 1, alignItems: 'center'}} spacing={1}>
+
+    <Tooltag  component={IconButton} title="Delete order by" onClick={() => dropGroupBy(index)}>
+    <Delete />
+   </Tooltag>
+ 
+    <QuickSelect options={columns} onChange={handleColumn} error={!fieldName} label="field" value={label}/> 
+
+  </Stack>
+
+
+}
+
+
 function OrderItem ({ index }) {
   const { tables, orders, addOrderBy, dropOrderBy } = React.useContext(QuerySettingsContext);
 
@@ -543,8 +624,8 @@ function OrderItem ({ index }) {
     <Delete />
    </Tooltag>
  
-    <QuickSelect options={columns} onChange={handleColumn} error={!fieldName} label={label}/>
-    <QuickSelect options={['ASC', 'DESC']} onChange={handleDirection}  label={direction}/>
+    <QuickSelect options={columns} onChange={handleColumn} error={!fieldName} label="field" value={label}/>
+    <QuickSelect options={['ASC', 'DESC']} onChange={handleDirection} label="direction" value={direction}/>
 
   </Stack>
 
@@ -557,12 +638,12 @@ function columnIndex(total, table) {
 }
 
 function collateColumns(columns, table) {
-  table.columns.map(col => columns.push(`${table.name}.${col.name}`))
+  table.columns.map(col => columns.push(`${table.alias}.${col.name}`))
   return columns
 }
 
 function selectedColumns(columns, table) {
-  table.columns.filter(f => !f.selected).map(col => columns.push(`${table.alias}.${col.alias}`))
+  table.columns.filter(f => !f.selected).map(col => columns.push(`${table.alias}.${col.name}`))
   return columns
 }
 
@@ -607,10 +688,10 @@ function WhereItem ({ index }) {
     <Delete />
    </Tooltag>
  
-    {!!operator && <QuickSelect options={['OR', 'AND']} onChange={handleOperator}  label={operator}/>}
-  <QuickSelect options={columns} onChange={handleClose} error={!fieldName} label={label}/>
+    {!!operator && <QuickSelect label="and/or" options={['OR', 'AND']} onChange={handleOperator}  value={operator}/>}
+  <QuickSelect options={columns} label="field" onChange={handleClose} error={!fieldName} value={label}/>
     {" "}
-    <QuickSelect options={predicates.map(e => e.name)} onChange={handlePredicate} error={!predicate} label={predicate || 'predicate'}/>
+    <QuickSelect options={predicates.map(e => e.name)} label="operator" onChange={handlePredicate} error={!predicate} value={predicate || 'predicate'}/>
   {predicate?.indexOf('NULL') < 0 &&  <TextField autoComplete="off" value={clauseProp}  onChange={handleProp} size="small" label="Compare to" placeholder="Enter value"/>}
   
   </Stack>
@@ -628,30 +709,35 @@ export const QuickSelect = ({
   const [filterText, setFilterText] = React.useState(null); 
   
  
-  const handleChange = (event) => {
-    onChange && onChange(event.target.value);
+  const handleChange = (event, value) => {
+    onChange && onChange(value);
     setFilterText('')
   };
+
+  const selections = options
+  .filter(f => !filterText || f.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
 
   return <>
   {/* <AU style={{marginRight: 8}} active error={error} onClick={handleClick}>{label}</AU> */}
   
-  <Select 
+  <Autocomplete  
+    disablePortal
+    autoHighlight
     sx={{mr: 1, minWidth: 220}}
     size="small"
-    value={label} 
+    value={selected} 
+    options={selections}
     onChange={handleChange} 
+    renderInput={(params) => <TextField {...params} label={label} placeholder="Filter options" size="small" />}
   > 
-    <Box sx={{p: 1}}>
-      <SearchBox onChange={e => setFilterText(e.target.value)} placeholder="Filter options"
-         onClose={() => setFilterText('')} value={filterText} label="filter" size="small" fullWidth />
+    {/* <Box sx={{p: 1}}>
+      <SearchBox onChange={e => setFilterText(e.target.value)} placeholder="Filter options" size="small"
+         onClose={() => setFilterText('')} value={filterText} label="filter" fullWidth />
     </Box>
 
-    {options
-      .filter(f => !filterText || f.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
-      .map (option => <MenuItem key={option} 
-     value={option}>{selected === option && <>&bull;{" "}</>}{option}</MenuItem>)} 
-  </Select>
+    {selections.map (option => <MenuItem key={option} 
+     value={option}>{selected === option && <>&bull;{" "}</>}{option}</MenuItem>)}  */}
+  </Autocomplete>
   </>
 
 }

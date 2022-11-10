@@ -54,12 +54,13 @@ export const useQueryTransform = () => {
 
 
   const createTSQL = React.useCallback((configuration) => {
-    const { tables, wheres, orders } = configuration;
+    const { tables, wheres, orders, groups } = configuration;
     const sql = ['SELECT'];
     const columns = [];
     const from = [];
     const where = [];
     const order = [];
+    const group = [];
 
     tables.map((table, i) => {
       const { destTable, srcCol, destCol } = table.join ?? {};
@@ -77,12 +78,23 @@ export const useQueryTransform = () => {
       where.push (`${clause.operator || ''} ${clause.fieldName} ${decodeClause(clause.predicate, clause.clauseProp)}\n`)
     })
 
-    orders.map((by, i) => {
+    orders
+    .filter(f => !!f.fieldName)
+    .map((by, i) => {
       order.push (` ${by.fieldName} ${by.direction}\n`)
     })
 
+    groups
+    .filter(f => !!f.fieldName)
+    .map((by, i) => {
+      group.push (` ${by.fieldName}\n`)
+    })
+
     const core = [...sql, '\n', columns.length ? columns.join(', ') : '*', '\n', 'FROM', '\n', ...from];
-    wheres.length && core.push('\n', '\n WHERE\n', ...where);
+    wheres
+    .filter(f => !!f.fieldName).length && core.push('\n WHERE\n', ...where);
+    groups
+    .filter(f => !!f.fieldName).length && core.push('\n GROUP BY\n', group.join(', '));
     orders.length && core.push('\n ORDER BY\n', order.join(', '));
 
     const o = core.join(' ');
