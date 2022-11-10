@@ -54,7 +54,7 @@ export const useQueryTransform = () => {
 
 
   const createTSQL = React.useCallback((configuration) => {
-    const { tables, wheres, orders, groups, fields } = configuration;
+    const { tables, wheres, orders, groups, fields = [] } = configuration;
     const sql = ['SELECT'];
     const columns = [];
     const from = [];
