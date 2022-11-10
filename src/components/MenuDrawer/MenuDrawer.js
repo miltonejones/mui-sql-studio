@@ -14,7 +14,7 @@ export const LogoURL = 'https://associate-ui.s3.amazonaws.com/kisspng-mysql-rela
 export const Logo = ({ short }) =>{ 
   const navigate = useNavigate()
   return <Stack onClick={() => navigate('/')} sx={{
-      cursor: 'pointer', ml: 2, mr: 4, width: short ? 104 : 300 , alignItems: 'center'}} spacing={1} direction="row" >
+      cursor: 'pointer', ml: 2, mr: 4, width: short ? 144 : 300 , alignItems: 'center'}} spacing={1} direction="row" >
     <img alt="logo" src={LogoURL} style={{height:  32, width: 'auto'}}/>
     <Box sx={{fontFamily: 'Play'}}>MySQL<b style={{color: 'orange'}}>Now</b></Box>
   </Stack>
@@ -33,6 +33,7 @@ const RotateButton = styled(IconButton)(({ deg = 90 }) => ({
 
 const Panel = styled(Box)(({ theme }) => ({
   backgroundColor: theme.palette.primary.main,
+  overflowX: 'auto',
   position: 'absolute', 
   top: 0, 
   left: 0,
@@ -46,24 +47,26 @@ const Panel = styled(Box)(({ theme }) => ({
 
 
 
-export default function MenuDrawer({ label = 'Dashboard', report, options = []}) {
+export default function MenuDrawer({ 
+  label = 'Dashboard',  
+  pinnedTab,
+  setPinnedTab,
+  options = []
+
+}) {
 
   const [filterText, setFilterText] = React.useState('')
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [pinned, setPinned] = React.useState(false);
+  const [anchorEl, setAnchorEl] = React.useState(null); 
+  const pinned = pinnedTab === label;
+
   const open = Boolean(anchorEl);
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const handleClose = () => {   
     setAnchorEl(null);
-  };
-
-  const pinMenu = () => {
-    setPinned(!pinned)
-    report && report(label, !pinned)
-  }
+  }; 
 
   const Tag = pinned ? Panel : Menu;
  
@@ -98,6 +101,8 @@ export default function MenuDrawer({ label = 'Dashboard', report, options = []})
         {label}
       </Button> </Collapse>
       <Tag
+        sx={{maxWidth: pinned?320:'inherit'}}
+        dense
         id="demo-positioned-menu"
         aria-labelledby="demo-positioned-button"
         anchorEl={anchorEl}
@@ -138,7 +143,7 @@ export default function MenuDrawer({ label = 'Dashboard', report, options = []})
             <FilterBox white={pinned} size="small" label="Filter" value={filterText} autoComplete="off"
               onChange={e => setFilterText(e.target.value)} 
               InputProps={adornment}/>
-            <RotateButton color="inherit" onClick={() => pinMenu()} deg={pinned ? 45 : 0}>
+            <RotateButton color="inherit" onClick={() => setPinnedTab(pinnedTab === label ? null : label)} deg={pinned ? 45 : 0}>
               <PushPin />
             </RotateButton>
           </Stack> 

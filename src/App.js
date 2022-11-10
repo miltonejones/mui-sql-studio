@@ -719,7 +719,8 @@ function App() {
   const props = useAppHistory(); 
   const { current } = props;
 
-  const [pinned, setPinned] = React.useState(false);
+  const [pinnedTab, setPinnedTab] = React.useState('');
+  const pinned = !!pinnedTab;
  
   return (
     <AppStateContext.Provider value={{ 
@@ -736,10 +737,15 @@ function App() {
         </Helmet>}
 
         <BrowserRouter>
-          <ToggleToolbar setModalState={setModalState} {...props} onPin={t => setPinned(!!pinned ? null : t)}/>
-          <Area pinned={pinned}> 
+          <ToggleToolbar 
+            setModalState={setModalState} 
+            {...props} 
+            pinnedTab={pinnedTab}
+            setPinnedTab={setPinnedTab}
+          />
+          <Area pinned={!!pinnedTab}> 
             <Routes>
-              <Route path="/" element={<HomePage pinned={pinned} />} /> 
+              <Route path="/" element={<HomePage pinned={!!pinnedTab} />} /> 
               <Route path="/connection/:connectionID" element={<ConnectionGrid  />} /> 
               <Route path="/table/:connectionID/:schema/:tablename" element={<TableGrid  />} /> 
               <Route path="/query/:connectionID/:schema/:tablename" element={<QueryGrid  />} /> 

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {  Box, Chip, styled} from '@mui/material';
+import {  Box, Chip, Stack, styled} from '@mui/material';
 import MenuDrawer, { Logo } from '../MenuDrawer/MenuDrawer'; 
 import { useConfig } from '../../hooks/useConfig';
 import { useSaveQuery } from '../../hooks/useSaveQuery';
@@ -11,6 +11,8 @@ import moment from 'moment';
 const Navbar = styled(Box)(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
+  // alignContent: 'center',
+  justifyContent: 'space-between',
   color: 'white',
    position: 'absolute',
    top: 0,
@@ -23,8 +25,9 @@ const Navbar = styled(Box)(({ theme }) => ({
 
 const formatConnectName = name => name.toLowerCase().replace(/\s/g, '_');
   
-export default function ToggleToolbar({ 
-    onPin, 
+export default function ToggleToolbar({  
+    pinnedTab, 
+    setPinnedTab, 
     getAppHistory, 
     current, 
     getFavorite, 
@@ -37,7 +40,9 @@ export default function ToggleToolbar({
   const configs = getConfigs();
   const { getQueries } = useSaveQuery();
 
-  const past = getAppHistory();
+  const gesh = getAppHistory();
+  const past = gesh.length < 10 ? gesh 
+    : gesh.slice( gesh.length - 10)
   const guys = getFavorites();
   const asks = getQueries();
 
@@ -121,10 +126,15 @@ export default function ToggleToolbar({
 
 
   return <><Navbar >
-    <Logo />
-    {buttons.map((btn => <MenuDrawer report={onPin} key={btn.label} {...btn} />))}
-    <Box sx={{flexGrow: 1}} /> 
-    <Box sx={{mr: 2}}>
+
+  <Stack direction="row">
+
+  <Logo short={!pinnedTab} />
+    {buttons.map((btn => <MenuDrawer setPinnedTab={setPinnedTab} pinnedTab={pinnedTab} key={btn.label} {...btn} />))}
+
+  </Stack>
+
+    <Box>
       {!!current?.title && <Chip label={current.title} color="secondary" variant="filled"
         sx={{minWidth: 120, backgroundColor: 'rgba(0,0,0,0.5)', border: 'solid 1px rgba(255, 255, 255, 0.4)'}}
               onDelete={() => {
@@ -133,6 +143,9 @@ export default function ToggleToolbar({
               }}
               deleteIcon={<Icon />}/>} 
     </Box>
+    
+    <Box sx={{flexShrink: 1, width: pinnedTab ? 300 : 450}}/>
+
   </Navbar>
   
   {/* <ConnectionModal onChange={(key, val) => {
