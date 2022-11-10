@@ -124,7 +124,7 @@ export default function MenuDrawer({
         <Box sx={{flexGrow: 1}} />
         <Button
         color="inherit"
-        sx={{mt: 0,  mb: 0, mr: 2, textDecoration: 'underline'}}
+        sx={{mt: 0,  mb: 0, mr: 2, borderBottom: 'solid 2px white', borderRadius: 0}}
         id="demo-positioned-button"
        
         aria-controls={open ? 'demo-positioned-menu' : undefined}
@@ -138,7 +138,7 @@ export default function MenuDrawer({
       </Stack> )}
 
      
-        <MenuItem >
+        <Box sx={{p: 2}}>
           <Stack spacing={2} direction="row">
             <FilterBox white={pinned} size="small" label="Filter" value={filterText} autoComplete="off"
               onChange={e => setFilterText(e.target.value)} 
@@ -147,7 +147,7 @@ export default function MenuDrawer({
               <PushPin />
             </RotateButton>
           </Stack> 
-        </MenuItem>
+        </Box>
         <MenuTree filterText={filterText} pinned={pinned} options={options} handleClose={handleClose}/> 
       </Tag>
     </div>

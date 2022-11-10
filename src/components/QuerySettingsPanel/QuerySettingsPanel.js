@@ -382,9 +382,9 @@ export default function QuerySettingsPanel({
     </ToggleButtonGroup>  
   </Divider>
 
-  <SectionHeader expanded={showFieldNames} blank actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
+ {!showSQL && <SectionHeader expanded={showFieldNames} blank actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
     { showSQL ? "SQL" : "SELECT" } 
-  </SectionHeader> 
+  </SectionHeader> }
     
   <Collapse in={!showSQL}>
     
@@ -502,9 +502,10 @@ export default function QuerySettingsPanel({
 
   <Collapse in={showSQL}>
 
-  <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
+  {/* <Divider  sx={{m: theme => theme.spacing(1, 0)}}/> */}
   <Card sx={{p: 2, maxWidth: 400 }}>
-
+      <Typography><b>SQL Code</b></Typography>
+      <Divider />
   <pre>
     {createTSQL()}
     </pre>
