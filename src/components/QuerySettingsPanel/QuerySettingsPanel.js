@@ -191,7 +191,7 @@ export default function QuerySettingsPanel({
   };
 
   const setColumnAlias = (name, field) => {
-    editColumn(name, field, async (col) => {
+    editColumn(name, field, async (col, table) => {
       const alias = await Prompt(
         `Enter an alias for ${col.name}`,
         col.alias,
@@ -199,6 +199,12 @@ export default function QuerySettingsPanel({
       );
       if (!alias) return;
       Object.assign(col, { alias });
+      setConfiguration((f) => ({
+        ...f,
+        columnMap: f.columnMap?.map(c => c.name === col.name && c.objectname === table.name 
+          ? ({...c, alias})
+          : c)
+      }));
     });
   };
 
@@ -209,25 +215,7 @@ export default function QuerySettingsPanel({
       Object.assign(table, { join });
     });
   }; 
-
-  const moveColumn = (name, col) => {
-    editTable(name, (table) => {
-     const column = table.columns.find (f => f.name === col);
-     const tables = configuration.tables.map(t => {
-      const tgt = t.columns.filter(c => c.index > column.index);
-      if (!tgt.length) return t;
-      const target = tgt[0]
-      t.columns = t.columns.map(b => b.name === target.name ? {...b, index: column.index} : b)
-      table.columns = table.columns.map(b => b.name === col ? {...b, index: target.index} : b)
-      return t;
-     })
-     setConfiguration((f) => ({
-       ...f,
-       tables 
-     }));
-     alert (column.index)
-    });
-  }
+ 
 
   
   const openDb = async (s) => { 
@@ -437,10 +425,10 @@ export default function QuerySettingsPanel({
 
  {!showSQL && <SectionHeader expanded={showFieldNames} blank 
     buttons={[
-      <RotateButton sx={{mr: 2}} deg={orderMode ? 180 : 0}
+      <Tooltag title="Set field order" component={RotateButton} sx={{mr: 2}} deg={orderMode ? 180 : 0}
         onClick={openColumnOrderPanel}>
         <UnfoldMore />
-      </RotateButton>
+      </Tooltag>
     ]}
     actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
    SELECT

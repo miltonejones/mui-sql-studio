@@ -68,7 +68,7 @@ export const useQueryTransform = () => {
     });
 
     if (columnMap.length && !passThru) {
-      return columnMap;
+      return columnMap.map(c => collated.find(f => f.objectname === c.objectname && f.name === c.name));
     }
 
     return collated;
