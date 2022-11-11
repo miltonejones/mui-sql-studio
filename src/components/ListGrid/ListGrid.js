@@ -198,14 +198,15 @@ export default function ListGrid({
     </Stack>
     <Divider sx={{mb: 1}} />
  
+  </>}
+ 
     {!!count && <Stack direction="row" sx={{alignItems: 'center'}}>
       <Pagination sx={{mb: 1}}  onChange={handleChange} page={page} count={pageCount} />
       <Box sx={{flexGrow: 1}} />
       <Typography variant="caption">{desc}</Typography>
       </Stack>
       } 
-  </>}
- 
+      
   {empty && <Box sx={{cursor: 'pointer'}} onClick={() => onClear && onClear()}>Query returned no results. <u>Click here to clear filter</u>.</Box>}
 
   {!empty && <Tiles cellSpacing="1">

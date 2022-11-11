@@ -9,8 +9,8 @@ import {
 } from "react-router-dom";
 import './App.css';
 import Modal, { useModal } from './components/Modal/Modal';
-import { ToggleToolbar, ListGrid, ConnectionModal, Tooltag, QuickSelect, QuerySettingsPanel } from './components'
-import { Alert, TextField, Box, Button, Collapse, IconButton, Stack, Typography, styled } from '@mui/material';
+import { ToggleToolbar, ListGrid, RotateButton, ConnectionModal, Tooltag, QuickSelect, QuerySettingsPanel } from './components'
+import { Alert, TextField, Box, Button, Collapse, Divider, IconButton, Stack, Typography, styled } from '@mui/material';
 import { useConfig } from './hooks/useConfig';
 import { useSaveQuery } from './hooks/useSaveQuery';
 import { useAppHistory } from './hooks/useAppHistory';
@@ -19,7 +19,7 @@ import { useQueryTransform } from './hooks/useQueryTransform';
 import { execQuery  } from './connector/dbConnector';
 import {Helmet} from "react-helmet";
 
-import { Add, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
+import { Add, ExpandMore, PlayArrow, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
  
 
 const formatConnectName = name => name.toLowerCase().replace(/\s/g, '_');
@@ -36,6 +36,7 @@ function QueryAnalyzer () {
   const [loaded, setLoaded] = React.useState(false) ;
   const [configName, setConfigName] = React.useState(null)
   const [sqlText, setSqlText] = React.useState(null)
+  const [showQuery, setShowQuery] = React.useState(true)
   const [page, setPage] = React.useState(1)
   const [data, setData] = React.useState(null);
   const { getConfigs  } = useConfig()
@@ -61,7 +62,7 @@ function QueryAnalyzer () {
   }));
 
   const runQuery = async (pg) => {
-
+    setData(null);  
     const f = await execQuery(configs[configName], sqlText, pg); 
     setPage(pg);
     setData(f); 
@@ -69,28 +70,46 @@ function QueryAnalyzer () {
 
   return <>
   <Stack>
-    <Stack direction="row" sx={{alignItems: 'center'}}>
-
+    
+    <Stack direction="row" sx={{alignItems: 'center', mb: 1}}>
       <QuickSelect options={Object.keys(configs)} 
         onChange={setConfigName} label="connection" value={configName}/> 
-        <Button disabled={!sqlText} onClick={() => runQuery(1)} variant="contained">
-          Run
-        </Button>
+      <Button disabled={!sqlText} onClick={() => runQuery(1)} variant="contained"
+        color="warning" endIcon={<PlayArrow />}>
+        Run
+      </Button>
+      <Box sx={{flexGrow: 1}} />
+      <RotateButton deg={showQuery ? 0 : 180} onClick={() => setShowQuery(!showQuery)}>
+        <ExpandMore />
+      </RotateButton>
     </Stack>
-    {configs[configName] && <>
+
+    {configs[configName] && <Collapse in={showQuery}>
       <TextField value={sqlText} fullWidth sx={{mt: 1, mb: 1}}
         onChange={e => setSqlText(e.target.value)} 
         label="SQL Query"
         placeholder="Type or paste SQL code"
         multiline rows={6}/>
-      </>}
+      </Collapse>}
+
+    {!!data?.error && <> 
+      <Typography>{data.error.code}</Typography>
+      <Alert severity="error">{data.error.sqlMessage}</Alert>
+    </>}
+
     {!!data?.rows && 
-    <ListGrid   
-      setPage={runQuery}
-      count={data?.count}
-      page={page}  
-      rows={data?.rows?.map(configRow)}  
-    />  }
+    <>
+      <Divider sx={{mb: 1}} >
+        Query results
+      </Divider>
+      <ListGrid   
+        count={data?.count}
+        setPage={runQuery}
+        count={data?.count}
+        page={page}  
+        rows={data?.rows?.map(configRow)}  
+      />
+    </>  }
   </Stack>
   </>
 }
@@ -394,16 +413,13 @@ function QueryGrid () {
 
 
   return <> 
+
+    {!!data?.error && <> 
+      <Typography>{data.error.code}</Typography>
+      <Alert severity="error">{data.error.sqlMessage}</Alert>
+    </>}
+
   <Collapse in={!edit}> 
-  {/* <pre>
-    {JSON.stringify(data?.fields,0,2)}
-  </pre>
-  <pre>
-    {JSON.stringify(configuration.orders,0,2)}
-  </pre>
-  <pre>
-    {JSON.stringify(data?.rows,0,2)}
-  </pre> */}
 
     <ListGrid  
       dense
