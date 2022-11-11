@@ -4,7 +4,8 @@ import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
 import { Divider, Box, Breadcrumbs,Select, Autocomplete, Card,
   Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, 
-  TextField, Stack, Button, ToggleButtonGroup, ToggleButton, IconButton, Typography, styled} from '@mui/material';
+  TextField, Stack, Button, ToggleButtonGroup, ToggleButton, 
+  IconButton, Typography, styled } from '@mui/material';
 import { Add, UnfoldMore, Remove, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
 
 import { Tooltag, RotateButton, SearchBox  } from '..'
@@ -823,6 +824,8 @@ export const QuickSelect = ({
   
   <Autocomplete  
     disablePortal
+    disableClearable
+    autoComplete
     autoHighlight
     sx={{mr: 1, minWidth: 220}}
     size="small"

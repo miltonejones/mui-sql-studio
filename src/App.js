@@ -16,7 +16,7 @@ import { useSaveQuery } from './hooks/useSaveQuery';
 import { useAppHistory } from './hooks/useAppHistory';
 import { AppStateContext } from './hooks/AppStateContext';
 import { useQueryTransform } from './hooks/useQueryTransform';
-import { execQuery  } from './connector/dbConnector';
+import { execQuery, describeConnection, describeTable } from './connector/dbConnector';
 import {Helmet} from "react-helmet";
 
 import { Add, ExpandMore, PlayArrow, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
@@ -33,19 +33,36 @@ const EMPTY_CONFIGURATION = {
 };
 
 function QueryAnalyzer () {
+  const { schema, tablename, listname, connectionID } = useParams();
+  const { createTSQL } = useQueryTransform()
+
   const [loaded, setLoaded] = React.useState(false) ;
   const [configName, setConfigName] = React.useState(null)
+  const [connect, setConnect] = React.useState(null)
   const [sqlText, setSqlText] = React.useState(null)
+  const [tableName, setTableName] = React.useState(null)
   const [showQuery, setShowQuery] = React.useState(true)
   const [page, setPage] = React.useState(1)
   const [data, setData] = React.useState(null);
   const { getConfigs  } = useConfig()
   const configs = getConfigs();
   const { setAppHistory  } = React.useContext(AppStateContext);
+  const { getQueries } = useSaveQuery();
 
   React.useEffect(() => {
    
     if (loaded) return;
+
+    if (listname) {
+      const lists = getQueries();
+      const title = Object.keys(lists).find(f => formatConnectName(f) === listname);
+      const conf = Object.keys(configs).find(f => formatConnectName(f) === connectionID);
+      setSqlText(lists[title].queryText)
+      setConfig (conf)
+      setTableName(lists[title].tablename) 
+    }
+  
+
     setAppHistory({
       title: `Home | Query Analyzer`,
       path: `/sql` 
@@ -68,12 +85,30 @@ function QueryAnalyzer () {
     setData(f); 
   }
 
+  const setTable = async (name) => {
+    const { rows } = await describeTable(configs[configName], name);
+    const cols = rows.map(r => r.COLUMN_NAME).join(', ') 
+    setSqlText(`SELECT ${cols} 
+FROM ${name}`)
+    setTableName(name)
+  }
+
+  const setConfig = async (name) => {
+    const f = await describeConnection(configs[name]);
+    setConnect(f?.rows.map(r => r.TABLE_NAME));
+    setConfigName(name);
+  }
+
   return <>
   <Stack>
     
     <Stack direction="row" sx={{alignItems: 'center', mb: 1}}>
+      <Box>
       <QuickSelect options={Object.keys(configs)} 
-        onChange={setConfigName} label="connection" value={configName}/> 
+        onChange={setConfig} label="connections" value={configName}/> 
+      </Box>
+      {!!connect &&  <QuickSelect options={connect} 
+        onChange={setTable} label="tables" value={tableName}/> }
       <Button disabled={!sqlText} onClick={() => runQuery(1)} variant="contained"
         color="warning" endIcon={<PlayArrow />}>
         Run
@@ -89,7 +124,7 @@ function QueryAnalyzer () {
         onChange={e => setSqlText(e.target.value)} 
         label="SQL Query"
         placeholder="Type or paste SQL code"
-        multiline rows={6}/>
+        multiline rows={!!data?.rows ? 5 : 0} />
       </Collapse>}
 
     {!!data?.error && <> 
@@ -397,11 +432,15 @@ function QueryGrid () {
   </Tooltag>,
   <Tooltag title="Save List" component={IconButton} onClick={savePage}>
     <Save />
+  </Tooltag>,
+  <Tooltag title="Open in Query Analyzer" component={IconButton} onClick={() => {
+    navigate(`/sql/${connectionID}/${schema}/${tablename}/${listname}`)
+  }}>
+    <Launch />
   </Tooltag>] : []
 
   const buttons = saveBtn.concat([
-    <Tooltag title="Set list filters" component={IconButton} onClick={() => {
-      // setData(null);
+    <Tooltag title="Set list filters" component={IconButton} onClick={() => { 
       setEdit(!edit)
     }}>
       <FilterAlt />
@@ -618,10 +657,7 @@ function ConnectionGrid () {
   React.useEffect(() => {
     if (!!data) return;
     (async() => {
-      const f = await execQuery(configs[configKey], ` SELECT
-      TABLE_NAME,	TABLE_TYPE,	TABLE_ROWS, AUTO_INCREMENT,	CREATE_TIME, UPDATE_TIME
-      FROM INFORMATION_SCHEMA.TABLES t
-      WHERE table_schema = '${configs[configKey].database}' ORDER BY TABLE_NAME `)
+      const f = await describeConnection(configs[configKey])
       setData(f);
     })()
   }, [configs, configKey, data])
@@ -828,8 +864,9 @@ function App() {
               <Route path="/connection/:connectionID" element={<ConnectionGrid  />} /> 
               <Route path="/table/:connectionID/:schema/:tablename" element={<TableGrid  />} /> 
               <Route path="/query/:connectionID/:schema/:tablename" element={<QueryGrid  />} /> 
-              <Route path="/sql" element={<QueryAnalyzer   />} /> 
               <Route path="/lists/:connectionID/:schema/:tablename/:listname" element={<QueryGrid   />} /> 
+              <Route path="/sql/:connectionID/:schema/:tablename/:listname" element={<QueryAnalyzer   />} /> 
+              <Route path="/sql" element={<QueryAnalyzer   />} /> 
             </Routes>
           </Area>
         </BrowserRouter>

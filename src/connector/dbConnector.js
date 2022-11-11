@@ -54,3 +54,20 @@ export const execCommand = async (config, query) => {
   console.log({ response });
   return await response.json();
 };
+
+
+export const describeConnection = async (config) => {
+  const query = ` SELECT
+    TABLE_NAME,	TABLE_TYPE,	TABLE_ROWS, AUTO_INCREMENT,	CREATE_TIME, UPDATE_TIME
+    FROM INFORMATION_SCHEMA.TABLES t
+    WHERE table_schema = '${config.database}' ORDER BY TABLE_NAME `;
+  const requestOptions = {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ config, query }),
+  }; 
+  const response = await fetch(`${API_ENDPOINT}/query/1`, requestOptions);
+  console.log({ response });
+  return await response.json();
+};
+
