@@ -1,6 +1,7 @@
 import * as React from 'react';
 import {  Box, Chip, Stack, styled} from '@mui/material';
-import MenuDrawer, { Logo } from '../MenuDrawer/MenuDrawer'; 
+import MenuDrawer from '../MenuDrawer/MenuDrawer'; 
+import Logo from '../MenuDrawer/components/Logo/Logo'; 
 import { useConfig } from '../../hooks/useConfig';
 import { useSaveQuery } from '../../hooks/useSaveQuery';
 import { Star, StarBorder } from '@mui/icons-material';

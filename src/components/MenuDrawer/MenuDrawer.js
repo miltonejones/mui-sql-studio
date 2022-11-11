@@ -2,49 +2,19 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import {  InputAdornment, Box, Stack, Collapse, IconButton, TextField, Typography, styled} from '@mui/material';
-import {  
-  useNavigate, 
-} from "react-router-dom";
+import Logo, { LogoURL } from './components/Logo/Logo';
+import Panel from './components/Panel/Panel';
+import { RotateButton } from '..';
+import { InputAdornment, Box, Stack, Collapse, IconButton, TextField, Typography, styled} from '@mui/material'; 
 
 import { PushPin, ExpandMore , Close, FilterAlt} from '@mui/icons-material';
-
-export const LogoURL = 'https://associate-ui.s3.amazonaws.com/kisspng-mysql-relational-database-management-system-logo-m-mysql-instalaci%C3%B3n-y-creaci%C3%B3n-usuario-atrum-5b649e7bb60bf3.4045674715333208277457.png';
-
-export const Logo = ({ short }) =>{ 
-  const navigate = useNavigate()
-  return <Stack onClick={() => navigate('/')} sx={{
-      cursor: 'pointer', ml: 2, mr: 4, width: short ? 144 : 300 , alignItems: 'center'}} spacing={1} direction="row" >
-    <img alt="logo" src={LogoURL} style={{height:  32, width: 'auto'}}/>
-    <Box sx={{fontFamily: 'Play'}}>MySQL<b style={{color: 'orange'}}>Now</b></Box>
-  </Stack>
-}
+ 
 
 const FilterBox = styled(TextField)(({ white }) => ({
   '& .MuiFormLabel-root': {
     color: white ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
   }
-}))
-
-const RotateButton = styled(IconButton)(({ deg = 90 }) => ({
-  transition: 'transform 0.2s linear', 
-  transform: `rotate(${deg}deg)`
-}));
-
-const Panel = styled(Box)(({ theme }) => ({
-  backgroundColor: theme.palette.primary.main,
-  overflowX: 'auto',
-  position: 'absolute', 
-  top: 0, 
-  left: 0,
-  height: '100vh',
-  minWidth: 300,
-  // boxShadow: `
-  //   0px 5px 5px -3px rgb(0 0 0 / 20%), 
-  //   0px 8px 10px 1px rgb(0 0 0 / 14%), 
-  //   0px 3px 14px 2px rgb(0 0 0 / 12%)`,
-}))
-
+}));  
 
 
 export default function MenuDrawer({ 
@@ -158,7 +128,8 @@ export default function MenuDrawer({
 const MenuTree = ({options, spaces = 0, pinned, handleClose, filterText}) => {
   const [open, setOpen] = React.useState(true)
   const hue = pinned ? 'white' : 'gray';
-  const borderLeft =  !spaces  ? '' : ('solid 1px ' + hue)
+  const borderLeft =  !spaces  ? '' : ('solid 1px ' + hue);
+
   const execClose = (e, opt) => {
     if (!!opt.descendants) {
       return setOpen(!open);
@@ -166,26 +137,27 @@ const MenuTree = ({options, spaces = 0, pinned, handleClose, filterText}) => {
     !!opt.action && opt.action(opt)
     handleClose(e)
   } 
+
   return <>
-  {options
-  .filter(opt => !filterText || opt.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
-  .map((opt, i) => <>
-    <MenuItem key={i} sx={{ml: spaces, borderLeft }} onClick={e => execClose(e, opt)}>
-      <Stack>
-        <Stack sx={{ width: '100%', alignItems: 'center' }} direction="row">
-          {opt.active && <Box sx={{mr: 1}}>&bull;</Box>}
-          <Typography sx={{ fontWeight: opt.active ? 600 : 400}}>
-            {opt.title}
-          </Typography>
-          <Box sx={{flexGrow: 1}} />
-        {   !!opt.descendants &&  <RotateButton deg={open ? 180 : 0} onClick={() => setOpen(!open)} >
-            <ExpandMore />
-          </RotateButton>}
+    {options
+    .filter(opt => !filterText || opt.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
+    .map((opt, i) => <>
+      <MenuItem key={i} sx={{ml: spaces, borderLeft }} onClick={e => execClose(e, opt)}>
+        <Stack>
+          <Stack sx={{ width: '100%', alignItems: 'center' }} direction="row">
+            {opt.active && <Box sx={{mr: 1}}>&bull;</Box>}
+            <Typography sx={{ fontWeight: opt.active ? 600 : 400}}>
+              {opt.title}
+            </Typography>
+            <Box sx={{flexGrow: 1}} />
+          {   !!opt.descendants &&  <RotateButton deg={open ? 180 : 0} onClick={() => setOpen(!open)} >
+              <ExpandMore />
+            </RotateButton>}
+          </Stack>
+          {!!opt.subtext && <Typography sx={{ml: opt.active ? 2 : 0}} variant="caption">{opt.subtext}</Typography>}
         </Stack>
-        {!!opt.subtext && <Typography sx={{ml: opt.active ? 2 : 0}} variant="caption">{opt.subtext}</Typography>}
-      </Stack>
-    </MenuItem>
-    {opt.descendants && <Collapse in={open}><MenuTree filterText={filterText} pinned={pinned} handleClose={handleClose} options={opt.descendants} spaces={spaces + 4}/></Collapse>}
-  </>)} 
+      </MenuItem>
+      {opt.descendants && <Collapse in={open}><MenuTree filterText={filterText} pinned={pinned} handleClose={handleClose} options={opt.descendants} spaces={spaces + 4}/></Collapse>}
+    </>)} 
   </>
 }

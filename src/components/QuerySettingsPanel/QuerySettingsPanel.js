@@ -5,7 +5,7 @@ import { useQueryTransform } from '../../hooks/useQueryTransform';
 import { Divider, Box, Breadcrumbs,Select, Autocomplete, Card,
   Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, 
   TextField, Stack, Button, ToggleButtonGroup, ToggleButton, IconButton, Typography, styled} from '@mui/material';
-import { Add, Remove, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
+import { Add, UnfoldMore, Remove, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
 
 import { Tooltag, RotateButton, SearchBox  } from '..'
 const QuerySettingsContext = React.createContext({});
@@ -25,38 +25,25 @@ const AU = styled('u')(({ active, error }) => ({
   }
 }))
 
-const CL = styled(AU)(({ active, error }) => ({
-  position: 'relative',
-  '& .cl': {  
-    display: 'none'
-  },
-  // '&:hover': {
-  //   display: 'none',
-  //   '& .cl': { 
-  //     display: 'block'
-  //   }, ArrowBack, ArrowForward
-  // }
+const Pane = styled(Box)(({ theme }) => ({
+  width: 320,
+  height: 300, 
+  overflow: 'auto', 
+  border: 'solid 1px gray',
+  padding: theme.spacing(0.5), 
+  borderRadius: 5
 }))
-
-const CLink = ({children, onClick, onMove, ...props}) => {
-  return <Tooltag title={
-    <>
-    <IconButton onClick={onClick}>
-      <Delete />
-    </IconButton>
-    <IconButton onClick={() => onMove && onMove(false)}>
-      <ArrowBack />
-    </IconButton>
-    <IconButton onClick={() => onMove && onMove(true)}>
-      <ArrowForward />
-    </IconButton>
-    </>
-  } component={AU} {...props}>
-    {children} 
-  </Tooltag>
-}
-
-
+ 
+const Item = styled(Box)(({ theme, active }) => ({
+  borderRadius: 5,
+  padding: theme.spacing(0.5), 
+  margin: theme.spacing(0.5, 0), 
+  cursor: 'default', 
+  fontWeight: active ? 600 : 400,
+  border: active ? 'solid 1px gray' : 'solid 1px white',
+  backgroundColor: active ? 'aliceblue' : ''
+}))
+ 
 export default function QuerySettingsPanel({ 
     config, 
     tablename, 
@@ -70,6 +57,7 @@ export default function QuerySettingsPanel({
   const [tableNames, setTableNames] = React.useState([]);
   const [showTableNames, setShowTableNames] = React.useState(false);
   const [showFieldNames, setShowFieldNames] = React.useState(false);
+  const [orderMode, setOrderMode] = React.useState(false);
   const [showSQL, setShowSQL] = React.useState(false);
   const { Prompt, Confirm, ExpressionModal } = React.useContext(AppStateContext);
 
@@ -179,8 +167,14 @@ export default function QuerySettingsPanel({
   };
   
   const setColumnSelected = (name, field) => {
-    editColumn(name, field, (col) => {
+    editColumn(name, field, (col, table) => {
       Object.assign(col, { selected: !col.selected });
+      const node = {
+        objectname: table.name,
+        objectalias: table.alias ,
+        ...col
+      }
+      appendOrderItem(node) 
     });
   };
   
@@ -242,33 +236,92 @@ export default function QuerySettingsPanel({
     setTableNames(tables); 
   };
 
+  const openColumnOrderPanel = () => {
+    const { columnMap = [] } = configuration; 
+    if (!columnMap.length) {
+      const selectedItems = collateTables(f => !!f.selected);  
+      setConfiguration((f) => ({
+        ...f,
+        columnMap: selectedItems
+      }));
+    }
+    
+    setConfiguration((f) => ({
+      ...f,
+      columnMap: f.columnMap.map(c => ({...c, clicked: !1}))
+    }));
+    setOrderMode(!orderMode);
+  }
 
-  const columnList = (filter, small, Tag = CLink) => {
+  const clickOrderItem = o => {
+    setConfiguration((f) => ({
+      ...f,
+      columnMap: f.columnMap.map((c, i) => i === o ? {...c, clicked: !c.clicked} : c)
+    }));
+  }
+
+
+  function arraymove(arr, fromIndex, toIndex) {
+    if (toIndex > -1 && toIndex < arr.length) {
+      var element = arr[fromIndex];
+      arr.splice(fromIndex, 1);
+      arr.splice(toIndex, 0, element);
+    } 
+  }
+
+  const appendOrderItem = col => {
+    const { columnMap = [] } = configuration; 
+    if (!columnMap.length) return;
+
+    setConfiguration((f) => ({
+      ...f,
+      columnMap: f.columnMap.find(c => c.objectname === col.objectname && 
+          c.name === col.name) 
+        ? f.columnMap.filter (c => !(c.objectname === col.objectname && 
+          c.name === col.name))
+        : f.columnMap.concat(col)   
+    }));
+  }
+
+
+  const sortOrderItem = (offset) => {
+    const { columnMap } = configuration; 
+    const clicked = columnMap.filter(f =>  f.clicked);
+    clicked.map(node => {
+      const ordinal = columnMap.indexOf(node);
+      arraymove(columnMap, ordinal, ordinal + offset); 
+    })
+    setConfiguration((f) => ({
+      ...f,
+      columnMap 
+    }));
+  }
+
+  const collateTables = (filter, passThru) => transformer.collateTables(configuration, filter, passThru); 
+
+
+  const columnList = (filter, small, passThru) => {
     const p = [];
-    const names = [];
+    const collated = collateTables(filter, passThru); 
 
-    configuration.tables.map(table => {
-      table.columns.filter(filter).map(col => names.push(col.alias)) 
-    });
+    collated.map((column, i) => { 
+      const error = collated.filter(n => n.alias === column.alias).length > 1;
+      const { objectname, objectalias, name, alias, selected } = column;
+      const last = i === (collated.length - 1)
 
-    configuration.tables.map(table => {
-      table.columns
-      .sort((a,b) => a.index - b.index)
-      .filter(filter).map((col, i) => {
-        const error = names.filter(n => n === col.alias).length > 1;
-        p.push(<>
-          {table.alias}.<Tag 
-            onMove={fwd => moveColumn(table.name, col.name)} 
-            active={col.selected} 
-            onClick={() => setColumnSelected(table.name, col.name)}>{col.name}</Tag>
-            
-            {!small && <> 
-            {" "}<i>as</i>{" "}
-            <AU active error={error} onClick={() => setColumnAlias(table.name, col.name)}>{col.alias}</AU>
-            </>}, {" "}
-          </>)
-        }   
-    )})
+      p.push(<>
+        {objectalias}.<Tooltag component={AU}
+          title={passThru ? "Add to column list" : "Remove from column list"}
+          active={selected} 
+          onClick={() => setColumnSelected(objectname, name)}>{name}</Tooltag>
+          
+          {!small && <> 
+          {" "}<i>as</i>{" "}
+          <AU active error={error} onClick={() => setColumnAlias(objectname, name)}>{alias}</AU>
+          </>}{!last && <>, </>} {" "}
+        </>)
+    }) 
+
     return p.length ? p : ['*'];
   }
 //  
@@ -382,27 +435,56 @@ export default function QuerySettingsPanel({
     </ToggleButtonGroup>  
   </Divider>
 
- {!showSQL && <SectionHeader expanded={showFieldNames} blank actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
-    { showSQL ? "SQL" : "SELECT" } 
+ {!showSQL && <SectionHeader expanded={showFieldNames} blank 
+    buttons={[
+      <RotateButton sx={{mr: 2}} deg={orderMode ? 180 : 0}
+        onClick={openColumnOrderPanel}>
+        <UnfoldMore />
+      </RotateButton>
+    ]}
+    actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
+   SELECT
   </SectionHeader> }
     
   <Collapse in={!showSQL}>
     
-    <Box sx={{m: theme => theme.spacing(1, 0)}}>
-    {columnList(z => !!z.selected)}
-        {configuration.fields?.map(f => <>{f.expression} as <AU active onClick={async () => {
-          const b = await ExpressionModal(f)
-          if (!b) return;  
-          addExpression({...f, ...b})
-        }}>{f.name}</AU></>)}
-    </Box> 
+    <Collapse in={!orderMode}>
+      <Box sx={{m: theme => theme.spacing(1, 0)}}>
+        {columnList(z => !!z.selected)}
+          {configuration.fields?.map(f => <>{f.expression} as <AU active onClick={async () => {
+            const b = await ExpressionModal(f)
+            if (!b) return;  
+            addExpression({...f, ...b})
+          }}>{f.name}</AU></>)}
+      </Box>
+    </Collapse>
+   
+
+    <Collapse in={orderMode}>
+      <Stack direction="row" sx={{alignItems: 'center'}}>
+        <Pane>
+          {configuration.columnMap?.map((item, i) => <Item 
+              key={i} 
+              active={item.clicked}
+              onClick={() => clickOrderItem(i)}
+            >
+            {item.objectalias}.{item.name} <i>as {item.alias}</i>
+          </Item>)}
+        </Pane>
+        <Stack>
+          <RotateButton deg={180} onClick={() => sortOrderItem(-1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
+          <RotateButton deg={0} onClick={() => sortOrderItem(1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
+        </Stack>
+      </Stack>
+      {/* {JSON.stringify(configuration.columnMap)} */}
+    </Collapse>
 
     <Collapse in={showFieldNames}>
 
       {!!columns.length && <>
         <Typography variant="caption">Available fields</Typography>
         <Box>
-        {columnList(z => !z.selected, !0, AU)}
+        {columnList(z => !z.selected, !0, !0)}
         </Box>
       </>}
 
@@ -557,7 +639,7 @@ const predicates = [
   },
 ]
 
-function SectionHeader({ children, inactive, blank, actionText, expanded, disabled, onAdd}) {
+function SectionHeader({ children, inactive, blank, actionText, expanded, buttons = [], disabled, onAdd}) {
 
   const sx = inactive 
     ? {color: 'gray'}
@@ -569,6 +651,8 @@ function SectionHeader({ children, inactive, blank, actionText, expanded, disabl
   <Stack direction="row" sx={{alignItems: 'center'}}>
     <Typography sx={sx}> {children} </Typography>
     <Box sx={{ flexGrow: 1 }}/>
+
+    {buttons.map((button, i) => <Box key={i}>{button}</Box>)}
     <Tooltag title={actionText} deg={ expanded ? 0 : 180 }
       component={RotateButton} onClick={onAdd} disabled={disabled}
       >

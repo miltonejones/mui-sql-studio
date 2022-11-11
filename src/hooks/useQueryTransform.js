@@ -52,6 +52,29 @@ export const useQueryTransform = () => {
     return value;
   }, [predicates])
 
+  const collateTables = React.useCallback((configuration, filter, passThru) => {
+    const { columnMap = [], tables } = configuration; 
+
+    const collated = []; 
+
+    tables.map(table => {
+      table.columns.filter(filter).map(col => { 
+        collated.push({
+          objectname: table.name,
+          objectalias: table.alias,
+          ...col
+        })
+      }) 
+    });
+
+    if (columnMap.length && !passThru) {
+      return columnMap;
+    }
+
+    return collated;
+  }, [])
+
+
 
   const createTSQL = React.useCallback((configuration) => {
     const { tables, wheres, orders, groups, fields = [] } = configuration;
@@ -62,11 +85,12 @@ export const useQueryTransform = () => {
     const order = [];
     const group = [];
 
+    const collated = collateTables(configuration, f => !!f.selected); 
+    collated
+      .map((col) => columns.push(`${col.objectalias}.${col.name} as ${col.alias}\n`));
     tables.map((table, i) => {
       const { destTable, srcCol, destCol, type = 'JOIN' } = table.join ?? {};
-      table.columns
-        .filter((f) => !!f.selected)
-        .map((col) => columns.push(`${table.alias}.${col.name} as ${col.alias}\n`));
+
       from.push(
         i === 0
           ? ` ${table.name} as ${table.alias}\n`
@@ -104,7 +128,7 @@ export const useQueryTransform = () => {
   }, [findAlias, decodeClause]);
 
 
-  return { decodeClause, predicates, createTSQL, findAlias, findTable }
+  return { decodeClause, collateTables, predicates, createTSQL, findAlias, findTable }
   
 }
 

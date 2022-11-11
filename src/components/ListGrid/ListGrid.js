@@ -1,9 +1,12 @@
 import * as React from 'react';
 import './ListGrid.css';
 
-import { styled, Box, Typography, Divider, 
+import { 
+  styled, Box, Typography, Divider, 
   IconButton, InputAdornment,
-  Stack, TextField, Breadcrumbs, Pagination, Link} from '@mui/material';
+  Stack, TextField, Breadcrumbs, 
+  Pagination, Link
+} from '@mui/material';
 import { QuickMenu, RotateButton, Tooltag } from '..';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { Sync, Save, Close, ExpandMore } from '@mui/icons-material';
@@ -16,18 +19,18 @@ const Cell = styled('td')(({theme, header, odd, dense, active}) => ({
   cursor: !active ? 'default' : 'pointer',
   whiteSpace: 'nowrap',
   // borderRadius: 5
-}))
+}));
   
 const Tiles = styled('table')(({theme}) => ({ 
   backgroundColor: '#d9d9d9',
   minWidth: '80vw',
   // borderRadius: 5
-}))
+}));
   
 const CellText = styled(Typography)(({theme, clickable, active}) => ({ 
    cursor: clickable || active ? 'pointer' : 'default',
    color: active ? theme.palette.primary.main : '#222'
-}))
+}));
   
 
 
@@ -221,9 +224,7 @@ export default function ListGrid({
     row={headers[0]} />}
     {rows.map((row, i) => <ListRow odd={i % 2 === 0} dense={dense} commitRow={commitRow} key={row.field} row={row} />)}
   </Tiles>}
-  
-  {/* <pre>{JSON.stringify(rows,0,2)}</pre> */}
- 
+   
   </>
 
 }
