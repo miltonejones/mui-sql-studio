@@ -93,7 +93,14 @@ export default function ToggleToolbar({
               }
             })
           }
+        },
+        
+
+        {
+          title: 'Query Analyzer',
+          action: () => navigate(`/sql`)
         }
+        
       ])
     },
     { 

@@ -9,8 +9,8 @@ import {
 } from "react-router-dom";
 import './App.css';
 import Modal, { useModal } from './components/Modal/Modal';
-import { ToggleToolbar, ListGrid, ConnectionModal, Tooltag, QuerySettingsPanel } from './components'
-import { Alert,  Box, Button, Collapse, IconButton, Stack, Typography, styled } from '@mui/material';
+import { ToggleToolbar, ListGrid, ConnectionModal, Tooltag, QuickSelect, QuerySettingsPanel } from './components'
+import { Alert, TextField, Box, Button, Collapse, IconButton, Stack, Typography, styled } from '@mui/material';
 import { useConfig } from './hooks/useConfig';
 import { useSaveQuery } from './hooks/useSaveQuery';
 import { useAppHistory } from './hooks/useAppHistory';
@@ -31,6 +31,69 @@ const EMPTY_CONFIGURATION = {
   groups: [],
   fields: []
 };
+
+function QueryAnalyzer () {
+  const [loaded, setLoaded] = React.useState(false) ;
+  const [configName, setConfigName] = React.useState(null)
+  const [sqlText, setSqlText] = React.useState(null)
+  const [page, setPage] = React.useState(1)
+  const [data, setData] = React.useState(null);
+  const { getConfigs  } = useConfig()
+  const configs = getConfigs();
+  const { setAppHistory  } = React.useContext(AppStateContext);
+
+  React.useEffect(() => {
+   
+    if (loaded) return;
+    setAppHistory({
+      title: `Home | Query Analyzer`,
+      path: `/sql` 
+    });
+  
+    setLoaded(true)
+
+  }, [ setAppHistory, loaded ])
+  
+ 
+  const configRow = (conf) => Object.keys(conf).map(key => ({
+    field: key,
+    value: conf[key], 
+  }));
+
+  const runQuery = async (pg) => {
+
+    const f = await execQuery(configs[configName], sqlText, pg); 
+    setPage(pg);
+    setData(f); 
+  }
+
+  return <>
+  <Stack>
+    <Stack direction="row" sx={{alignItems: 'center'}}>
+
+      <QuickSelect options={Object.keys(configs)} 
+        onChange={setConfigName} label="connection" value={configName}/> 
+        <Button disabled={!sqlText} onClick={() => runQuery(1)} variant="contained">
+          Run
+        </Button>
+    </Stack>
+    {configs[configName] && <>
+      <TextField value={sqlText} fullWidth sx={{mt: 1, mb: 1}}
+        onChange={e => setSqlText(e.target.value)} 
+        label="SQL Query"
+        placeholder="Type or paste SQL code"
+        multiline rows={6}/>
+      </>}
+    {!!data?.rows && 
+    <ListGrid   
+      setPage={runQuery}
+      count={data?.count}
+      page={page}  
+      rows={data?.rows?.map(configRow)}  
+    />  }
+  </Stack>
+  </>
+}
 
 function QueryGrid () {
 
@@ -386,7 +449,7 @@ function TableGrid () {
   const configs = getConfigs();
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID)
 
-  const { Alert, Confirm, setAppHistory} = React.useContext(AppStateContext);
+  const { Alert, Confirm, setAppHistory } = React.useContext(AppStateContext);
   
 
   
@@ -749,6 +812,7 @@ function App() {
               <Route path="/connection/:connectionID" element={<ConnectionGrid  />} /> 
               <Route path="/table/:connectionID/:schema/:tablename" element={<TableGrid  />} /> 
               <Route path="/query/:connectionID/:schema/:tablename" element={<QueryGrid  />} /> 
+              <Route path="/sql" element={<QueryAnalyzer   />} /> 
               <Route path="/lists/:connectionID/:schema/:tablename/:listname" element={<QueryGrid   />} /> 
             </Routes>
           </Area>

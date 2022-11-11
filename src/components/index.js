@@ -2,7 +2,7 @@ import ConnectionModal from "./ConnectionModal/ConnectionModal";
 import MenuDrawer from "./MenuDrawer/MenuDrawer";
 import ToggleToolbar from "./ToggleToolbar/ToggleToolbar";
 import ListGrid from "./ListGrid/ListGrid";
-import QuerySettingsPanel, { QuickMenu } from "./QuerySettingsPanel/QuerySettingsPanel";
+import QuerySettingsPanel, { QuickMenu, QuickSelect } from "./QuerySettingsPanel/QuerySettingsPanel";
 
 import { Flex, Tooltag, Spacer, TextBtn, RotateButton, SearchBox } from './Control/Control';
 
@@ -17,6 +17,7 @@ export {
   RotateButton,
   SearchBox,
   QuickMenu,
+  QuickSelect,
   Flex, 
   Tooltag, 
   Spacer, 
