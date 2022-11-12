@@ -9,16 +9,17 @@ import {
 } from '@mui/material';
 import { QuickMenu, RotateButton, Tooltag } from '..';
 import { AppStateContext } from '../../hooks/AppStateContext';
-import { Sync, Save, Close, ExpandMore } from '@mui/icons-material';
+import { Sync, Save, Close, Menu, ExpandMore } from '@mui/icons-material';
 
 const Cell = styled('td')(({theme, header, odd, dense, active}) => ({ 
   padding: theme.spacing(dense ? 0.5 : 1, 2),
   backgroundColor: header ? 'rgb(240, 240, 240)' : `rgb(${odd ? 250 : 255}, 255, 255)`, 
   color: !active ? 'black' : 'blue',
-  textDecoration: !active ? 'none' : 'underline',
   cursor: !active ? 'default' : 'pointer',
-  whiteSpace: 'nowrap',
-  // borderRadius: 5
+  whiteSpace: 'nowrap', 
+  '&:hover': {
+    textDecoration: !active ? 'none' : 'underline',
+  }
 }));
   
 const Tiles = styled('table')(({theme}) => ({ 
@@ -85,7 +86,7 @@ function ListCell({
   const arrow = !ask ? <>&#9650;</> : <>&#9660;</>
 
   const content = !types 
-    ?  <CellText active={!!sortProp?.direction} clickable={type === 'header'} 
+    ?  <CellText active={!!action || !!sortProp?.direction} clickable={type === 'header'} 
         variant={type === 'header' ? 'subtitle2' : 'body2'}>
       {type === 'password' ? '********' : text} {sortable && arrow}
     </CellText>
@@ -166,7 +167,7 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
 export default function ListGrid({
   title, empty,  searchable, dense,
   searches, sorts, onClear, onSearch, 
-  commitRow, count = 0, page = 1, 
+  commitRow, count = 0, page = 1, menuItems,
   setPage, buttons, onSort, dropOrder,
   breadcrumbs, rows = []}) { 
   if (!rows?.length && !empty) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
@@ -192,9 +193,21 @@ export default function ListGrid({
 
   {!!title && <>
     <Stack direction="row" sx={{alignItems: 'center'}}>
+      {!!menuItems && <QuickMenu 
+        options={menuItems.map(p => p.title)} 
+        icons={menuItems.map(p => p.icon)} 
+        label={<IconButton><Menu /></IconButton> } onChange={key => { 
+          const { action } = menuItems.find(f => f.title === key); 
+          action && action()
+        }} />}
       <Typography variant="h6">{title}</Typography>
       <Box sx={{flexGrow: 1}} />
       {buttons?.map((button, i) => <Box key={i}>{button}</Box>)}
+      {menuItems?.map(({title, icon: Icon, action}, i) => <Box key={i}>
+        <Tooltag title={title} component={IconButton} onClick={action}>
+          <Icon />
+        </Tooltag>
+      </Box>)}
     </Stack>
     <Divider sx={{mb: 1}} />
  
@@ -206,7 +219,7 @@ export default function ListGrid({
       <Typography variant="caption">{desc}</Typography>
       </Stack>
       } 
-      
+
   {empty && <Box sx={{cursor: 'pointer'}} onClick={() => onClear && onClear()}>Query returned no results. <u>Click here to clear filter</u>.</Box>}
 
   {!empty && <Tiles cellSpacing="1">

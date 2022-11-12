@@ -85,7 +85,7 @@ const Modal = ({
  
        {/* modal injected component */}
        {!!Component && (
-         <Box  sx={{p: theme => theme.spacing(0, 2, 2, 2)}}>
+         <Box  sx={{p: theme => theme.spacing(1, 2, 2, 2)}}>
            <Component {...props} onChange={setModelState} />
          </Box>
        )}

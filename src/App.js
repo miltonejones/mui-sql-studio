@@ -8,8 +8,9 @@ import {
   useParams
 } from "react-router-dom";
 import './App.css';
+import './components/ListGrid/ListGrid.css';
 import Modal, { useModal } from './components/Modal/Modal';
-import { ToggleToolbar, ListGrid, RotateButton, ConnectionModal, Tooltag, QuickSelect, QuerySettingsPanel } from './components'
+import { ToggleToolbar, ListGrid, QueryTest, RotateButton, ConnectionModal, Tooltag, QuickSelect, QuerySettingsPanel } from './components'
 import { Alert, TextField, Box, Button, Collapse, Divider, IconButton, Stack, Typography, styled } from '@mui/material';
 import { useConfig } from './hooks/useConfig';
 import { useSaveQuery } from './hooks/useSaveQuery';
@@ -19,7 +20,7 @@ import { useQueryTransform } from './hooks/useQueryTransform';
 import { execQuery, describeConnection, describeTable } from './connector/dbConnector';
 import {Helmet} from "react-helmet";
 
-import { Add, ExpandMore, PlayArrow, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
+import { Add, ExpandMore, PlayArrow, Sync, Settings, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
  
 
 const formatConnectName = name => name.toLowerCase().replace(/\s/g, '_');
@@ -31,6 +32,16 @@ const EMPTY_CONFIGURATION = {
   groups: [],
   fields: []
 };
+
+const TextBox = styled(TextField)(({ theme }) => ({
+  marginTop: theme.spacing(1), 
+  marginBottom: theme.spacing(1),
+  '& .MuiInputBase-input': {
+    fontSize: '0.9rem',
+    lineHeight: 1.5,
+    fontFamily: 'Courier'
+  }
+}))
 
 function QueryAnalyzer () {
   const { schema, tablename, listname, connectionID } = useParams();
@@ -44,9 +55,10 @@ function QueryAnalyzer () {
   const [showQuery, setShowQuery] = React.useState(true)
   const [page, setPage] = React.useState(1)
   const [data, setData] = React.useState(null);
+  const [busy, setBusy] = React.useState(null);
   const { getConfigs  } = useConfig()
   const configs = getConfigs();
-  const { setAppHistory  } = React.useContext(AppStateContext);
+  const { setAppHistory, Alert  } = React.useContext(AppStateContext);
   const { getQueries } = useSaveQuery();
 
   React.useEffect(() => {
@@ -79,8 +91,10 @@ function QueryAnalyzer () {
   }));
 
   const runQuery = async (pg) => {
+    setBusy(true);  
     setData(null);  
     const f = await execQuery(configs[configName], sqlText, pg); 
+    setBusy(false);  
     setPage(pg);
     setData(f); 
   }
@@ -99,32 +113,47 @@ FROM ${name}`)
     setConfigName(name);
   }
 
+  const Icon = busy ? Sync : PlayArrow;
+
   return <>
   <Stack>
     
     <Stack direction="row" sx={{alignItems: 'center', mb: 1}}>
       <Box>
-      <QuickSelect options={Object.keys(configs)} 
-        onChange={setConfig} label="connections" value={configName}/> 
+        <QuickSelect options={Object.keys(configs)} 
+          onChange={setConfig} label="connections" value={configName}/> 
       </Box>
+
       {!!connect &&  <QuickSelect options={connect} 
         onChange={setTable} label="tables" value={tableName}/> }
-      <Button disabled={!sqlText} onClick={() => runQuery(1)} variant="contained"
-        color="warning" endIcon={<PlayArrow />}>
+
+      <Button disabled={busy || !sqlText} onClick={() => runQuery(1)} variant="contained"
+        color="warning" endIcon={<Icon className={busy ? 'spin' : ''} />}>
         Run
       </Button>
+
       <Box sx={{flexGrow: 1}} />
+       
+      <Tooltag title="Test Query" component={QueryTest} onResult={async(msg) => {
+        await Alert(`Query completed ${msg.error?'with errors':'successfully'} in ${msg.since}ms.`);
+        !!msg.error && Alert(`${msg.error.sqlMessage}`)
+      }} sx={{mr: 2}} sql={sqlText} config={configs[configName]} />
+
+      {!!data && <IconButton onClick={() => setData(null)}>
+        <Close />
+      </IconButton>}
+
       <RotateButton deg={showQuery ? 0 : 180} onClick={() => setShowQuery(!showQuery)}>
         <ExpandMore />
       </RotateButton>
     </Stack>
 
     {configs[configName] && <Collapse in={showQuery}>
-      <TextField value={sqlText} fullWidth sx={{mt: 1, mb: 1}}
+      <TextBox value={sqlText} fullWidth 
         onChange={e => setSqlText(e.target.value)} 
-        label="SQL Query"
+        
         placeholder="Type or paste SQL code"
-        multiline rows={!!data?.rows ? 5 : 0} />
+        multiline rows={!!data?.rows ? 8 : 0} />
       </Collapse>}
 
     {!!data?.error && <> 
@@ -427,17 +456,53 @@ function QueryGrid () {
   ] : [])
 
   const saveBtn = saveEnabled ? [
-  <Tooltag title="Delete List" component={IconButton} onClick={() => deletePage(configuration.title)}>
-    <Delete />
-  </Tooltag>,
-  <Tooltag title="Save List" component={IconButton} onClick={savePage}>
-    <Save />
-  </Tooltag>,
-  <Tooltag title="Open in Query Analyzer" component={IconButton} onClick={() => {
-    navigate(`/sql/${connectionID}/${schema}/${tablename}/${listname}`)
-  }}>
-    <Launch />
-  </Tooltag>] : []
+    <Tooltag title="Delete List" component={IconButton} onClick={() => deletePage(configuration.title)}>
+      <Delete />
+    </Tooltag>,
+    <Tooltag title="Save List" component={IconButton} onClick={savePage}>
+      <Save />
+    </Tooltag>,
+    <Tooltag title="Open in Query Analyzer" component={IconButton} onClick={() => {
+      navigate(`/sql/${connectionID}/${schema}/${tablename}/${listname}`)
+    }}>
+      <Launch />
+    </Tooltag>] : []
+
+const saveMenu = saveEnabled ? [
+  {
+    title: 'Delete List',
+    icon: Delete,
+    action: () => deletePage(configuration.title)
+  },
+  {
+    title: "Save List",
+    icon: Save,
+    action: () => savePage
+  },
+  {
+    title: 'Open in Query Analyzer',
+    icon: Launch,
+    action:  () => {
+      navigate(`/sql/${connectionID}/${schema}/${tablename}/${listname}`)
+    }
+  }, ] : []
+  
+  const menuItems = saveMenu.concat([
+    {
+      title: "Set list filters",
+      icon: FilterAlt,
+      action:  () => {
+        setEdit(!edit)
+      }
+    }, 
+    {
+      title: 'Close',
+      icon: Close,
+      action:  () => {
+        navigate(`/table/${connectionID}/${schema}/${tablename}`)
+      }
+    },   
+  ]);
 
   const buttons = saveBtn.concat([
     <Tooltag title="Set list filters" component={IconButton} onClick={() => { 
@@ -472,7 +537,7 @@ function QueryGrid () {
       setPage={loadPage}
       count={data?.count}
       page={page}
-      buttons={buttons} 
+      menuItems={menuItems} 
       title={`${tablename}`} 
       breadcrumbs={breadcrumbs} 
       rows={data?.rows?.map(row => configRow(row, data?.fields))} 
@@ -597,17 +662,27 @@ function TableGrid () {
     }
   ] 
 
-  const buttons = [
-    <IconButton onClick={() => navigate(`/query/${connectionID}/${schema}/${tablename}`)}>
-      <Launch />
-    </IconButton>,
-    <IconButton onClick={() => Alert('Add column not implemented')}>
-      <Add />
-    </IconButton>,
-    <IconButton onClick={() => navigate(`/connection/${connectionID}`)}>
-      <Close />
-    </IconButton>
-  ]
+  const saveMenu =  [
+    {
+      title: 'Open Table',
+      icon: Launch,
+      action:  () => {
+        navigate(`/query/${connectionID}/${schema}/${tablename}`)
+      }
+    },  
+    {
+      title: "Add Column",
+      icon: Add,
+      action: () => Alert('Add column not implemented')
+    },
+    {
+      title: 'Return to Connection',
+      icon: Close,
+      action:  () => {
+        navigate(`/connection/${connectionID}`)
+      }
+    }, ] 
+     
  
   React.useEffect(() => {
     if(loaded) return
@@ -623,7 +698,7 @@ function TableGrid () {
  
 
   return <> 
-  <ListGrid buttons={buttons} breadcrumbs={breadcrumbs} commitRow={commitRow} title={`Columns in "${tablename}"`} 
+  <ListGrid menuItems={saveMenu} breadcrumbs={breadcrumbs} commitRow={commitRow} title={`Columns in "${tablename}"`} 
       rows={data?.rows?.map(configRow)} />  
   </>
 
@@ -665,8 +740,9 @@ function ConnectionGrid () {
 
   const configRow = (conf) => [
     {
-      field: 'Open',
+      field: '',
       icon: <Launch />,
+      value: 'Open',
       action: () => navigate(`/query/${connectionID}/${configs[configKey].database}/${conf.TABLE_NAME}`)
     },
     {
@@ -706,15 +782,22 @@ function ConnectionGrid () {
     }
   ]
 
-  const buttons = [
-    <IconButton onClick={() => Alert('Add table not implemented')}>
-      <Add />
-    </IconButton>,
-    <IconButton onClick={() => navigate('/')}>
-      <Close />
-    </IconButton>
-  ]
-  return <ListGrid breadcrumbs={breadcrumbs} title={`Tables in "${configKey}"`} buttons={buttons} rows={data?.rows?.map(configRow)} /> 
+
+  const saveMenu =  [ 
+    {
+      title: "Add Table",
+      icon: Add,
+      action: () => Alert('Add table not implemented')
+    },
+    {
+      title: 'Return to Home',
+      icon: Close,
+      action:  () => {
+        navigate(`/`)
+      }
+    }, ] 
+      
+  return <ListGrid breadcrumbs={breadcrumbs} title={`Tables in "${configKey}"`} menuItems={saveMenu} rows={data?.rows?.map(configRow)} /> 
 
 }
 
@@ -744,6 +827,7 @@ function HomePage ({ pinned }) {
  
   const configRow = (conf) => [
     {
+      icon: <Launch />,
       field: 'title',
       value: conf.title,
       action: () => navigate(`/connection/${formatConnectName(conf.title)}`)
@@ -751,6 +835,8 @@ function HomePage ({ pinned }) {
     {
       field: 'host',
       value: conf.host, 
+      icon: <Settings />,
+      action: () => openConnectionModal(conf)
     },
     {
       field: 'user',
@@ -775,10 +861,10 @@ function HomePage ({ pinned }) {
   ];
 
 
-  const openConnectionModal = () => {
+  const openConnectionModal = (conf) => {
     setModalState({
       open: true,
-      connection: { title: 'New Connection', host: '', user: '', password: ''},
+      connection: conf || { title: 'New Connection', host: '', user: '', password: ''},
       onClose: async (c) => { 
         !!c && saveConfig(c)
         setModalState({ open: false })
@@ -788,19 +874,22 @@ function HomePage ({ pinned }) {
 
   
   const rows = Object.keys(configs).map(f => configRow({...configs[f], title: f}));
-  const buttons = [
-    <IconButton onClick={openConnectionModal}>
-      <Add />
-    </IconButton>
-  ]
+ 
 
+  const saveMenu =  [ 
+    {
+      title: "New Connection...",
+      icon: Add,
+      action: openConnectionModal
+    },  ] 
+      
   if (!rows.length) {
     return <Alert severity="warning">
       You do not have any connections created.  <Button size="small" endIcon={<Add />} variant="contained" onClick={openConnectionModal}>Click here</Button> to create one.
     </Alert>
   }
 
-  return <ListGrid breadcrumbs={breadcrumbs} title="Available Connections" buttons={buttons} rows={rows} />
+  return <ListGrid breadcrumbs={breadcrumbs} title="Available Connections" menuItems={saveMenu} rows={rows} />
 }
 
 const Area = styled(Box)(({ pinned }) => ({

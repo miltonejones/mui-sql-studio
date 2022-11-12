@@ -125,7 +125,7 @@ export const useQueryTransform = () => {
 
     const o = core.join(' ');
     return o;
-  }, [findAlias, decodeClause]);
+  }, [findAlias, decodeClause, collateTables]);
 
 
   return { decodeClause, collateTables, predicates, createTSQL, findAlias, findTable }

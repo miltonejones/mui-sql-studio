@@ -1,14 +1,19 @@
 import * as React from 'react';
-import { describeTable, connectToDb } from '../../connector/dbConnector';
+import { describeTable, connectToDb, execQuery } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
 import { Divider, Box, Breadcrumbs,Select, Autocomplete, Card,
   Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, 
   TextField, Stack, Button, ToggleButtonGroup, ToggleButton, 
   IconButton, Typography, styled } from '@mui/material';
-import { Add, UnfoldMore, Remove, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
+import { Add, UnfoldMore, Speed, Remove,  Sync, CheckCircle,
+  Error, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
 
 import { Tooltag, RotateButton, SearchBox  } from '..'
+import '../ListGrid/ListGrid.css';
+
+
+
 const QuerySettingsContext = React.createContext({});
 const uniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
@@ -30,7 +35,7 @@ const Pane = styled(Box)(({ theme }) => ({
   width: 320,
   height: 300, 
   overflow: 'auto', 
-  border: 'solid 1px gray',
+  border: 'solid 1px #d5d5d5',
   padding: theme.spacing(0.5), 
   borderRadius: 5
 }))
@@ -41,7 +46,7 @@ const Item = styled(Box)(({ theme, active }) => ({
   margin: theme.spacing(0.5, 0), 
   cursor: 'default', 
   fontWeight: active ? 600 : 400,
-  border: active ? 'solid 1px gray' : 'solid 1px white',
+  border: active ? 'solid 1px #d5d5d5' : 'solid 1px white',
   backgroundColor: active ? 'aliceblue' : ''
 }))
  
@@ -54,21 +59,20 @@ export default function QuerySettingsPanel({
     onCommit, 
     onCancel 
   }) {
+  const [exclusive, setExclusive] = React.useState(true) 
   const [loaded, setLoaded] = React.useState(false) ; 
   const [tableNames, setTableNames] = React.useState([]);
   const [showTableNames, setShowTableNames] = React.useState(false);
   const [showFieldNames, setShowFieldNames] = React.useState(false);
   const [orderMode, setOrderMode] = React.useState(false);
   const [showSQL, setShowSQL] = React.useState(false);
-  const { Prompt, Confirm, ExpressionModal } = React.useContext(AppStateContext);
+  const { Alert, Prompt, Confirm, ExpressionModal } = React.useContext(AppStateContext);
 
   const transformer = useQueryTransform()
 
   const findTable = name => transformer.findTable(configuration.tables, name);  
  
   const createTSQL = () => transformer.createTSQL(configuration); 
-
-
 
   const dropTable = React.useCallback(async(ID) => {
     const ok = await Confirm(`Remove table?`);
@@ -102,7 +106,7 @@ export default function QuerySettingsPanel({
             : f.tables.concat(table),
       }
     });
-  }, [config, setConfiguration]); 
+  }, [config, setConfiguration, configuration.tables]); 
 
   const updateTable = (table) =>
     setConfiguration((f) => ({
@@ -218,7 +222,6 @@ export default function QuerySettingsPanel({
   }; 
  
 
-  
   const openDb = async (s) => { 
     const res = await connectToDb(s);
     const tables = res.rows.map((f) => f[Object.keys(f)[0]]);
@@ -245,7 +248,7 @@ export default function QuerySettingsPanel({
   const clickOrderItem = o => {
     setConfiguration((f) => ({
       ...f,
-      columnMap: f.columnMap.map((c, i) => i === o ? {...c, clicked: !c.clicked} : c)
+      columnMap: f.columnMap.map((c, i) => i === o ? {...c, clicked: !c.clicked} : {...c, clicked: exclusive ? !1 : c.clicked})
     }));
   }
 
@@ -367,8 +370,7 @@ export default function QuerySettingsPanel({
   }
   
   const columns = configuration.tables.reduce(selectedColumns, []) 
-
-
+ 
   const handleChange = async (event) => {
     setShowSQL(event.target.checked); 
   };
@@ -386,6 +388,7 @@ export default function QuerySettingsPanel({
     dropTable,
     dropClause,
     dropOrderBy,
+    predicates: transformer.predicates,
     ...configuration
   }}>
   {!!breadcrumbs && <>
@@ -398,6 +401,11 @@ export default function QuerySettingsPanel({
   <Stack direction="row" sx={{alignItems: 'center'}}>
   <Typography variant="h6">Edit query for "{tablename}"</Typography>
       <Box sx={{flexGrow: 1}} />
+
+      <Tooltag title="Test Query" component={QueryTest} onResult={async(msg) => {
+        await Alert(`Query completed ${msg.error?'with errors':'successfully'} in ${msg.since}ms.`);
+        !!msg.error && Alert(`${msg.error.sqlMessage}`)
+      }} sx={{mr: 2}} sql={createTSQL()} config={config} />
 
     <Tooltag sx={{mr: 2}} color="warning" component={IconButton}  title="Run" onClick={() => onCommit && onCommit(createTSQL())}
       >
@@ -432,7 +440,7 @@ export default function QuerySettingsPanel({
       </Tooltag>
     ]}
     actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
-   SELECT
+   {orderMode ? "Set field order" : "SELECT"}
   </SectionHeader> }
     
   <Collapse in={!showSQL}>
@@ -447,187 +455,150 @@ export default function QuerySettingsPanel({
           }}>{f.name}</AU></>)}
       </Box>
     </Collapse>
-   
+    
 
-    <Collapse in={orderMode}>
-      <Stack direction="row" sx={{alignItems: 'center'}}>
-        <Pane>
-          {configuration.columnMap?.map((item, i) => <Item 
-              key={i} 
-              active={item.clicked}
-              onClick={() => clickOrderItem(i)}
-            >
-            {item.objectalias}.{item.name} <i>as {item.alias}</i>
-          </Item>)}
-        </Pane>
-        <Stack>
-          <RotateButton deg={180} onClick={() => sortOrderItem(-1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
-          <RotateButton deg={0} onClick={() => sortOrderItem(1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
-        </Stack>
-      </Stack>
-      {/* {JSON.stringify(configuration.columnMap)} */}
-    </Collapse>
+  <Collapse in={orderMode}>
+        <Stack direction="row" sx={{alignItems: 'center'}}>
+          <Card sx={{p: 2}}> 
+            <Pane sx={{mb: 1}}>
+              {configuration.columnMap?.map((item, i) => <Item 
+                  key={i} 
+                  active={item.clicked}
+                  onClick={() => clickOrderItem(i)}
+                >
+                {item.objectalias}.{item.name} <i>as {item.alias}</i>
+              </Item>)}
+            </Pane>
+            <FormControlLabel control={<Switch 
+              checked={exclusive}
+              onChange={e => setExclusive(e.target.checked)}
+            />} label="Exclusive" />
+          </Card>
+          <Stack>
+            <RotateButton deg={180} onClick={() => sortOrderItem(-1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
+            <RotateButton deg={0} onClick={() => sortOrderItem(1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
+          </Stack>
+        </Stack> 
+      </Collapse>
 
-    <Collapse in={showFieldNames}>
+      <Collapse in={showFieldNames}>
 
-      {!!columns.length && <>
-        <Typography variant="caption">Available fields</Typography>
-        <Box>
-        {columnList(z => !z.selected, !0, !0)}
+        {!!columns.length && <>
+          <Typography variant="caption">Available fields</Typography>
+          <Box>
+          {columnList(z => !z.selected, !0, !0)}
+          </Box>
+        </>}
+
+        <Button endIcon={<Add />} size="small" variant="outlined"  
+          onClick={async () => {
+            const b = await ExpressionModal({})
+            if (!b) return; 
+            addExpression(b)
+          }}
+          sx={{mr: 1, mt: 1}}
+          >add expression</Button>
+      
+      </Collapse> 
+
+      <SectionHeader expanded={showTableNames}
+        actionText="Add tables" onAdd={() => setShowTableNames(!showTableNames)}>
+        FROM
+      </SectionHeader>
+  
+
+      <Stack>
+        
+        <Box sx={{mb: 1}}>
+          {configuration.tables.map((t, k) => <TableItem first={k === 0} comma={k < (configuration.tables.length - 1)} key={t.name} table={t} addTable={addTable} setTableAlias={setTableAlias}/>)}
         </Box>
+
+        <Collapse in={showTableNames}>
+          <>
+          
+            <Typography variant="caption">Available tables</Typography>
+
+            <Box>
+              {tableNames.filter(t => !configuration.tables.find(c => c.name === t)).map(tname => <>
+                <AU onClick={() => addTable(tname)}>{tname}</AU>, {" "}
+              </>)}
+            </Box>
+          </>
+        </Collapse>
+
+
+      </Stack>
+      
+
+      <SectionHeader disabled={configuration.wheres.length}  inactive={!configuration.wheres.length}
+        actionText="Add where clause" onAdd={() => newClause({index: uniqueId()})}>
+        WHERE
+      </SectionHeader> 
+
+      {configuration.wheres.map((where) => <WhereItem key={where.index} {...where} />)}
+
+      {!!configuration.wheres.length && <>
+        <Button endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</Button>
+        <Button endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</Button>
       </>}
 
-      <Button endIcon={<Add />} size="small" variant="outlined"  
-        onClick={async () => {
-          const b = await ExpressionModal({})
-          if (!b) return; 
-          addExpression(b)
-        }}
-        sx={{mr: 1, mt: 1}}
-        >add expression</Button>
-     
-    </Collapse> 
-
-    <SectionHeader expanded={showTableNames}
-      actionText="Add tables" onAdd={() => setShowTableNames(!showTableNames)}>
-      FROM
-    </SectionHeader>
- 
-
-    <Stack>
-      
-      <Box sx={{mb: 1}}>
-        {configuration.tables.map((t, k) => <TableItem first={k === 0} comma={k < (configuration.tables.length - 1)} key={t.name} table={t} addTable={addTable} setTableAlias={setTableAlias}/>)}
-      </Box>
-
-      <Collapse in={showTableNames}>
-        <>
+      <Collapse in={configuration.orders.filter(f => !!f.fieldName).length}>
         
-          <Typography variant="caption">Available tables</Typography>
 
-          <Box>
-            {tableNames.filter(t => !configuration.tables.find(c => c.name === t)).map(tname => <>
-              <AU onClick={() => addTable(tname)}>{tname}</AU>, {" "}
-            </>)}
-          </Box>
-        </>
+        <SectionHeader inactive={!configuration.groups.length} actionText="Add group by" onAdd={() => newGroup({index: uniqueId()})}>
+          GROUP BY
+        </SectionHeader> 
+
+
+        {configuration.groups.map((group) => <GroupItem key={group.index} {...group} />)}
+
+
       </Collapse>
 
 
-    </Stack>
-    
-
-    <SectionHeader disabled={configuration.wheres.length}  inactive={!configuration.wheres.length}
-      actionText="Add where clause" onAdd={() => newClause({index: uniqueId()})}>
-      WHERE
-    </SectionHeader> 
-
-    {configuration.wheres.map((where) => <WhereItem key={where.index} {...where} />)}
-
-    {!!configuration.wheres.length && <>
-      <Button endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</Button>
-      <Button endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</Button>
-    </>}
-
-    <Collapse in={configuration.orders.filter(f => !!f.fieldName).length}>
-      
-
-      <SectionHeader inactive={!configuration.groups.length} actionText="Add group by" onAdd={() => newGroup({index: uniqueId()})}>
-        GROUP BY
+      <SectionHeader inactive={!configuration.orders.length} actionText="Add order by" onAdd={() => newSort({index: uniqueId(), direction: 'ASC'})}>
+        ORDER BY
       </SectionHeader> 
+  
 
 
-      {configuration.groups.map((group) => <GroupItem key={group.index} {...group} />)}
+      {configuration.orders.map((order) => <OrderItem key={order.index} {...order} />)}
 
-
-    </Collapse>
-
-
-    <SectionHeader inactive={!configuration.orders.length} actionText="Add order by" onAdd={() => newSort({index: uniqueId(), direction: 'ASC'})}>
-      ORDER BY
-    </SectionHeader> 
  
+      <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
 
+      <Stack direction="row" sx={{alignItems: 'center'}}>
+        <Box  sx={{flexGrow: 1}}/>
 
-    {configuration.orders.map((order) => <OrderItem key={order.index} {...order} />)}
+        <Button size="small" sx={{mr: 1}} endIcon={ <Close />} onClick={() => onCancel && onCancel()}
+          variant="outlined">
+        close
+        </Button>
+      {!!onCommit && <Button color="warning" onClick={() => onCommit(createTSQL())} variant="contained"
+        size="small" endIcon={<PlayArrow />}
+      >run</Button>}
 
-
-{/* footer  */}
-    <Divider  sx={{m: theme => theme.spacing(1, 0)}}/>
-
-    <Stack direction="row" sx={{alignItems: 'center'}}>
-      <Box  sx={{flexGrow: 1}}/>
-
-      <Button size="small" sx={{mr: 1}} endIcon={ <Close />} onClick={() => onCancel && onCancel()}
-       variant="outlined">
-     close
-    </Button>
-    {!!onCommit && <Button color="warning" onClick={() => onCommit(createTSQL())} variant="contained"
-      size="small" endIcon={<PlayArrow />}
-    >run</Button>}
-
-</Stack>
+    </Stack>
 
   </Collapse>
   
 
   <Collapse in={showSQL}>
-
-  {/* <Divider  sx={{m: theme => theme.spacing(1, 0)}}/> */}
-  <Card sx={{p: 2, maxWidth: 400 }}>
+ 
+    <Card sx={{ p: 2, maxWidth: 400 }}>
       <Typography><b>SQL Code</b></Typography>
       <Divider />
-  <pre>
-    {createTSQL()}
-    </pre>
-
-  </Card>
+      <pre>
+        {createTSQL()}
+      </pre>
+    </Card>
 
   </Collapse>
 
 
   </QuerySettingsContext.Provider>
 }
-
-const predicates = [
-  {
-    name: 'EQUALS', 
-    transform: (s) => `= '${s}'`
-  },
-  {
-    name: 'DOES NOT EQUAL' , 
-    transform: (s) => `<> '${s}'`
-  },
-  {
-    name: 'IS GREATER THAN' , 
-    transform: (s) => `> ${s}`
-  },
-  {
-    name: 'IS LESS THAN' , 
-    transform: (s) => `< ${s}`
-  },
-  {
-    name: 'CONTAINS' , 
-    transform: (s) => `LIKE '%${s}%'`
-  },
-  {
-    name: 'STARTS WITH' , 
-    transform: (s) => `LIKE '${s}%'`
-  },
-  {
-    name: 'ENDS WITH' , 
-    transform: (s) => `LIKE '%${s}'`
-  },
-  {
-    name: 'IS NULL' , 
-    transform: (s) => `IS NULL`
-  },
-  {
-    name: 'IS NOT NULL' , 
-    transform: (s) => `IS NOT NULL`
-  },
-]
-
+ 
 function SectionHeader({ children, inactive, blank, actionText, expanded, buttons = [], disabled, onAdd}) {
 
   const sx = inactive 
@@ -691,7 +662,6 @@ function GroupItem ({ index }) {
 
 }
 
-
 function OrderItem ({ index }) {
   const { tables, orders, addOrderBy, dropOrderBy } = React.useContext(QuerySettingsContext);
 
@@ -751,7 +721,7 @@ function selectedColumns(columns, table) {
 }
 
 function WhereItem ({ index }) {
-  const { tables, wheres, addClause, dropClause } = React.useContext(QuerySettingsContext);
+  const { tables, wheres, addClause, dropClause, predicates } = React.useContext(QuerySettingsContext);
 
  
   const handleClose = (clausecol) => {  
@@ -839,7 +809,7 @@ export const QuickSelect = ({
 }
 
 
-export const QuickMenu = ({ label, error, value: selected, options, onChange }) => {
+export const QuickMenu = ({ label, error, value: selected, icons = [], options, onChange }) => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -847,8 +817,8 @@ export const QuickMenu = ({ label, error, value: selected, options, onChange }) 
     setAnchorEl(event.currentTarget);
   };
   const handleClose = (value) => {  
-    onChange && onChange(value)
     setAnchorEl(null);
+    onChange && onChange(value)
   };
   // const arrow = open ? <>&#9650;</> : <>&#9660;</>
   return <>
@@ -859,8 +829,11 @@ export const QuickMenu = ({ label, error, value: selected, options, onChange }) 
     open={open}
     onClose={() => handleClose()} 
   > 
-    {options?.map (option => <MenuItem key={option} onClick={() => handleClose(option)}
-    >{selected === option && <>&bull;{" "}</>}{option}</MenuItem>)} 
+    {options?.map ((option, index) => {
+      const Icon = icons[index];
+      return <MenuItem key={option} onClick={() => handleClose(option)}
+      >{!!Icon && <><Icon sx={{mr: 1}} /></>}{selected === option && <>&bull;{" "}</>}{option}</MenuItem>
+    })} 
   </Menu>
   </>
 
@@ -959,4 +932,45 @@ function TableMenu ({ tablename, name, fieldname }) {
         {tables?.map (table => <MenuItem key={table.name} onClick={() => handleClose(table.name)}>{table.name}</MenuItem>)} 
       </Menu>
   </>;
+}
+
+export const QueryTest = ({ config, sql, onResult, ...props }) => {
+  const [state, setState] = React.useState(0)
+  const run = async () => {
+    setState(1);
+    const now = new Date().getTime()
+    const f = await execQuery(config, sql); 
+    const since = new Date().getTime() - now;
+
+    onResult && onResult ({
+      since,
+      error: f?.error
+    })
+
+    setState(!f || f.error ? 2 : 3);
+
+    setTimeout(() => {
+      setState(0)
+    }, 2999)
+  }
+
+  const hues = [
+    'primary',
+    'warning',
+    'error',
+    'success'
+  ]
+
+  const icons = [
+    Speed,
+    Sync,
+    Error,
+    CheckCircle
+  ];
+
+  const Icon = icons[state];
+
+  return <IconButton color={hues[state]} {...props} onClick={run}>
+    <Icon className={state === 1 ? 'spin' : ''} />
+  </IconButton>
 }

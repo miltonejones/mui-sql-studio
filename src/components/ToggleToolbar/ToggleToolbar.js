@@ -37,7 +37,7 @@ export default function ToggleToolbar({
     setModalState
   }) {
   const navigate = (href) => window.location.replace(href); // useNavigate();
-  const { getConfigs, saveConfig  } = useConfig()
+  const { getConfigs  } = useConfig()
   const configs = getConfigs();
   const { getQueries } = useSaveQuery();
 
@@ -73,7 +73,7 @@ export default function ToggleToolbar({
 
         {
           title: 'Connections',
-          descendants:  Object.keys(configs).map(title => ({
+          descendants: Object.keys(configs).map(title => ({
             title,
             active: current?.title?.indexOf(title) > -1,
             action: () => navigate(`/connection/${formatConnectName(title)}`)
@@ -81,19 +81,19 @@ export default function ToggleToolbar({
         }, 
 
 
-        {
-          title: 'New Connection...',
-          action: () => {
-            setModalState({
-              open: true,
-              connection: { title: 'New Connection', host: '', user: '', password: ''},
-              onClose: async (c) => { 
-                !!c && saveConfig(c)
-                setModalState({ open: false })
-              }
-            })
-          }
-        },
+        // {
+        //   title: 'New Connection...',
+        //   action: () => {
+        //     setModalState({
+        //       open: true,
+        //       connection: { title: 'New Connection', host: '', user: '', password: ''},
+        //       onClose: async (c) => { 
+        //         !!c && saveConfig(c)
+        //         setModalState({ open: false })
+        //       }
+        //     })
+        //   }
+        // },
         
 
         {

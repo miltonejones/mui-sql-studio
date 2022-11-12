@@ -95,7 +95,7 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
      
 
     </Grid>
-   {!!isValid() && <Grid xs={7} item>
+   {!!isValid() && <Grid sx={{alignItems: 'center'}} xs={7} item>
       {!!db.length ? <Select value={connection.database} 
         disabled={!checked} size="small" fullWidth >
         {db.map(d => <MenuItem
