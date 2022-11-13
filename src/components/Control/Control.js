@@ -22,7 +22,7 @@ export const Tooltag = ({
  children,
  ...props
 }) => (
- <Tooltip arrow title={title}>
+ <Tooltip  placement="left-start" arrow title={title}>
    <Component {...props}>{children}</Component>
  </Tooltip>
 );

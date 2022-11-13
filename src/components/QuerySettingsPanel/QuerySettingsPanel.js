@@ -203,15 +203,41 @@ export default function QuerySettingsPanel({
         col.alias
       );
       if (!alias) return;
-      Object.assign(col, { alias });
-      setConfiguration((f) => ({
-        ...f,
-        columnMap: f.columnMap?.map(c => c.name === col.name && c.objectname === table.name 
-          ? ({...c, alias})
-          : c)
-      }));
+      assignColumnAlias(name, field, alias);
     });
   };
+
+  const assignColumnAlias = (name, field, alias) => {
+    editColumn(name, field, async (col, table) => { 
+      Object.assign(col, { alias });
+      clearConfig(columnMap => {
+        setConfiguration((f) => ({
+          ...f,
+          columnMap: columnMap?.map(
+            c => c.name === col.name && c.objectname === table.name 
+              ? ({...c, alias})
+              : c
+          )
+        }));
+      })
+    });
+  }
+
+  const assignColumnType = (name, field, type) => {
+    editColumn(name, field, async (col, table) => { 
+      Object.assign(col, { type });
+      clearConfig(columnMap => {
+        setConfiguration((f) => ({
+          ...f,
+          columnMap: columnMap?.map(
+            c => c.name === col.name && c.objectname === table.name 
+              ? ({...c, type})
+              : c
+          )
+        }));
+      })
+    });
+  }
 
   const setTableJoin = (name, field, value) => {
     editTable(name, (table) => {
@@ -468,7 +494,7 @@ export default function QuerySettingsPanel({
       </Tooltag>
     ]}
     actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
-   {orderMode ? "Set field order" : "SELECT"}
+   {orderMode ? "Order fields" : "SELECT"}
   </SectionHeader> }
     
   <Collapse in={!showSQL}>
@@ -487,11 +513,7 @@ export default function QuerySettingsPanel({
 
     <Collapse in={orderMode}>
         <Stack direction="row" sx={{alignItems: 'center'}}>
-          <Stack>
-            <RotateButton deg={180} onClick={() => sortOrderItem(-1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
-            <RotateButton deg={0} onClick={() => sortOrderItem(1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
-          </Stack>
-          <Box sx={{p: 2}}> 
+          <Box sx={{p: 0}}> 
             {/* <Pane sx={{mb: 1}}>
               {configuration.columnMap?.map((item, i) => <Item 
                   key={i} 
@@ -501,9 +523,27 @@ export default function QuerySettingsPanel({
                 {item.objectalias}.{item.name} <i>as {item.alias}</i>
               </Item>)}
             </Pane> */}
-            <ColumnSettingsGrid onSelect={clickOrderItem} columns={configuration.columnMap} />
+            <ColumnSettingsGrid onChange={(key, val, index) => {
+            
+                  const { objectname, name } = configuration.columnMap[index];
+              switch (key) {
+                case "Label": 
+                  assignColumnAlias(objectname, name, val) 
+                  break;
+                case "Type":
+                  assignColumnType(objectname, name, val) 
+                  break;
+                default:
+                  // do nothing
+              }
+              // alert (JSON.stringify({key, val}))
+            }} onSelect={clickOrderItem} columns={configuration.columnMap} />
 
           </Box>
+          <Stack>
+            <RotateButton deg={180} onClick={() => sortOrderItem(-1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
+            <RotateButton deg={0} onClick={() => sortOrderItem(1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
+          </Stack>
         </Stack> 
         <FormControlLabel control={<Switch 
           checked={exclusive}

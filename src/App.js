@@ -451,7 +451,7 @@ const saveMenu = saveEnabled ? [
   {
     title: "Save List",
     icon: Save,
-    action: () => savePage
+    action: savePage
   },
   {
     title: 'Open in Query Analyzer',
@@ -496,6 +496,7 @@ const saveMenu = saveEnabled ? [
       dropOrder={dropOrder}
       sorts={configuration.orders}
       searches={configuration.wheres}
+      columns={configuration.columnMap}
       searchable={saveEnabled}
       setPage={loadPage}
       count={data?.count}
