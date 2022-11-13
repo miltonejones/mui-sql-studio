@@ -2,7 +2,7 @@ import * as React from 'react';
 import Button from '@mui/material/Button';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import Logo, { LogoURL } from './components/Logo/Logo';
+import Logo from './components/Logo/Logo';
 import Panel from './components/Panel/Panel';
 import { RotateButton } from '..';
 import { InputAdornment, Box, Stack, Collapse, IconButton, TextField, Typography, styled} from '@mui/material'; 
@@ -113,7 +113,7 @@ export default function MenuDrawer({
             <FilterBox white={pinned} size="small" label="Filter" value={filterText} autoComplete="off"
               onChange={e => setFilterText(e.target.value)} 
               InputProps={adornment}/>
-            <RotateButton color="inherit" onClick={() => setPinnedTab(pinnedTab === label ? null : label)} deg={pinned ? 45 : 0}>
+            <RotateButton color="inherit" onClick={() => setPinnedTab(pinnedTab === label ? '' : label)} deg={pinned ? 45 : 0}>
               <PushPin />
             </RotateButton>
           </Stack> 

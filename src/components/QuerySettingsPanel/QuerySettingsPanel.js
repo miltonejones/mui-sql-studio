@@ -2,14 +2,15 @@ import * as React from 'react';
 import { describeTable, connectToDb, execQuery } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
-import { Divider, Box, Breadcrumbs,Select, Autocomplete, Card,
+import { Divider, Box, Breadcrumbs,  Autocomplete, Card,
   Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, 
   TextField, Stack, Button, ToggleButtonGroup, ToggleButton, 
   IconButton, Typography, styled } from '@mui/material';
 import { Add, UnfoldMore, Speed, Remove,  Sync, CheckCircle,
-  Error, Delete, ExpandMore, PlayArrow, ArrowBack, ArrowForward, Close } from '@mui/icons-material';
+  Error, Delete, ExpandMore, PlayArrow, Close } from '@mui/icons-material';
 
-import { Tooltag, RotateButton, SearchBox  } from '..'
+import { ColumnSettingsGrid } from './components'
+import { Tooltag, RotateButton  } from '..'
 import '../ListGrid/ListGrid.css';
 
 
@@ -84,12 +85,11 @@ export default function QuerySettingsPanel({
   }, [Confirm, setConfiguration])
 
   const addTable = React.useCallback(async (name, loading) => {
-    const { rows } = await describeTable(config, name);
-    const maxIndex = configuration.tables.reduce(columnIndex, 0) || 0;
+    const { rows } = await describeTable(config, name);  
     const columns = rows.map((col, i) => ({
       name: col.COLUMN_NAME,
-      alias: col.COLUMN_NAME ,
-      index: i + maxIndex + 1
+      alias: col.COLUMN_NAME , 
+      ...col
     }));
     const table = { ID: uniqueId(), name, alias: name, columns };
 
@@ -106,7 +106,7 @@ export default function QuerySettingsPanel({
             : f.tables.concat(table),
       }
     });
-  }, [config, setConfiguration, configuration.tables]); 
+  }, [config, setConfiguration]); 
 
   const updateTable = (table) =>
     setConfiguration((f) => ({
@@ -245,16 +245,9 @@ export default function QuerySettingsPanel({
     setOrderMode(!orderMode);
   }
 
-  const clickOrderItem = o => {
-    setConfiguration((f) => ({
-      ...f,
-      columnMap: f.columnMap.map((c, i) => i === o ? {...c, clicked: !c.clicked} : {...c, clicked: exclusive ? !1 : c.clicked})
-    }));
-  }
-
 
   function arraymove(arr, fromIndex, toIndex) {
-    if (toIndex > -1 && toIndex < arr.length) {
+    if (toIndex > -1) {
       var element = arr[fromIndex];
       arr.splice(fromIndex, 1);
       arr.splice(toIndex, 0, element);
@@ -275,18 +268,37 @@ export default function QuerySettingsPanel({
     }));
   }
 
-
-  const sortOrderItem = (offset) => {
+  const clearConfig = (fn) => {
     const { columnMap } = configuration; 
-    const clicked = columnMap.filter(f =>  f.clicked);
-    clicked.map(node => {
-      const ordinal = columnMap.indexOf(node);
-      arraymove(columnMap, ordinal, ordinal + offset); 
-    })
     setConfiguration((f) => ({
       ...f,
-      columnMap 
+      columnMap : []
     }));
+    setTimeout(() => fn(columnMap), 9)
+  }
+
+  const clickOrderItem = o => {
+    clearConfig((columnMap) => {
+      setConfiguration((f) => ({
+        ...f,
+        columnMap: columnMap.map((c, i) => i === o ? {...c, clicked: !c.clicked} : {...c, clicked: exclusive ? !1 : c.clicked})
+      }));
+    }) 
+  }
+
+
+  const sortOrderItem = (offset) => {
+    clearConfig((columnMap) => {
+      const clicked = columnMap.filter(f =>  f.clicked);
+      clicked.map(node => {
+        const ordinal = columnMap.indexOf(node);
+        return arraymove(columnMap, ordinal, ordinal + offset); 
+      })
+      setConfiguration((f) => ({
+        ...f,
+        columnMap 
+      }));
+    }) 
   }
 
   const collateTables = (filter, passThru) => transformer.collateTables(configuration, filter, passThru); 
@@ -301,7 +313,7 @@ export default function QuerySettingsPanel({
       const { objectname, objectalias, name, alias, selected } = column;
       const last = i === (collated.length - 1)
 
-      p.push(<>
+      return p.push(<>
         {objectalias}.<Tooltag component={AU}
           title={passThru ? "Add to column list" : "Remove from column list"}
           active={selected} 
@@ -370,15 +382,31 @@ export default function QuerySettingsPanel({
   }
   
   const columns = configuration.tables.reduce(selectedColumns, []) 
- 
-  const handleChange = async (event) => {
-    setShowSQL(event.target.checked); 
-  };
+  
 
   if (!tablename) {
     return <>No table was entered.</>
   }
-
+/**
+ * 
+ * {
+ * 
+ * "COLUMN_NAME":"trackTime",
+ * "TABLE_NAME":null,
+ * "CONSTRAINT_NAME":null,
+ * 
+ * name,
+ * alias,
+ * "IS_NULLABLE":"YES",
+ * "COLUMN_DEFAULT":null,
+ * "COLUMN_TYPE":"int(11)", <-- type, size
+ * 
+ * "REFERENCED_TABLE_NAME":null,
+ * "REFERENCED_COLUMN_NAME":null
+ * 
+ * }]
+ * 
+ */
   return <QuerySettingsContext.Provider value={{
     setTableJoin,
     addClause,
@@ -457,10 +485,14 @@ export default function QuerySettingsPanel({
     </Collapse>
     
 
-  <Collapse in={orderMode}>
+    <Collapse in={orderMode}>
         <Stack direction="row" sx={{alignItems: 'center'}}>
-          <Card sx={{p: 2}}> 
-            <Pane sx={{mb: 1}}>
+          <Stack>
+            <RotateButton deg={180} onClick={() => sortOrderItem(-1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
+            <RotateButton deg={0} onClick={() => sortOrderItem(1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
+          </Stack>
+          <Box sx={{p: 2}}> 
+            {/* <Pane sx={{mb: 1}}>
               {configuration.columnMap?.map((item, i) => <Item 
                   key={i} 
                   active={item.clicked}
@@ -468,17 +500,16 @@ export default function QuerySettingsPanel({
                 >
                 {item.objectalias}.{item.name} <i>as {item.alias}</i>
               </Item>)}
-            </Pane>
-            <FormControlLabel control={<Switch 
-              checked={exclusive}
-              onChange={e => setExclusive(e.target.checked)}
-            />} label="Exclusive" />
-          </Card>
-          <Stack>
-            <RotateButton deg={180} onClick={() => sortOrderItem(-1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
-            <RotateButton deg={0} onClick={() => sortOrderItem(1)} variant="outlined" sx={{m: .5}}><ExpandMore /></RotateButton>
-          </Stack>
+            </Pane> */}
+            <ColumnSettingsGrid onSelect={clickOrderItem} columns={configuration.columnMap} />
+
+          </Box>
         </Stack> 
+        <FormControlLabel control={<Switch 
+          checked={exclusive}
+          onChange={e => setExclusive(e.target.checked)}
+        />} label="Exclusive" />
+
       </Collapse>
 
       <Collapse in={showFieldNames}>
@@ -625,7 +656,7 @@ function SectionHeader({ children, inactive, blank, actionText, expanded, button
  
 
 function GroupItem ({ index }) {
-  const { tables, groups, orders, addGroupBy, dropGroupBy } = React.useContext(QuerySettingsContext);
+  const {  groups, orders, addGroupBy, dropGroupBy } = React.useContext(QuerySettingsContext);
 
 
   const thisGroupBy = groups.find(w => w.index === index);
@@ -704,12 +735,7 @@ function OrderItem ({ index }) {
 
 
 }
-
-function columnIndex(total, table) { 
-  table.columns.map(col => total = Math.max(total, col.index || 1));
-  return total
-}
-
+ 
 function collateColumns(columns, table) {
   table.columns.map(col => columns.push(`${table.alias}.${col.name}`))
   return columns

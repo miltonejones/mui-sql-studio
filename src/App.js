@@ -44,8 +44,7 @@ const TextBox = styled(TextField)(({ theme }) => ({
 }))
 
 function QueryAnalyzer () {
-  const { schema, tablename, listname, connectionID } = useParams();
-  const { createTSQL } = useQueryTransform()
+  const { listname, connectionID } = useParams(); 
 
   const [loaded, setLoaded] = React.useState(false) ;
   const [configName, setConfigName] = React.useState(null)
@@ -61,6 +60,13 @@ function QueryAnalyzer () {
   const { setAppHistory, Alert  } = React.useContext(AppStateContext);
   const { getQueries } = useSaveQuery();
 
+
+  const setConfig = React.useCallback(async (name) => {
+    const f = await describeConnection(configs[name]);
+    setConnect(f?.rows.map(r => r.TABLE_NAME));
+    setConfigName(name);
+  }, [configs])
+
   React.useEffect(() => {
    
     if (loaded) return;
@@ -74,7 +80,7 @@ function QueryAnalyzer () {
       setTableName(lists[title].tablename) 
     }
   
-
+    
     setAppHistory({
       title: `Home | Query Analyzer`,
       path: `/sql` 
@@ -82,7 +88,7 @@ function QueryAnalyzer () {
   
     setLoaded(true)
 
-  }, [ setAppHistory, loaded ])
+  }, [ setAppHistory, loaded, configs, connectionID, getQueries, listname, setConfig ])
   
  
   const configRow = (conf) => Object.keys(conf).map(key => ({
@@ -105,12 +111,6 @@ function QueryAnalyzer () {
     setSqlText(`SELECT ${cols} 
 FROM ${name}`)
     setTableName(name)
-  }
-
-  const setConfig = async (name) => {
-    const f = await describeConnection(configs[name]);
-    setConnect(f?.rows.map(r => r.TABLE_NAME));
-    setConfigName(name);
   }
 
   const Icon = busy ? Sync : PlayArrow;
@@ -137,7 +137,7 @@ FROM ${name}`)
       <Tooltag title="Test Query" component={QueryTest} onResult={async(msg) => {
         await Alert(`Query completed ${msg.error?'with errors':'successfully'} in ${msg.since}ms.`);
         !!msg.error && Alert(`${msg.error.sqlMessage}`)
-      }} sx={{mr: 2}} sql={sqlText} config={configs[configName]} />
+      }}   sql={sqlText} config={configs[configName]} />
 
       {!!data && <IconButton onClick={() => setData(null)}>
         <Close />
@@ -168,8 +168,7 @@ FROM ${name}`)
       </Divider>
       <ListGrid   
         count={data?.count}
-        setPage={runQuery}
-        count={data?.count}
+        setPage={runQuery} 
         page={page}  
         rows={data?.rows?.map(configRow)}  
       />
@@ -284,20 +283,7 @@ function QueryGrid () {
     if (!!listname) {
       const lists = getQueries();
       const title = Object.keys(lists).find(f => formatConnectName(f) === listname);
-      const conf = lists[title];
-      let i = 0;
-      const fixed = {
-        ...conf,
-        tables: conf.tables.map(t => {
-          t.columns = t.columns.map(c => {
-            if (c.selected) {
-              c.index = i++;
-            }
-            return c;
-          })
-          return t;
-        })
-      }
+      const conf = lists[title]; 
  
       setConfiguration({
         title,
@@ -330,6 +316,7 @@ function QueryGrid () {
       if (col) {
         name = `${t.name}.${col.name}`
       }
+      return t;
     });
     return name;
   }
@@ -454,20 +441,7 @@ function QueryGrid () {
       text: queryDesc
     }
   ] : [])
-
-  const saveBtn = saveEnabled ? [
-    <Tooltag title="Delete List" component={IconButton} onClick={() => deletePage(configuration.title)}>
-      <Delete />
-    </Tooltag>,
-    <Tooltag title="Save List" component={IconButton} onClick={savePage}>
-      <Save />
-    </Tooltag>,
-    <Tooltag title="Open in Query Analyzer" component={IconButton} onClick={() => {
-      navigate(`/sql/${connectionID}/${schema}/${tablename}/${listname}`)
-    }}>
-      <Launch />
-    </Tooltag>] : []
-
+ 
 const saveMenu = saveEnabled ? [
   {
     title: 'Delete List',
@@ -503,18 +477,7 @@ const saveMenu = saveEnabled ? [
       }
     },   
   ]);
-
-  const buttons = saveBtn.concat([
-    <Tooltag title="Set list filters" component={IconButton} onClick={() => { 
-      setEdit(!edit)
-    }}>
-      <FilterAlt />
-    </Tooltag>, 
-    <Tooltag  title="Close" component={IconButton} onClick={() => navigate(`/table/${connectionID}/${schema}/${tablename}`)}>
-      <Close />
-    </Tooltag>, 
-  ]);
-
+ 
 
   return <> 
 
@@ -923,8 +886,12 @@ function App() {
   const props = useAppHistory(); 
   const { current } = props;
 
-  const [pinnedTab, setPinnedTab] = React.useState('');
-  const pinned = !!pinnedTab;
+  const [pinnedTab, setPinnedTab] = React.useState(localStorage.getItem('pinned-tab')); 
+
+  const pinTab = tab => { 
+    setPinnedTab(tab);
+    localStorage.setItem('pinned-tab', tab)
+  }
  
   return (
     <AppStateContext.Provider value={{ 
@@ -945,7 +912,7 @@ function App() {
             setModalState={setModalState} 
             {...props} 
             pinnedTab={pinnedTab}
-            setPinnedTab={setPinnedTab}
+            setPinnedTab={pinTab}
           />
           <Area pinned={!!pinnedTab}> 
             <Routes>

@@ -5,14 +5,17 @@ import {
   styled, Box, Typography, Divider, 
   IconButton, InputAdornment,
   Stack, TextField, Breadcrumbs, 
-  Pagination, Link
+  Pagination, Link, Checkbox
 } from '@mui/material';
-import { QuickMenu, RotateButton, Tooltag } from '..';
+import { QuickMenu, Tooltag } from '..';
 import { AppStateContext } from '../../hooks/AppStateContext';
-import { Sync, Save, Close, Menu, ExpandMore } from '@mui/icons-material';
+import { Sync, Save, Close, Menu } from '@mui/icons-material';
 
-const Cell = styled('td')(({theme, header, odd, dense, active}) => ({ 
-  padding: theme.spacing(dense ? 0.5 : 1, 2),
+const Cell = styled('td')(({theme, control, header, odd, dense, active}) => ({ 
+  maxWidth: 180,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  padding: control ? 0 : theme.spacing(dense ? 0.5 : 1, 2),
   backgroundColor: header ? 'rgb(240, 240, 240)' : `rgb(${odd ? 250 : 255}, 255, 255)`, 
   color: !active ? 'black' : 'blue',
   cursor: !active ? 'default' : 'pointer',
@@ -39,13 +42,15 @@ function ListCell({
     field, 
     value, 
     alias,
-    type, 
     icon, 
     odd,
     action, 
     sortable, 
     sorted, 
+    type,
     types, 
+    control: Control,
+    controlProps,
     edit, 
     dense,
     onSort,
@@ -82,20 +87,26 @@ function ListCell({
     action && action ()
   }
 
-  const deg = ask ? 180 : 0;
+  const cellText = type === 'password' ? '********' : text;
+
+  // const deg = ask ? 180 : 0;
   const arrow = !ask ? <>&#9650;</> : <>&#9660;</>
+  const c = (!!Control)
+    ? <Control {...controlProps} />
+    : ''
 
   const content = !types 
-    ?  <CellText active={!!action || !!sortProp?.direction} clickable={type === 'header'} 
+    ?  <Tooltag title={cellText} component={CellText} active={!!action || !!sortProp?.direction} clickable={type === 'header'} 
         variant={type === 'header' ? 'subtitle2' : 'body2'}>
-      {type === 'password' ? '********' : text} {sortable && arrow}
-    </CellText>
+      {cellText} {sortable && arrow}
+    </Tooltag>
     : <QuickMenu options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
  
-  return <Cell odd={odd} dense={dense} header={type === 'header'} active={edit || !!action}>
+  return <Cell control={!!Control} odd={odd} dense={dense} header={type === 'header'} active={edit || !!action}>
     <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
 
      <Stack direction="row" spacing={1} sx={{alignItems: 'center'}} onClick={onClick}> 
+     {c}
         {icon}
         {content} 
      </Stack>
@@ -113,7 +124,7 @@ function ListRow({ row, sortable, odd, onSort, dense, dropOrder, sorts = [], com
   const [data, setData] = React.useState(row)
   const [dirty, setDirty] = React.useState(false);
   
-  return <tr>
+  return <tr> 
     {data.map((cell, i) => <ListCell odd={odd} dense={dense} dropOrder={dropOrder} 
       sorts={sorts} onSort={onSort} sortable={sortable} key={i} onChange={(datum) => { 
       setData((d) => d.map((r, k) => k === i ? {...r, value: datum} : r));
@@ -232,13 +243,15 @@ export default function ListGrid({
     key={row.field} 
     row={row} 
     />)}
-    {!!searchable && <SearchRow searches={searches} 
+    {!!searchable && <SearchRow  searches={searches} 
       onClear={(key, val) => onClear && onClear(key, val)} 
       onChange={(key, val) => onSearch && onSearch(key, val)} 
     row={headers[0]} />}
-    {rows.map((row, i) => <ListRow odd={i % 2 === 0} dense={dense} commitRow={commitRow} key={row.field} row={row} />)}
+    {rows.map((row, i) => <ListRow  odd={i % 2 === 0} dense={dense} commitRow={commitRow} key={row.field} row={row} />)}
   </Tiles>}
-   
+   {/* <pre>
+   {JSON.stringify(rows,0,2)}
+   </pre> */}
   </>
 
 }

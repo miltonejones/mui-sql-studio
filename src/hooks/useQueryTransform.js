@@ -58,8 +58,8 @@ export const useQueryTransform = () => {
     const collated = []; 
 
     tables.map(table => {
-      table.columns.filter(filter).map(col => { 
-        collated.push({
+      return table.columns.filter(filter).map(col => { 
+        return collated.push({
           objectname: table.name,
           objectalias: table.alias,
           ...col
@@ -91,7 +91,7 @@ export const useQueryTransform = () => {
     tables.map((table, i) => {
       const { destTable, srcCol, destCol, type = 'JOIN' } = table.join ?? {};
 
-      from.push(
+      return from.push(
         i === 0
           ? ` ${table.name} as ${table.alias}\n`
           : `\n ${type} ${table.name} as ${table.alias} ON \n  ${table.alias}.${srcCol} = ${findAlias(configuration.tables, destTable)}.${destCol}\n`
@@ -101,19 +101,19 @@ export const useQueryTransform = () => {
     fields.map(f => columns.push(`${f.expression} as ${f.name}\n`))
 
     wheres.map((clause, i) => {
-      where.push (`${clause.operator || ''} ${clause.fieldName} ${decodeClause(clause.predicate, clause.clauseProp)}\n`)
+      return where.push (`${clause.operator || ''} ${clause.fieldName} ${decodeClause(clause.predicate, clause.clauseProp)}\n`)
     })
 
     orders
     .filter(f => !!f.fieldName)
     .map((by, i) => {
-      order.push (` ${by.fieldName} ${by.direction}\n`)
+      return order.push (` ${by.fieldName} ${by.direction}\n`)
     })
 
     groups
     .filter(f => !!f.fieldName)
     .map((by, i) => {
-      group.push (` ${by.fieldName}\n`)
+      return group.push (` ${by.fieldName}\n`)
     })
 
     const core = [...sql, '\n', columns.length ? columns.join(', ') : '*', '\n', 'FROM', '\n', ...from];
