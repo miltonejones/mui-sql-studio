@@ -11,8 +11,7 @@ import moment from 'moment';
 
 const Navbar = styled(Box)(({ theme }) => ({
   display: 'flex',
-  alignItems: 'center',
-  // alignContent: 'center',
+  alignItems: 'center', 
   justifyContent: 'space-between',
   color: 'white',
    position: 'absolute',
@@ -20,7 +19,7 @@ const Navbar = styled(Box)(({ theme }) => ({
    left:  0,
    width: '100vw',
    backgroundColor: theme.palette.primary.main,
-   minHeight: 40
+   minHeight: 32
 }));
 
 

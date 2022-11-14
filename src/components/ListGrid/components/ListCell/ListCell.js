@@ -3,7 +3,7 @@ import { styled, Box, Stack, Typography } from '@mui/material';
 import { Cell } from '..';
 import { QuickMenu, Tooltag } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
-import { PlayArrow, Close  } from "@mui/icons-material";
+import { PlayCircle, Image, Close  } from "@mui/icons-material";
    
 const CellText = styled(Typography)(({theme, clickable, active}) => ({ 
   cursor: clickable || active ? 'pointer' : 'default',
@@ -52,6 +52,9 @@ if (!(!!text || !!text?.length) && !Control && type !== 'header') {
 const ask = sortProp?.direction === 'ASC';
 
 const onClick = async () => {
+  if (column?.type === 'image') {
+    return window.open(value)
+  }
   if (column?.type === 'audio') {
     setAudioProp(null);
     if (value === audioProp) return;
@@ -82,9 +85,10 @@ const c = (!!Control)
   ? <Control {...controlProps} />
   : ''
 
-const audioIcon = value === audioProp ? <Close /> : <PlayArrow />
+const audioIcon = value === audioProp ? <Close /> : <PlayCircle />
+const mediaIcon = column?.type === 'image' ? <Image /> : audioIcon;
+const cellIcon = column?.type === 'audio' || column?.type === 'image' ? mediaIcon : icon;
 const imageContent = <img alt={cellText} src={cellText} style={{width: 160, height: 'auto'}}  />
-const cellIcon = column?.type === 'audio' ? audioIcon: icon;
 
 const content = !types 
   ?  <Tooltag title={column?.type === 'image' ? imageContent : cellText} component={CellText} active={!!action || !!sortProp?.direction} clickable={type === 'header'} 

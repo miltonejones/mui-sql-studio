@@ -1,8 +1,9 @@
 import React from 'react';
 import { Checkbox } from '@mui/material';
 import { ListGrid, DATA_TYPES } from '../../..';
+import { Settings } from '@mui/icons-material';
   
-const ColumnSettingsGrid = ({ onSelect, onChange, columns = [] }) => {
+const ColumnSettingsGrid = ({ onSelect, onChange, onConfig, columns = [] }) => {
     
   const configRow = (conf, i) => {
     const regex = /(\w+)\((\d+)\)/;
@@ -20,9 +21,11 @@ const ColumnSettingsGrid = ({ onSelect, onChange, columns = [] }) => {
       },   
       {
         field: 'Label', 
+        icon: !!conf.expression ? <Settings /> : null,
         selected: conf.clicked,
         value: !!conf.expression ? conf.name : conf.alias, 
-        edit: !0,
+        action: !!conf.expression ? () => onConfig (conf) : null,
+        edit: !conf.expression,
       },  
       {
         field: 'Name', 

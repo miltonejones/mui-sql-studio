@@ -120,8 +120,8 @@ export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}
 
 }
 
-export const Area = styled(Box)(({ pinned }) => ({
-  height: 'calc(100vh - 92px)',
+export const Area = styled(Box)(({ theme, pinned }) => ({
+  height: 'calc(100vh - 80px)',
   backgroundColor: 'white',
   outline: 'dotted 1px blue',
   position: 'absolute',
@@ -129,7 +129,7 @@ export const Area = styled(Box)(({ pinned }) => ({
   left: pinned ? 340 : 0,
   width: !pinned ? 'calc(100vw - 32px)' : 'calc(100vw - 372px)',
   transition: 'left 0.1s linear', 
-  margin: 8,
+  margin: theme.spacing(0, 1),
   padding: 8,
   borderRadius: 8,
   overflow: 'auto'

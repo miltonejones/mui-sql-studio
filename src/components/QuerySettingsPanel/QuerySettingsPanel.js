@@ -522,28 +522,14 @@ export default function QuerySettingsPanel({
     
     <Collapse in={!orderMode}>
       <Box sx={{m: theme => theme.spacing(1, 0)}}>
-        {columnList(z => !!z.selected)}
-          {/* {configuration.fields?.map(f => <>{f.expression} as <AU active onClick={async () => {
-            const b = await ExpressionModal(f)
-            if (!b) return;  
-            addExpression({...f, ...b})
-          }}>{f.name}</AU></>)} */}
+        {columnList(z => !!z.selected)} 
       </Box>
     </Collapse>
     
 
     <Collapse in={orderMode}>
         <Stack direction="row" sx={{alignItems: 'center'}}>
-          <Box sx={{p: 0}}> 
-            {/* <Pane sx={{mb: 1}}>
-              {configuration.columnMap?.map((item, i) => <Item 
-                  key={i} 
-                  active={item.clicked}
-                  onClick={() => clickOrderItem(i)}
-                >
-                {item.objectalias}.{item.name} <i>as {item.alias}</i>
-              </Item>)}
-            </Pane> */}
+          <Box sx={{p: 0}}>  
             <ColumnSettingsGrid onChange={(key, val, index) => {
             
                   const { objectname, name } = configuration.columnMap[index];
@@ -558,7 +544,9 @@ export default function QuerySettingsPanel({
                   // do nothing
               }
               // alert (JSON.stringify({key, val}))
-            }} onSelect={clickOrderItem} columns={configuration.columnMap} />
+            }} onSelect={clickOrderItem} 
+            onConfig={configureExpr}
+            columns={configuration.columnMap} />
 
           </Box>
           <Stack>
