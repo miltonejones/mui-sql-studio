@@ -4,7 +4,7 @@ import ToggleToolbar from "./ToggleToolbar/ToggleToolbar";
 import ListGrid from "./ListGrid/ListGrid";
 import QuerySettingsPanel, { QuickMenu, QuickSelect, QueryTest } from "./QuerySettingsPanel/QuerySettingsPanel";
 
-import { Flex, Tooltag, Spacer, TextBtn, RotateButton, Area, SearchBox } from './Control/Control';
+import { Flex, Tooltag, Spacer, TextBtn, RotateButton, Area, SearchBox, TextBox } from './Control/Control';
 
 const DATA_TYPES =  ['int', 'bit', 'bigint', 'text', 'mediumtext', 'varchar', 'datetime', 'image', 'audio', 'video'];
 
@@ -22,7 +22,8 @@ export {
   QueryTest,
   Flex, 
   Tooltag, 
-  Spacer, 
+  Spacer,
+  TextBox,
   TextBtn ,
   DATA_TYPES
 }

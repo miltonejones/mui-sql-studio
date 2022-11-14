@@ -4,13 +4,13 @@ import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
 import { Divider, Box, Breadcrumbs,  Autocomplete, Card,
   Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, 
-  TextField, Stack, Button, ToggleButtonGroup, ToggleButton, 
+  TextField, Stack,  ToggleButtonGroup, ToggleButton, 
   IconButton, Typography, styled } from '@mui/material';
 import { Add, UnfoldMore, Speed, Remove,  Sync, CheckCircle,
   Error, Delete, ExpandMore, PlayArrow, Close } from '@mui/icons-material';
 
 import { ColumnSettingsGrid } from './components'
-import { Tooltag, RotateButton  } from '..'
+import { Tooltag, RotateButton, TextBtn  } from '..'
 import '../ListGrid/ListGrid.css';
 
 
@@ -509,9 +509,9 @@ export default function QuerySettingsPanel({
 
  {!showSQL && <SectionHeader expanded={showFieldNames} blank 
     buttons={[
-      <Tooltag title="Set field order" component={RotateButton} sx={{mr: 2}} deg={orderMode ? 180 : 0}
+      <Tooltag title="Set field order" component={RotateButton} sx={{mr: 2}} deg={orderMode ? 0 : 180}
         onClick={openColumnOrderPanel}>
-        <UnfoldMore />
+        {orderMode ? <Close /> : <UnfoldMore />}
       </Tooltag>
     ]}
     actionText="Add fields" onAdd={() => setShowFieldNames(!showFieldNames)}>
@@ -582,14 +582,14 @@ export default function QuerySettingsPanel({
           </Box>
         </>}
 
-        <Button endIcon={<Add />} size="small" variant="outlined"  
+        <TextBtn endIcon={<Add />} size="small" variant="outlined"  
           onClick={async () => {
             const b = await ExpressionModal({})
             if (!b) return; 
             addExpression(b)
           }}
           sx={{mr: 1, mt: 1}}
-          >add expression</Button>
+          >add expression</TextBtn>
       
       </Collapse> 
 
@@ -630,8 +630,8 @@ export default function QuerySettingsPanel({
       {configuration.wheres.map((where) => <WhereItem key={where.index} {...where} />)}
 
       {!!configuration.wheres.length && <>
-        <Button endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</Button>
-        <Button endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</Button>
+        <TextBtn endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</TextBtn>
+        <TextBtn endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</TextBtn>
       </>}
 
       <Collapse in={configuration.orders.filter(f => !!f.fieldName).length}>
@@ -662,13 +662,13 @@ export default function QuerySettingsPanel({
       <Stack direction="row" sx={{alignItems: 'center'}}>
         <Box  sx={{flexGrow: 1}}/>
 
-        <Button size="small" sx={{mr: 1}} endIcon={ <Close />} onClick={() => onCancel && onCancel()}
+        <TextBtn size="small" sx={{mr: 1}} endIcon={ <Close />} onClick={() => onCancel && onCancel()}
           variant="outlined">
         close
-        </Button>
-      {!!onCommit && <Button color="warning" onClick={() => onCommit(createTSQL())} variant="contained"
+        </TextBtn>
+      {!!onCommit && <TextBtn color="warning" onClick={() => onCommit(createTSQL())} variant="contained"
         size="small" endIcon={<PlayArrow />}
-      >run</Button>}
+      >run</TextBtn>}
 
     </Stack>
 
@@ -909,7 +909,7 @@ export const QuickMenu = ({ label, error, value: selected, icons = [], options, 
   };
   // const arrow = open ? <>&#9650;</> : <>&#9660;</>
   return <>
-  <AU style={{marginRight: 4}} active error={error} onClick={handleClick}>{label}</AU> 
+  <AU style={{marginRight: 4}} active error={error} onClick={handleClick}>{label || 'Choose'}</AU> 
  
   <Menu 
     anchorEl={anchorEl}

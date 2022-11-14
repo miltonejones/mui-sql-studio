@@ -7,7 +7,7 @@ import {
  Typography,
  Box,
 } from "@mui/material";
-import { Flex, Tooltag, Spacer, TextBtn, QuickMenu, DATA_TYPES } from "..";
+import { Flex, Tooltag, Spacer, TextBtn, TextBox, QuickMenu, DATA_TYPES } from "..";
 import { Business, Close, Announcement , Help, Info  } from "@mui/icons-material";
  
 // global style for Modal TextFields
@@ -172,23 +172,27 @@ const ExpressionPrompt = ({ onChange, title, message, defaultValue = {} }) => {
   const { name, type, expression } = value;
   return (
     <Stack>  
+
       <TextField {...modalTextProps} value={name} onChange={e => {
         const val = { ...value, name: e.target.value }
         setValue(val);
         onChange(val);
       }} label="Name" placeholder="Alias name" sx={{mb: 1}}/> 
-      <TextField label="Expression" placeholder="Type an SQL expression" {...modalTextProps} value={expression} onChange={e => { 
+
+      <TextBox label="Expression" placeholder="Type an SQL expression" {...modalTextProps} value={expression} onChange={e => { 
         const val = { ...value, expression: e.target.value }
         setValue(val);
         onChange(val);
       }} multiline rows={4} sx={{mb: 1}}/>
 
-    data type: <QuickMenu options={DATA_TYPES} onChange={e => { 
-        const val = { ...value, type: e }
-        setValue(val);
-        onChange(val);
-      }} label={type || 'datatype'} value={type}/> 
-
+      <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}>
+        <Typography>Type:</Typography> <QuickMenu options={DATA_TYPES} onChange={e => { 
+            if (!e) return;
+            const val = { ...value, type: e }
+            setValue(val);
+            onChange(val);
+          }} label={type || 'datatype'} value={type}/> 
+      </Stack>
     </Stack>
   );
  };
@@ -250,6 +254,7 @@ export const useModal = () => {
     icon: Announcement,
     defaultValue: value, 
     component: ExpressionPrompt,
+    required: ['name', 'expression']
   });
 
  const [modalProps, setModelProps] = React.useState({ open: false });
@@ -272,6 +277,12 @@ export const useModal = () => {
        // when Okay is clicked, return whatever value
        // the Modal collected and close the Modal
        submitClicked: (value) => {
+         if (props.required) { 
+          const bad = props.required.find(e => !value[e])
+          if (bad) {
+           return alert (`Required field "${bad}" must be completed!`)
+          }
+         }
          resolve(value);
          setModelProps({ open: false });
        },

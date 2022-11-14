@@ -34,6 +34,7 @@ export const Spacer = styled(Box)(() => ({
 export const TextBtn = styled(Button)(() => ({
  textTransform: "capitalize",
  whiteSpace: "nowrap",
+ borderRadius: 0
 }));
  
 export const UL = styled("ul")(({ theme, margin, collapsed }) => ({
@@ -120,14 +121,26 @@ export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}
 }
 
 export const Area = styled(Box)(({ pinned }) => ({
-  height: 'calc(100vh - 112px)',
+  height: 'calc(100vh - 92px)',
   backgroundColor: 'white',
   outline: 'dotted 1px blue',
   position: 'absolute',
   top: 40,
   left: pinned ? 340 : 0,
-  width: !pinned ? 'calc(100vw - 48px)' : 'calc(100vw - 388px)',
+  width: !pinned ? 'calc(100vw - 32px)' : 'calc(100vw - 372px)',
   transition: 'left 0.1s linear', 
-  padding: 24,
+  margin: 8,
+  padding: 8,
+  borderRadius: 8,
   overflow: 'auto'
+}))
+
+export const TextBox = styled(TextField)(({ theme }) => ({
+  marginTop: theme.spacing(1), 
+  marginBottom: theme.spacing(1),
+  '& .MuiInputBase-input': {
+    fontSize: '0.9rem',
+    lineHeight: 1.5,
+    fontFamily: 'Courier'
+  }
 }))
