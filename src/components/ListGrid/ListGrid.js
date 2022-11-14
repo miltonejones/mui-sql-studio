@@ -2,7 +2,7 @@ import * as React from 'react';
 import './ListGrid.css';
 
 import { 
-   Box, Typography, Divider, 
+  Alert, Box, Typography, Divider, 
   IconButton, 
   Stack,  Breadcrumbs, 
   Pagination, Link 
@@ -68,7 +68,8 @@ export default function ListGrid({
       </Stack>
       } 
 
-  {empty && <Box sx={{cursor: 'pointer'}} onClick={() => onClear && onClear()}>Query returned no results. <u>Click here to clear filter</u>.</Box>}
+  {empty && <Alert severity="warning"><Box sx={{cursor: 'pointer'}} onClick={() => onClear && onClear()}
+      >Query returned no results. <u>Click here to clear filter</u>.</Box></Alert>}
 
   {!empty && <Tiles cellSpacing="1" wide={wide}>
     {headers.map(row => <ListRow 

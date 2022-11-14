@@ -207,7 +207,10 @@ export default function QuerySettingsPanel({
     });
   };
 
-  const assignColumnAlias = (name, field, alias) => {
+  const assignColumnAlias = (name, field, aliasName) => {
+    const alias = aliasName.indexOf(' ') > -1
+      ? `'${aliasName}'`
+      : aliasName
     editColumn(name, field, async (col, table) => { 
       Object.assign(col, { alias });
       clearConfig(columnMap => {
@@ -414,7 +417,10 @@ export default function QuerySettingsPanel({
         fields: (f.fields||[]).map((t) => (t.index === field.index ? field : t)),
       }));
     }
-    const column = {...field, index: uniqueId()};
+    const name = field.name.indexOf(' ') > -1
+      ? `'${field.name}'`
+      : field.name
+    const column = {...field, name, index: uniqueId()};
     columnMap = oldMap.concat(column);
     setConfiguration((f) => ({
       ...f,
