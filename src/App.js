@@ -47,8 +47,8 @@ function App() {
     modalProps,
   } = useModal()
 
-  const props = useAppHistory(); 
-  const { current } = props;
+  const appHistory = useAppHistory(); 
+  const { current } = appHistory;
 
   const [pinnedTab, setPinnedTab] = React.useState(localStorage.getItem('pinned-tab')); 
 
@@ -59,7 +59,7 @@ function App() {
  
   return (
     <AppStateContext.Provider value={{ 
-        ...props, 
+        ...appHistory, 
         audioProp,
         setAudioProp,
         Alert,
@@ -81,7 +81,7 @@ function App() {
           {/* toolbar  */}
           <ToggleToolbar 
             setModalState={setModalState} 
-            {...props} 
+            {...appHistory} 
             pinnedTab={pinnedTab}
             setPinnedTab={pinTab}
           />

@@ -99,6 +99,10 @@ export default function ToggleToolbar({
         {
           title: 'Query Analyzer',
           action: () => navigate(`/sql`)
+        }, 
+        {
+          title: 'Local Storage Data',
+          action: () => navigate(`/json`)
         }
         
       ])
