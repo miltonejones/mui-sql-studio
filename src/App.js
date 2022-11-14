@@ -7,7 +7,7 @@ import { Box, Stack, Typography, styled } from '@mui/material';
 import { useAppHistory } from './hooks/useAppHistory';
 import { AppStateContext } from './hooks/AppStateContext';  
 import { Helmet } from "react-helmet";
-import { SaveAs } from '@mui/icons-material';
+import { SaveAs, StopCircle } from '@mui/icons-material';
 import { 
   JsonTabs, 
   HomePage, 
@@ -104,7 +104,7 @@ function App() {
 
         {/* page footer  */}
         <Footer spacing={1} direction="row">
-          {!!audioProp && <Typography sx={{ ml: 1 }} variant="caption">Now playing: <b>{audioProp}</b></Typography>}
+          {!!audioProp && <><StopCircle onClick={() => setAudioProp(null)} sx={{ml: 1, cursor: 'pointer'}}/> <Typography sx={{ ml: 1 }} variant="caption">Now playing: <b>{audioProp}</b></Typography></>}
           <Box sx={{flexGrow: 1}}/>
           <SaveAs />
           <Typography variant="caption">MySQL<b>Now</b>.</Typography>

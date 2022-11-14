@@ -13,11 +13,11 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
       
       const adornment = !state[cell.value] ? {} : {
         endAdornment: <InputAdornment position="end">
-          <IconButton size="small" onClick={() => {
+          <IconButton size="small" sx={{width: 18, height: 18}} onClick={() => {
             setState(s => ({...s, [cell.value]: ''}))
             onClear && onClear(cell.value, state[cell.value])
           }}>
-            <Close />
+            <Close sx={{width: 16, height: 16}} />
           </IconButton>
         </InputAdornment>,
       } 

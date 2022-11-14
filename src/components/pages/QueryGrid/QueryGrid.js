@@ -280,6 +280,7 @@ const saveMenu = saveEnabled ? [
   {
     title: 'Delete List',
     icon: Delete,
+    hide: !0,
     action: () => deletePage(configuration.title)
   },
   {
@@ -289,6 +290,7 @@ const saveMenu = saveEnabled ? [
   },
   {
     title: 'Open in Query Analyzer',
+    hide: !0,
     icon: Launch,
     action:  () => {
       navigate(`/sql/${connectionID}/${schema}/${tablename}/${listname}`)
@@ -299,6 +301,7 @@ const saveMenu = saveEnabled ? [
     {
       title: 'Show SQL',
       icon: Info,
+      hide: !0,
       action: () => Alert(<pre>{queryText}</pre>, 'SQL Code')
     },
     {

@@ -3,11 +3,12 @@ import { styled, Box, Stack, Typography } from '@mui/material';
 import { Cell } from '..';
 import { QuickMenu, Tooltag } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
-import { PlayCircle, Image, Close  } from "@mui/icons-material";
+import { PlayCircle, Image, StopCircle  } from "@mui/icons-material";
    
-const CellText = styled(Typography)(({theme, clickable, active}) => ({ 
+const CellText = styled(Typography)(({theme, clickable, selected, active}) => ({ 
   cursor: clickable || active ? 'pointer' : 'default',
-  color: active ? theme.palette.primary.main : '#222'
+  color: active ? theme.palette.primary.main : '#222',
+  fontWeight: selected ? 600 : 400
 }));
  
 
@@ -85,19 +86,23 @@ const c = (!!Control)
   ? <Control {...controlProps} />
   : ''
 
-const audioIcon = value === audioProp ? <Close /> : <PlayCircle />
+const cellSelected = selected || (audioProp && (value === audioProp));
+const audioIcon = value === audioProp ? <StopCircle /> : <PlayCircle />
 const mediaIcon = column?.type === 'image' ? <Image /> : audioIcon;
 const cellIcon = column?.type === 'audio' || column?.type === 'image' ? mediaIcon : icon;
 const imageContent = <img alt={cellText} src={cellText} style={{width: 160, height: 'auto'}}  />
 
 const content = !types 
-  ?  <Tooltag title={column?.type === 'image' ? imageContent : cellText} component={CellText} active={!!action || !!sortProp?.direction} clickable={type === 'header'} 
+  ?  <Tooltag title={column?.type === 'image' ? imageContent : cellText} 
+      selected={cellSelected}
+      component={CellText} active={!!action || !!sortProp?.direction} 
+      clickable={type === 'header'} 
       variant={type === 'header' ? 'subtitle2' : 'body2'}>
     {cellText} {sortable && arrow}
   </Tooltag>
   : <QuickMenu options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
 
-return <Cell selected={selected || (audioProp && (value === audioProp))} control={!!Control} odd={odd} dense={dense} 
+return <Cell selected={cellSelected} control={!!Control} odd={odd} dense={dense} 
   header={type === 'header'} active={edit || !!action}>
   <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
 

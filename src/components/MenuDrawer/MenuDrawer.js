@@ -41,16 +41,16 @@ export default function MenuDrawer({
   const Tag = pinned ? Panel : Menu;
  
   const startAdornment = pinned ? null  : <InputAdornment position="start">
-  <IconButton size="small">
-    <FilterAlt />
+  <IconButton sx={{width: 18, height: 18}} size="small">
+    <FilterAlt sx={{width: 16, height: 16}} />
   </IconButton>
 </InputAdornment>
 
   const adornment = !filterText.length ? {startAdornment} : {
     startAdornment,
     endAdornment: <InputAdornment position="end">
-      <IconButton size="small" onClick={() => setFilterText('')}>
-        <Close />
+      <IconButton sx={{width: 18, height: 18}} size="small" onClick={() => setFilterText('')}>
+        <Close sx={{width: 16, height: 16}} />
       </IconButton>
     </InputAdornment>,
   }

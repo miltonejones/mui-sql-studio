@@ -51,7 +51,7 @@ export default function ListGrid({
       <Typography variant="h6">{title}</Typography>
       <Box sx={{flexGrow: 1}} />
       {buttons?.map((button, i) => <Box key={i}>{button}</Box>)}
-      {menuItems?.map(({title, icon: Icon, action}, i) => <Box key={i}>
+      {menuItems?.filter(f => !f.hide).map(({title, icon: Icon, action}, i) => <Box key={i}>
         <Tooltag title={title} component={IconButton} onClick={action}>
           <Icon />
         </Tooltag>
