@@ -32,24 +32,24 @@ const AU = styled('u')(({ active, error }) => ({
   }
 }))
 
-const Pane = styled(Box)(({ theme }) => ({
-  width: 320,
-  height: 300, 
-  overflow: 'auto', 
-  border: 'solid 1px #d5d5d5',
-  padding: theme.spacing(0.5), 
-  borderRadius: 5
-}))
+// const Pane = styled(Box)(({ theme }) => ({
+//   width: 320,
+//   height: 300, 
+//   overflow: 'auto', 
+//   border: 'solid 1px #d5d5d5',
+//   padding: theme.spacing(0.5), 
+//   borderRadius: 5
+// }))
  
-const Item = styled(Box)(({ theme, active }) => ({
-  borderRadius: 5,
-  padding: theme.spacing(0.5), 
-  margin: theme.spacing(0.5, 0), 
-  cursor: 'default', 
-  fontWeight: active ? 600 : 400,
-  border: active ? 'solid 1px #d5d5d5' : 'solid 1px white',
-  backgroundColor: active ? 'aliceblue' : ''
-}))
+// const Item = styled(Box)(({ theme, active }) => ({
+//   borderRadius: 5,
+//   padding: theme.spacing(0.5), 
+//   margin: theme.spacing(0.5, 0), 
+//   cursor: 'default', 
+//   fontWeight: active ? 600 : 400,
+//   border: active ? 'solid 1px #d5d5d5' : 'solid 1px white',
+//   backgroundColor: active ? 'aliceblue' : ''
+// }))
  
 export default function QuerySettingsPanel({ 
     config, 
@@ -329,6 +329,11 @@ export default function QuerySettingsPanel({
 
   const collateTables = (filter, passThru) => transformer.collateTables(configuration, filter, passThru); 
 
+  const configureExpr = async (f) => {
+    const b = await ExpressionModal(f)
+    if (!b) return;  
+    addExpression({...f, ...b})
+  }
 
   const columnList = (filter, small, passThru) => {
     const p = [];
@@ -336,25 +341,33 @@ export default function QuerySettingsPanel({
 
     collated.map((column, i) => { 
       const error = collated.filter(n => n.alias === column.alias).length > 1;
-      const { objectname, objectalias, name, alias, selected } = column;
+      const { objectname, objectalias, name, alias, selected, expression } = column;
       const last = i === (collated.length - 1)
 
       return p.push(<>
-        {objectalias}.<Tooltag component={AU}
+      {!!expression ? <>{expression}</> : <>
+      {objectalias}.<Tooltag component={AU}
           title={passThru ? "Add to column list" : "Remove from column list"}
           active={selected} 
           onClick={() => setColumnSelected(objectname, name)}>{name}</Tooltag>
+      </>}
+
           
           {!small && <> 
           {" "}<i>as</i>{" "}
-          <AU active error={error} onClick={() => setColumnAlias(objectname, name)}>{alias}</AU>
+          <AU active error={error} onClick={() => !!expression 
+            ? configureExpr(column)
+            : setColumnAlias(objectname, name)
+            }>{alias || name}</AU>
+
+
           </>}{!last && <>, </>} {" "}
         </>)
     }) 
 
     return p.length ? p : ['*'];
   }
-//  
+  
   React.useEffect(() => { 
     if (!!loaded) return; 
     (async () => {
@@ -386,14 +399,22 @@ export default function QuerySettingsPanel({
   }
 
   const addExpression = (field) => {
+    const { columnMap: oldMap = [] } = configuration; 
+    let columnMap;
     if (field.index) {
+      columnMap = !oldMap.find (f => f.index === field.index)
+        ? oldMap.concat(field)
+        : oldMap.map(f => f.index === field.index ? field : f); 
       return setConfiguration((f) => ({
         ...f,
+        columnMap,
         fields: (f.fields||[]).map((t) => (t.index === field.index ? field : t)),
       }));
     }
+    columnMap = oldMap.concat(field);
     setConfiguration((f) => ({
       ...f,
+      columnMap,
       fields: (f.fields||[]).concat({...field, index: uniqueId()})
     }));
   }
@@ -502,11 +523,11 @@ export default function QuerySettingsPanel({
     <Collapse in={!orderMode}>
       <Box sx={{m: theme => theme.spacing(1, 0)}}>
         {columnList(z => !!z.selected)}
-          {configuration.fields?.map(f => <>{f.expression} as <AU active onClick={async () => {
+          {/* {configuration.fields?.map(f => <>{f.expression} as <AU active onClick={async () => {
             const b = await ExpressionModal(f)
             if (!b) return;  
             addExpression({...f, ...b})
-          }}>{f.name}</AU></>)}
+          }}>{f.name}</AU></>)} */}
       </Box>
     </Collapse>
     
@@ -656,7 +677,7 @@ export default function QuerySettingsPanel({
 
   <Collapse in={showSQL}>
  
-    <Card sx={{ p: 2, maxWidth: 400 }}>
+    <Card sx={{ p: 2, maxWidth: 640 }}>
       <Typography><b>SQL Code</b></Typography>
       <Divider />
       <pre>

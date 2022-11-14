@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled, InputAdornment, TextField, IconButton, Box } from '@mui/material';
+import { InputAdornment, TextField, IconButton } from '@mui/material';
 import { Cell } from '..'
 import { Close } from '@mui/icons-material';
  
@@ -20,8 +20,7 @@ function SearchRow({ row , searches = [], onChange, onClear}) {
             <Close />
           </IconButton>
         </InputAdornment>,
-      }
-
+      } 
   
       return (<Cell dense>
       <TextField fullWidth autoComplete="off" size="small" 

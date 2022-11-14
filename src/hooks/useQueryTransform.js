@@ -68,7 +68,13 @@ export const useQueryTransform = () => {
     });
 
     if (columnMap.length && !passThru) {
-      return columnMap.map(c => collated.find(f => f.objectname === c.objectname && f.name === c.name));
+      return columnMap.map(c => {
+        const col = collated.find(f => f.objectname === c.objectname && f.name === c.name);
+        if (col) {
+          return col;
+        }
+        return c;
+      });
     }
 
     return collated;
@@ -77,7 +83,7 @@ export const useQueryTransform = () => {
 
 
   const createTSQL = React.useCallback((configuration) => {
-    const { tables, wheres, orders, groups, fields = [] } = configuration;
+    const { tables, wheres, orders, groups  } = configuration;
     const sql = ['SELECT'];
     const columns = [];
     const from = [];
@@ -86,8 +92,12 @@ export const useQueryTransform = () => {
     const group = [];
 
     const collated = collateTables(configuration, f => !!f.selected); 
-    collated
-      .map((col) => columns.push(`${col.objectalias}.${col.name} as ${col.alias}\n`));
+    collated.map((col) => {
+      const columnLabel = !!col.expression ? col.expression : `${col.objectalias}.${col.name}`;
+      return columns.push(`${columnLabel} as ${col.alias || col.name}\n`)
+    });
+
+
     tables.map((table, i) => {
       const { destTable, srcCol, destCol, type = 'JOIN' } = table.join ?? {};
 
@@ -98,7 +108,7 @@ export const useQueryTransform = () => {
       );
     });
 
-    fields.map(f => columns.push(`${f.expression} as ${f.name}\n`))
+    // fields.map(f => columns.push(`${f.expression} as ${f.name}\n`))
 
     wheres.map((clause, i) => {
       return where.push (`${clause.operator || ''} ${clause.fieldName} ${decodeClause(clause.predicate, clause.clauseProp)}\n`)

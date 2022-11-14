@@ -118,3 +118,16 @@ export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}
   InputProps={adornment} autoFocus/>
 
 }
+
+export const Area = styled(Box)(({ pinned }) => ({
+  height: 'calc(100vh - 112px)',
+  backgroundColor: 'white',
+  outline: 'dotted 1px blue',
+  position: 'absolute',
+  top: 40,
+  left: pinned ? 340 : 0,
+  width: !pinned ? 'calc(100vw - 48px)' : 'calc(100vw - 388px)',
+  transition: 'left 0.1s linear', 
+  padding: 24,
+  overflow: 'auto'
+}))

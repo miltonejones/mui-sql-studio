@@ -1,11 +1,7 @@
 import React from 'react';
-import { styled, Box, Checkbox } from '@mui/material';
-import { ListGrid } from '../../..';
- 
-const Layout = styled(Box)(({ theme }) => ({
- margin: theme.spacing(4)
-}));
- 
+import { Checkbox } from '@mui/material';
+import { ListGrid, DATA_TYPES } from '../../..';
+  
 const ColumnSettingsGrid = ({ onSelect, onChange, columns = [] }) => {
     
   const configRow = (conf, i) => {
@@ -25,13 +21,13 @@ const ColumnSettingsGrid = ({ onSelect, onChange, columns = [] }) => {
       {
         field: 'Label', 
         selected: conf.clicked,
-        value: conf.alias, 
+        value: !!conf.expression ? conf.name : conf.alias, 
         edit: !0,
       },  
       {
         field: 'Name', 
         selected: conf.clicked,
-        value: `${conf.objectalias}.${conf.name}`, 
+        value: !!conf.expression ? conf.expression : `${conf.objectalias}.${conf.name}`, 
       },  
       {
         field: 'Default',
@@ -43,7 +39,7 @@ const ColumnSettingsGrid = ({ onSelect, onChange, columns = [] }) => {
         field: 'Type',
         selected: conf.clicked,
         value: conf.type || defaultType,
-        types: ['int', 'bit', 'bigint', 'text', 'mediumtext', 'varchar', 'datetime', 'image', 'audio', 'video']
+        types: DATA_TYPES
       }, 
       {
         field: 'Size',

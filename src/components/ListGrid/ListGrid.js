@@ -2,19 +2,18 @@ import * as React from 'react';
 import './ListGrid.css';
 
 import { 
-  styled, Box, Typography, Divider, 
-  IconButton, InputAdornment,
-  Stack, TextField, Breadcrumbs, 
-  Pagination, Link, Checkbox
+   Box, Typography, Divider, 
+  IconButton, 
+  Stack,  Breadcrumbs, 
+  Pagination, Link 
 } from '@mui/material';
-import { QuickMenu, Tooltag } from '..';
-import { AppStateContext } from '../../hooks/AppStateContext';
-import { Sync, Save, Close, Menu } from '@mui/icons-material';
-import { Cell, ListCell, ListRow, SearchRow, Tiles } from './components'; 
+import { QuickMenu, Tooltag } from '..'; 
+import { Sync, Menu } from '@mui/icons-material';
+import { ListRow, SearchRow, Tiles } from './components'; 
    
    
 export default function ListGrid({
-  title, empty,  searchable, dense,
+  title, empty,  searchable, dense, wide,
   searches, sorts, onClear, onSearch, 
   commitRow, count = 0, page = 1, menuItems,
   setPage, buttons, onSort, dropOrder,
@@ -71,7 +70,7 @@ export default function ListGrid({
 
   {empty && <Box sx={{cursor: 'pointer'}} onClick={() => onClear && onClear()}>Query returned no results. <u>Click here to clear filter</u>.</Box>}
 
-  {!empty && <Tiles cellSpacing="1">
+  {!empty && <Tiles cellSpacing="1" wide={wide}>
     {headers.map(row => <ListRow 
     dense={dense} 
     dropOrder={dropOrder} 

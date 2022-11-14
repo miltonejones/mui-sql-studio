@@ -3,11 +3,8 @@ import { styled, Box, Stack, Typography } from '@mui/material';
 import { Cell } from '..';
 import { QuickMenu, Tooltag } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
-  
-const Layout = styled(Box)(({ theme }) => ({
- margin: theme.spacing(4)
-}));
- 
+import { PlayArrow, Close  } from "@mui/icons-material";
+   
 const CellText = styled(Typography)(({theme, clickable, active}) => ({ 
   cursor: clickable || active ? 'pointer' : 'default',
   color: active ? theme.palette.primary.main : '#222'
@@ -38,7 +35,7 @@ function ListCell({
   dropOrder
 }) {
 const sortProp = sorts.find(s => s.fieldName === alias || s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
-const { Prompt } = React.useContext(AppStateContext);
+const { Prompt, audioProp, setAudioProp } = React.useContext(AppStateContext);
 let text = value;
 if (typeof(value) === 'object') {
   try {
@@ -55,6 +52,13 @@ if (!(!!text || !!text?.length) && !Control && type !== 'header') {
 const ask = sortProp?.direction === 'ASC';
 
 const onClick = async () => {
+  if (column?.type === 'audio') {
+    setAudioProp(null);
+    if (value === audioProp) return;
+    return setTimeout(() => {
+      setAudioProp(value)
+    }, 9)
+  }
   if (onSort) { 
     if (sortProp?.index) {
       return alert ('Hard-coded columns cannot be quick-sorted. Use the edit panel!')
@@ -69,7 +73,7 @@ const onClick = async () => {
   }
   action && action ()
 }
-
+// https://s3.amazonaws.com/box.import/
 const cellText = type === 'password' ? '********' : text;
 
 // const deg = ask ? 180 : 0;
@@ -78,7 +82,9 @@ const c = (!!Control)
   ? <Control {...controlProps} />
   : ''
 
+const audioIcon = value === audioProp ? <Close /> : <PlayArrow />
 const imageContent = <img alt={cellText} src={cellText} style={{width: 160, height: 'auto'}}  />
+const cellIcon = column?.type === 'audio' ? audioIcon: icon;
 
 const content = !types 
   ?  <Tooltag title={column?.type === 'image' ? imageContent : cellText} component={CellText} active={!!action || !!sortProp?.direction} clickable={type === 'header'} 
@@ -87,13 +93,13 @@ const content = !types
   </Tooltag>
   : <QuickMenu options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
 
-return <Cell selected={selected} control={!!Control} odd={odd} dense={dense} 
+return <Cell selected={selected || (audioProp && (value === audioProp))} control={!!Control} odd={odd} dense={dense} 
   header={type === 'header'} active={edit || !!action}>
   <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
 
-   <Stack direction="row" spacing={1} sx={{alignItems: 'center'}} onClick={onClick}> 
+   <Stack direction="row" spacing={1} sx={{alignItems: 'center'}} onClick={onClick}>  
       {c} 
-      {icon}
+      {cellIcon}
       {content} 
    </Stack>
 

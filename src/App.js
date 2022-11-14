@@ -10,7 +10,17 @@ import {
 import './App.css';
 import './components/ListGrid/ListGrid.css';
 import Modal, { useModal } from './components/Modal/Modal';
-import { ToggleToolbar, ListGrid, QueryTest, RotateButton, ConnectionModal, Tooltag, QuickSelect, QuerySettingsPanel } from './components'
+import { 
+  ToggleToolbar, 
+  Area, 
+  ListGrid, 
+  QueryTest, 
+  RotateButton, 
+  ConnectionModal, 
+  Tooltag, 
+  QuickSelect, 
+  QuerySettingsPanel 
+} from './components'
 import { Alert, TextField, Box, Button, Collapse, Divider, IconButton, Stack, Typography, styled } from '@mui/material';
 import { useConfig } from './hooks/useConfig';
 import { useSaveQuery } from './hooks/useSaveQuery';
@@ -19,8 +29,9 @@ import { AppStateContext } from './hooks/AppStateContext';
 import { useQueryTransform } from './hooks/useQueryTransform';
 import { execQuery, describeConnection, describeTable } from './connector/dbConnector';
 import {Helmet} from "react-helmet";
+import { JsonTabs } from './components/pages';
 
-import { Add, ExpandMore, PlayArrow, Sync, Settings, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
+import { Add, ExpandMore, PlayArrow, Info, Sync, Settings, Launch, Key, Close, FilterAlt, SaveAs, Save, Delete } from '@mui/icons-material';
  
 
 const formatConnectName = name => name.toLowerCase().replace(/\s/g, '_');
@@ -158,7 +169,7 @@ FROM ${name}`)
 
     {!!data?.error && <> 
       <Typography>{data.error.code}</Typography>
-      <Alert severity="error">{data.error.sqlMessage}</Alert>
+      <Alert severity="error">{JSON.stringify(data.error.sqlMessage)}</Alert>
     </>}
 
     {!!data?.rows && 
@@ -197,7 +208,7 @@ function QueryGrid () {
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID);
 
 
-  const { setAppHistory, Prompt, Confirm } = React.useContext(AppStateContext);
+  const { setAppHistory, Alert, Prompt, Confirm } = React.useContext(AppStateContext);
   const saveEnabled = !!configuration.tables.length
 
   const { saveQuery, deleteQuery, getQueries } = useSaveQuery();
@@ -463,6 +474,11 @@ const saveMenu = saveEnabled ? [
   
   const menuItems = saveMenu.concat([
     {
+      title: 'Show SQL',
+      icon: Info,
+      action: () => Alert(<pre>{JSON.stringify(queryText)}</pre>, 'SQL Code')
+    },
+    {
       title: "Set list filters",
       icon: FilterAlt,
       action:  () => {
@@ -483,20 +499,20 @@ const saveMenu = saveEnabled ? [
 
     {!!data?.error && <> 
       <Typography>{data.error.code}</Typography>
-      <Alert severity="error">{data.error.sqlMessage}</Alert>
+      <Alert severity="error">{JSON.stringify(data.error.sqlMessage)}</Alert>
     </>}
 
-  <Collapse in={!edit}> 
-
+  <Collapse in={!edit}>  
     <ListGrid  
       dense
+      wide
       onSearch={createAdHoc}
       onSort={orderAdHoc}
       onClear={dropAdHoc} 
       dropOrder={dropOrder}
       sorts={configuration.orders}
       searches={configuration.wheres}
-      columns={configuration.columnMap}
+      columns={configuration.columnMap?.concat(configuration.fields)}
       searchable={saveEnabled}
       setPage={loadPage}
       count={data?.count}
@@ -853,24 +869,12 @@ function HomePage ({ pinned }) {
     </Alert>
   }
 
-  return <ListGrid breadcrumbs={breadcrumbs} title="Available Connections" menuItems={saveMenu} rows={rows} />
+  return <ListGrid wide breadcrumbs={breadcrumbs} title="Available Connections" menuItems={saveMenu} rows={rows} />
 }
-
-const Area = styled(Box)(({ pinned }) => ({
-  height: 'calc(100vh - 112px)',
-  backgroundColor: 'white',
-  outline: 'dotted 1px blue',
-  position: 'absolute',
-  top: 40,
-  left: pinned ? 340 : 0,
-  width: !pinned ? 'calc(100vw - 48px)' : 'calc(100vw - 388px)',
-  transition: 'left 0.1s linear', 
-  padding: 24,
-  overflow: 'auto'
-}))
 
 function App() { 
 
+  const [audioProp, setAudioProp] = React.useState(null) ;
   const [modalState, setModalState] = React.useState({
     open: false,
     connection: {  }, 
@@ -897,6 +901,8 @@ function App() {
   return (
     <AppStateContext.Provider value={{ 
         ...props, 
+        audioProp,
+        setAudioProp,
         Alert,
         Confirm,
         Prompt,
@@ -916,6 +922,7 @@ function App() {
             setPinnedTab={pinTab}
           />
           <Area pinned={!!pinnedTab}> 
+        {!!audioProp && <>Now playing: {audioProp}</>}
             <Routes>
               <Route path="/" element={<HomePage pinned={!!pinnedTab} />} /> 
               <Route path="/connection/:connectionID" element={<ConnectionGrid  />} /> 
@@ -924,6 +931,7 @@ function App() {
               <Route path="/lists/:connectionID/:schema/:tablename/:listname" element={<QueryGrid   />} /> 
               <Route path="/sql/:connectionID/:schema/:tablename/:listname" element={<QueryAnalyzer   />} /> 
               <Route path="/sql" element={<QueryAnalyzer   />} /> 
+              <Route path="/json" element={<JsonTabs   />} /> 
             </Routes>
           </Area>
         </BrowserRouter>
@@ -940,7 +948,10 @@ function App() {
             [key]: val
           }})
         }} {...modalState} />
-
+      {!!audioProp && <audio controls autoPlay style={{display: 'none'}}> 
+        <source src={audioProp} type="audio/mpeg"/>
+      Your browser does not support the audio element.
+      </audio>}
       </div>
     </AppStateContext.Provider>
   );
