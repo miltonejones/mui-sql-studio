@@ -100,6 +100,7 @@ const Modal = ({
 };
  
 const ModalFooter = ({
+ handleDelete,
  handleClose,
  enableSave,
  modalState,
@@ -107,6 +108,17 @@ const ModalFooter = ({
  title,
 }) => (
  <Flex sx={{ p: 2, borderTop: "solid 1px #cdcdcd" }}>
+    {/* Close button */}
+    {!!handleDelete && <Tooltag
+      component={TextBtn}
+      title="Delete"
+      variant="contained"
+      color="error"
+      onClick={() => handleDelete(modalState)}
+    >
+      delete
+    </Tooltag>}
+
    <Spacer />
  
    {/* Close button */}
@@ -254,6 +266,7 @@ export const useModal = () => {
     icon: Announcement,
     defaultValue: value, 
     component: ExpressionPrompt,
+    handleDelete: !0,
     required: ['name', 'expression']
   });
 
@@ -292,10 +305,17 @@ export const useModal = () => {
          resolve(false);
          setModelProps({ open: false, message: 'Okay be that way!' });
        },
- 
+
        // User-provided props
        // -------------------------------------------------------------- *
        ...props,
+
+       handleDelete: !props.handleDelete ? null 
+        : () => {  
+          resolve(-1);
+          setModelProps({ open: false });
+        },
+ 
      });
    });
  

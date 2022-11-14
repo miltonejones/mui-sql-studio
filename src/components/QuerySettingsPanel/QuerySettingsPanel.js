@@ -332,6 +332,9 @@ export default function QuerySettingsPanel({
   const configureExpr = async (f) => {
     const b = await ExpressionModal(f)
     if (!b) return;  
+    if (b === -1) {
+      return dropExpression(f.index);
+    }
     addExpression({...f, ...b})
   }
 
@@ -340,7 +343,7 @@ export default function QuerySettingsPanel({
     const collated = collateTables(filter, passThru); 
 
     collated.map((column, i) => { 
-      const error = collated.filter(n => n.alias === column.alias).length > 1;
+      const error = collated.filter(n => !!n.alias && n.alias === column.alias).length > 1;
       const { objectname, objectalias, name, alias, selected, expression } = column;
       const last = i === (collated.length - 1)
 
@@ -411,14 +414,26 @@ export default function QuerySettingsPanel({
         fields: (f.fields||[]).map((t) => (t.index === field.index ? field : t)),
       }));
     }
-    columnMap = oldMap.concat(field);
+    const column = {...field, index: uniqueId()};
+    columnMap = oldMap.concat(column);
     setConfiguration((f) => ({
       ...f,
       columnMap,
-      fields: (f.fields||[]).concat({...field, index: uniqueId()})
+      fields: (f.fields||[]).concat(column)
     }));
   }
 
+  const dropExpression = async (ID) => {
+    if (!ID) return Alert ('No ID was present!')
+    const ok = await Confirm(`Remove expression?`);
+    if (!ok) return;
+    setConfiguration((f) => ({
+      ...f,
+      columnMap: f.columnMap?.filter(c => c.index !== ID),
+      fields: f.fields?.filter(c => c.index !== ID)
+    }));
+  }
+  
   const dropClause = async (ID) => {
     const ok = await Confirm(`Remove clause?`);
     if (!ok) return;
@@ -532,7 +547,7 @@ export default function QuerySettingsPanel({
           <Box sx={{p: 0}}>  
             <ColumnSettingsGrid onChange={(key, val, index) => {
             
-                  const { objectname, name } = configuration.columnMap[index];
+              const { objectname, name } = configuration.columnMap[index];
               switch (key) {
                 case "Label": 
                   assignColumnAlias(objectname, name, val) 
