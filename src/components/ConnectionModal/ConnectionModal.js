@@ -66,7 +66,7 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
     }
   };
 
-  const isValid = () => !!connection && !Object.keys(connection).some(f => !connection[f])
+  const isValid = () =>!0//Object.keys(connection).some(f => !connection[f])
  
   return <Dialog open={open}>
     <DialogTitle>
