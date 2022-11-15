@@ -7,7 +7,7 @@ import { Divider, Box, Breadcrumbs,  Autocomplete, Card,
   TextField, Stack,  ToggleButtonGroup, ToggleButton, 
   IconButton, Typography, styled } from '@mui/material';
 import { Add, UnfoldMore, Speed, Remove,  Sync, CheckCircle,
-  Error, Delete, ExpandMore, PlayArrow, Close } from '@mui/icons-material';
+  Error, Delete, ExpandMore, PlayArrow, Close, Menu as MenuIcon} from '@mui/icons-material';
 
 import { ColumnSettingsGrid } from './components'
 import { Tooltag, RotateButton, TextBtn  } from '..'
@@ -455,26 +455,19 @@ export default function QuerySettingsPanel({
   if (!tablename) {
     return <>No table was entered.</>
   }
-/**
- * 
- * {
- * 
- * "COLUMN_NAME":"trackTime",
- * "TABLE_NAME":null,
- * "CONSTRAINT_NAME":null,
- * 
- * name,
- * alias,
- * "IS_NULLABLE":"YES",
- * "COLUMN_DEFAULT":null,
- * "COLUMN_TYPE":"int(11)", <-- type, size
- * 
- * "REFERENCED_TABLE_NAME":null,
- * "REFERENCED_COLUMN_NAME":null
- * 
- * }]
- * 
- */
+ 
+  const menuItems = [
+    {
+      title: 'Run Query',
+      icon: PlayArrow, 
+      action: () => onCommit && onCommit(createTSQL())
+    },
+    {
+      title: 'Close',
+      icon: Close, 
+      action: () => onCancel && onCancel()
+    },
+  ]
   return <QuerySettingsContext.Provider value={{
     setTableJoin,
     addClause,
@@ -495,6 +488,14 @@ export default function QuerySettingsPanel({
     </Breadcrumbs>
   </>} */}
   <Stack direction="row" sx={{alignItems: 'center'}}>
+  {!!menuItems && <QuickMenu 
+        options={menuItems.map(p => p.title)} 
+        icons={menuItems.map(p => p.icon)} 
+        label={<IconButton><MenuIcon /></IconButton> } onChange={key => { 
+          const { action } = menuItems.find(f => f.title === key); 
+          action && action()
+        }} />}
+        
   <Typography variant="h6">Edit query for "{tablename}"</Typography>
       <Box sx={{flexGrow: 1}} />
 

@@ -126,10 +126,10 @@ export const Area = styled(Box)(({ theme, breadcrumbs, pinned }) => ({
   position: 'absolute',
   top: breadcrumbs ? 94 : 64,
   left: pinned ? 340 : 0,
-  width: !pinned ? 'calc(100vw - 48px)' : 'calc(100vw - 388px)',
+  width: !pinned ? 'calc(100vw - 64px)' : 'calc(100vw - 388px)',
   transition: 'left 0.1s linear', 
   margin: theme.spacing(0, 2),
-  padding: 8,
+  padding: theme.spacing(1, 2),
   borderRadius: 8,
   overflow: 'auto'
 }));
