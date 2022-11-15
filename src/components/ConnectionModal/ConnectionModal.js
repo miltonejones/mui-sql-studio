@@ -57,8 +57,8 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
   const [db, setDb] = React.useState([])
 
   const handleChange = async (event) => {
-    setChecked(event.target.checked);
-    if (event.target.checked && !db.length) {
+    setChecked(event.target.checked); 
+    if (event.target.checked && !db.length) { 
       const b = await execQuery(connection, 'select SCHEMA_NAME from information_schema.SCHEMATA');
       const rows = b.rows.map(e => e.SCHEMA_NAME)
       setDb(rows)
@@ -66,14 +66,16 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
     }
   };
 
-  const isValid = () =>!0//Object.keys(connection).some(f => !connection[f])
+  const isValid = () => !!connection && Object.keys(connection).some(f => !connection[f])
+
+  console.log ({ connection })
  
   return <Dialog open={open}>
     <DialogTitle>
       <Typography sx={{mb: 0}} variant="h6">Connection Setup</Typography> 
     </DialogTitle>
     <Divider />
-    <DialogContent>
+    <DialogContent> 
     <Grid container spacing={2}>
 
   {!!connection && fields.map(field => <Grid xs={12} item  key={field.label}>

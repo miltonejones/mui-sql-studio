@@ -76,7 +76,7 @@ function HomePage ({ pinned }) {
     {
       title: "New Connection...",
       icon: Add,
-      action: openConnectionModal
+      action: () => openConnectionModal()
     },  ] 
       
   React.useEffect(() => {
@@ -96,7 +96,7 @@ function HomePage ({ pinned }) {
           size="small" 
           endIcon={<Add />} 
           variant="contained" 
-          onClick={openConnectionModal}>Click here</TextBtn> to create one.
+          onClick={() => openConnectionModal()}>Click here</TextBtn> to create one.
     </Alert>
   }
 

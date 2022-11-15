@@ -97,7 +97,7 @@ function App() {
           </>}
          </Box>
           {/* work surface  */}
-          <Area pinned={!!pinnedTab} breadcrumbs={breadcrumbs}> 
+          <Area pinned={!!pinnedTab} breadcrumbs={breadcrumbs}>  
             <Routes>
               <Route path="/" element={<HomePage pinned={!!pinnedTab} />} /> 
               <Route path="/connection/:connectionID" element={<ConnectionGrid  />} /> 
