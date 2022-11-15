@@ -5,6 +5,8 @@ import Logo from '../MenuDrawer/components/Logo/Logo';
 import { useConfig } from '../../hooks/useConfig';
 import { useSaveQuery } from '../../hooks/useSaveQuery';
 import { Star, StarBorder } from '@mui/icons-material';
+import { QuickNav } from '..';
+
 import moment from 'moment';
 
 
@@ -18,8 +20,8 @@ const Navbar = styled(Box)(({ theme }) => ({
    top: 0,
    left:  0,
    width: '100vw',
-   backgroundColor: theme.palette.primary.main,
-   minHeight: 32
+   backgroundColor: theme.palette.primary.dark,
+   minHeight: 48
 }));
 
 
@@ -37,17 +39,15 @@ export default function ToggleToolbar({
   }) {
   const navigate = (href) => window.location.replace(href); // useNavigate();
   const { getConfigs  } = useConfig()
-  const configs = getConfigs();
   const { getQueries } = useSaveQuery();
+  const configs = getConfigs();
 
   const gesh = getAppHistory();
   const past = gesh.length < 10 ? gesh 
     : gesh.slice( gesh.length - 10)
   const guys = getFavorites();
   const asks = getQueries();
-
-  console.log ({ asks })
-
+ 
   const queryNode = Object.keys(asks).length ? [{
     title: 'Lists',
     descendants:  Object.keys(asks).map(title => {
@@ -155,7 +155,9 @@ export default function ToggleToolbar({
               deleteIcon={<Icon />}/>} 
     </Box>
     
-    <Box sx={{flexShrink: 1, width: pinnedTab ? 300 : 450}}/>
+    <Box sx={{flexShrink: 1, width: pinnedTab ? 300 : 450, textAlign: 'right', pr: 2}}>
+      <QuickNav />
+    </Box>
 
   </Navbar>
   

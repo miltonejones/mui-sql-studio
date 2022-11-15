@@ -17,7 +17,7 @@ function TableGrid () {
   const configs = getConfigs();
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID)
 
-  const { Alert, Confirm, setAppHistory } = React.useContext(AppStateContext);
+  const { Alert, Confirm, setAppHistory, setBreadcrumbs } = React.useContext(AppStateContext);
   
 
   
@@ -141,10 +141,11 @@ function TableGrid () {
       schema,
       tablename
     });
-    setLoaded(true)
-  }, [configKey, loaded, connectionID, schema, tablename, setAppHistory])
- 
 
+    setBreadcrumbs(breadcrumbs);
+    setLoaded(true)
+  }, [configKey, loaded, breadcrumbs, connectionID, schema, tablename, setAppHistory])
+ 
   return <> 
   <ListGrid menuItems={saveMenu} breadcrumbs={breadcrumbs} commitRow={commitRow} title={`Columns in "${tablename}"`} 
       rows={data?.rows?.map(configRow)} />  

@@ -3,7 +3,7 @@ import * as React from 'react';
 import { BrowserRouter, Routes, Route, } from "react-router-dom";
 import Modal, { useModal } from './components/Modal/Modal';
 import { ToggleToolbar, Area, ConnectionModal } from './components'
-import { Box, Stack, Typography, styled } from '@mui/material'; 
+import { Box, Stack, Typography, Link, Breadcrumbs, styled } from '@mui/material'; 
 import { useAppHistory } from './hooks/useAppHistory';
 import { AppStateContext } from './hooks/AppStateContext';  
 import { Helmet } from "react-helmet";
@@ -32,7 +32,8 @@ const Footer = styled(Stack)(() => ({
  
   
 function App() { 
-
+  
+  const [breadcrumbs, setBreadcrumbs] = React.useState(null) ;
   const [audioProp, setAudioProp] = React.useState(null) ;
   const [modalState, setModalState] = React.useState({
     open: false,
@@ -62,13 +63,14 @@ function App() {
         ...appHistory, 
         audioProp,
         setAudioProp,
+        setBreadcrumbs,
         Alert,
         Confirm,
         Prompt,
         ExpressionModal,
         setModalState 
       }}>
-      <div className="App">
+      <Box className="App" sx={{backgroundColor: theme => theme.palette.primary.main}}>
 
         {/* document title  */}
         {current?.title && <Helmet> 
@@ -85,9 +87,17 @@ function App() {
             pinnedTab={pinnedTab}
             setPinnedTab={pinTab}
           />
-
+         <Box sx={{position: 'absolute', top: 60, left: pinnedTab ? 356 : 16 }}>
+         {!!breadcrumbs && <>
+            <Breadcrumbs separator="›" aria-label="breadcrumb">
+              {breadcrumbs.map(crumb => crumb.href 
+                ? <Link sx={{color: 'white' }} href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
+                : <Typography sx={{color: 'white', fontWeight: 600 }} variant="body2">{crumb.text}</Typography>)}
+            </Breadcrumbs>
+          </>}
+         </Box>
           {/* work surface  */}
-          <Area pinned={!!pinnedTab}> 
+          <Area pinned={!!pinnedTab} breadcrumbs={breadcrumbs}> 
             <Routes>
               <Route path="/" element={<HomePage pinned={!!pinnedTab} />} /> 
               <Route path="/connection/:connectionID" element={<ConnectionGrid  />} /> 
@@ -104,11 +114,11 @@ function App() {
 
         {/* page footer  */}
         <Footer spacing={1} direction="row">
-          {!!audioProp && <><StopCircle onClick={() => setAudioProp(null)} sx={{ml: 1, cursor: 'pointer'}}/> <Typography sx={{ ml: 1 }} variant="caption">Now playing: <b>{audioProp}</b></Typography></>}
+          {!!audioProp && <><StopCircle onClick={() => setAudioProp(null)} sx={{ml: 2, cursor: 'pointer'}}/> <Typography sx={{ ml: 1 }} variant="caption">Now playing: <b>{audioProp}</b></Typography></>}
           <Box sx={{flexGrow: 1}}/>
           <SaveAs />
-          <Typography variant="caption">MySQL<b>Now</b>.</Typography>
-          <Typography variant="caption"><a style={{color: 'orange'}} rel="noreferrer" href="https://github.com/miltonejones/mui-sql-studio" target="_blank">Check out the repo</a>.</Typography>
+          <Typography variant="caption">MySQL<b>Now</b>. The "Low-Code" SQL solution.</Typography>
+          {/* <Typography variant="caption"><a style={{color: 'orange'}} rel="noreferrer" href="https://github.com/miltonejones/mui-sql-studio" target="_blank">Check out the repo</a>.</Typography> */}
         </Footer>
 
         {/* general global modal  */}
@@ -128,7 +138,7 @@ function App() {
         Your browser does not support the audio element.
         </audio>}
 
-      </div>
+      </Box>
     </AppStateContext.Provider>
   );
 }

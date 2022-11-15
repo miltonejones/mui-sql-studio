@@ -89,7 +89,12 @@ export default function MenuDrawer({
       >
 
 
-      {!!pinned && ( <Stack sx={{alignItems: 'center', mt: 0.5}} direction="row">
+      {!!pinned && ( <Stack sx={{
+          alignItems: 'center',
+          backgroundColor: theme => theme.palette.primary.dark,
+          m: 0,
+          height: 48 }
+          } direction="row">
         <Logo short />
         <Box sx={{flexGrow: 1}} />
         <Button

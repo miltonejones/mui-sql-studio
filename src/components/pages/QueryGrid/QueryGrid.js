@@ -31,42 +31,12 @@ function QueryGrid () {
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID);
 
 
-  const { setAppHistory, Alert, Prompt, Confirm } = React.useContext(AppStateContext);
+  const { setAppHistory, Alert, Prompt, Confirm, setBreadcrumbs } = React.useContext(AppStateContext);
   const saveEnabled = !!configuration.tables.length
 
   const { saveQuery, deleteQuery, getQueries } = useSaveQuery();
  
   
-  React.useEffect(() => {
-   
-    if (!!loaded) return;
-
-    let props = {
-      title: `${configKey} | ${tablename} | List`,
-      path: `/query/${connectionID}/${schema}/${tablename}`,
-    }
-
-    if (listname) {
-      const lists = getQueries();
-      const title = Object.keys(lists).find(f => formatConnectName(f) === listname);
-      props = {
-        title: `${configKey} | ${tablename} | List | ${title} `,
-        path: `/lists/${connectionID}/${schema}/${tablename}/${listname}`,
-      }
-    }
-  
-    setAppHistory({
-      ...props,
-      connectionID,
-      schema,
-      tablename,
-      listname
-    });
-   
-
-  }, [configKey, loaded, getQueries, connectionID, tablename, schema, listname, setAppHistory])
-  
-
   const deletePage = async (key) => {
     const ok = await Confirm(`Delete saved query "${key}"?`);
     if (!ok) return;
@@ -320,6 +290,36 @@ const saveMenu = saveEnabled ? [
     },   
   ]);
  
+  React.useEffect(() => {
+   
+    setBreadcrumbs(breadcrumbs);
+    if (!!loaded) return;
+
+    let props = {
+      title: `${configKey} | ${tablename} | List`,
+      path: `/query/${connectionID}/${schema}/${tablename}`,
+    }
+
+    if (listname) {
+      const lists = getQueries();
+      const title = Object.keys(lists).find(f => formatConnectName(f) === listname);
+      props = {
+        title: `${configKey} | ${tablename} | List | ${title} `,
+        path: `/lists/${connectionID}/${schema}/${tablename}/${listname}`,
+      }
+    }
+  
+    setAppHistory({
+      ...props,
+      connectionID,
+      schema,
+      tablename,
+      listname
+    });
+   
+
+  }, [configKey, loaded, breadcrumbs, getQueries, connectionID, tablename, schema, listname, setAppHistory])
+  
 
   return <> 
 

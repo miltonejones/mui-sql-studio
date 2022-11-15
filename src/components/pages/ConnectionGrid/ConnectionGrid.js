@@ -17,21 +17,8 @@ function ConnectionGrid () {
   const navigate = useNavigate();
 
 
-  const { setAppHistory, Alert } = React.useContext(AppStateContext);
+  const { setAppHistory, setBreadcrumbs, Alert } = React.useContext(AppStateContext);
   
-  React.useEffect(() => {
-   
-    if(loaded) return
-    setAppHistory({
-      title: `Connections | ${configKey}`,
-      path: `/connection/${connectionID}`,
-      connectionID, 
-    });
-    setLoaded(true)
-
-  }, [configKey, connectionID, loaded, setAppHistory])
-  
-
   React.useEffect(() => {
     if (!!data) return;
     (async() => {
@@ -99,7 +86,20 @@ function ConnectionGrid () {
         navigate(`/`)
       }
     }, ] 
-      
+    React.useEffect(() => {
+     
+      if(loaded) return
+      setAppHistory({
+        title: `Connections | ${configKey}`,
+        path: `/connection/${connectionID}`,
+        connectionID, 
+      });
+  
+      setBreadcrumbs(breadcrumbs);
+      setLoaded(true)
+  
+    }, [configKey, connectionID, breadcrumbs, loaded, setAppHistory])
+    
   return <ListGrid breadcrumbs={breadcrumbs} title={`Tables in "${configKey}"`} menuItems={saveMenu} rows={data?.rows?.map(configRow)} /> 
 
 } 

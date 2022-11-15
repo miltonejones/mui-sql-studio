@@ -4,8 +4,8 @@ import './ListGrid.css';
 import { 
   Alert, Box, Typography, Divider, 
   IconButton, 
-  Stack,  Breadcrumbs, 
-  Pagination, Link 
+  Stack, Link, Breadcrumbs, 
+  Pagination 
 } from '@mui/material';
 import { QuickMenu, Tooltag } from '..'; 
 import { Sync, Menu } from '@mui/icons-material';
@@ -31,13 +31,13 @@ export default function ListGrid({
 
   return <>
 
-  {!!breadcrumbs && <>
+  {/* {!!breadcrumbs && <>
     <Breadcrumbs separator="›" aria-label="breadcrumb">
       {breadcrumbs.map(crumb => crumb.href 
         ? <Link href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
         : <Typography variant="body2">{crumb.text}</Typography>)}
     </Breadcrumbs>
-  </>}
+  </>} */}
 
   {!!title && <>
     <Stack direction="row" sx={{alignItems: 'center'}}>

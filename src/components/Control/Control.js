@@ -99,7 +99,6 @@ export const RotateButton = styled(IconButton)(({ deg = 90 }) => ({
 
 
 export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}) => {
-
   const startAdornment = !startIcon ? null  : <InputAdornment position="start">
     <IconButton size="small">
       <FilterAlt />
@@ -117,15 +116,15 @@ export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}
 
   return  <TextField size="small" {...props} value={value} autoComplete="off" onChange={onChange} 
   InputProps={adornment} autoFocus/>
+};
 
-}
 
-export const Area = styled(Box)(({ theme, pinned }) => ({
-  height: 'calc(100vh - 80px)',
-  backgroundColor: '#f5f5f5   ',
+export const Area = styled(Box)(({ theme, breadcrumbs, pinned }) => ({
+  height: `calc(100vh - ${breadcrumbs ? 134 : 104}px)`,
+  backgroundColor: '#f5f5f5 ',
   outline: 'dotted 1px blue',
   position: 'absolute',
-  top: 40,
+  top: breadcrumbs ? 94 : 64,
   left: pinned ? 340 : 0,
   width: !pinned ? 'calc(100vw - 48px)' : 'calc(100vw - 388px)',
   transition: 'left 0.1s linear', 
@@ -133,7 +132,8 @@ export const Area = styled(Box)(({ theme, pinned }) => ({
   padding: 8,
   borderRadius: 8,
   overflow: 'auto'
-}))
+}));
+
 
 export const TextBox = styled(TextField)(({ theme }) => ({
   marginTop: theme.spacing(1), 
@@ -143,4 +143,4 @@ export const TextBox = styled(TextField)(({ theme }) => ({
     lineHeight: 1.5,
     fontFamily: 'Courier'
   }
-}))
+}));

@@ -17,17 +17,8 @@ function HomePage ({ pinned }) {
   const navigate = useNavigate();
 
  
-  const { setAppHistory, setModalState } = React.useContext(AppStateContext);
+  const { setAppHistory, setModalState, setBreadcrumbs } = React.useContext(AppStateContext);
  
-  
-  React.useEffect(() => {
-    if (loaded) return;
-    setAppHistory({
-      title: `Home`,
-      path: `/` 
-    });
-    setLoaded(true)
-  }, [ setAppHistory, loaded ])
   
  
   const configRow = (conf) => [
@@ -88,6 +79,16 @@ function HomePage ({ pinned }) {
       action: openConnectionModal
     },  ] 
       
+  React.useEffect(() => {
+    if (loaded) return;
+    setAppHistory({
+      title: `Home`,
+      path: `/` 
+    });
+    setBreadcrumbs(breadcrumbs);
+    setLoaded(true)
+  }, [ setAppHistory, loaded, breadcrumbs ])
+  
   if (!rows.length) {
     return <Alert severity="warning">
       You do not have any connections created.  

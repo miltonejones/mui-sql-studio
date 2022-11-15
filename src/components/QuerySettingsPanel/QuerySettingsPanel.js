@@ -67,7 +67,7 @@ export default function QuerySettingsPanel({
   const [showFieldNames, setShowFieldNames] = React.useState(false);
   const [orderMode, setOrderMode] = React.useState(false);
   const [showSQL, setShowSQL] = React.useState(false);
-  const { Alert, Prompt, Confirm, ExpressionModal } = React.useContext(AppStateContext);
+  const { Alert, Prompt, Confirm, ExpressionModal, setBreadcrumbs } = React.useContext(AppStateContext);
 
   const transformer = useQueryTransform()
 
@@ -374,7 +374,7 @@ export default function QuerySettingsPanel({
     return p.length ? p : ['*'];
   }
   
-  React.useEffect(() => { 
+  React.useEffect(() => {  
     if (!!loaded) return; 
     (async () => {
       await addTable(tablename, !0);
@@ -487,13 +487,13 @@ export default function QuerySettingsPanel({
     predicates: transformer.predicates,
     ...configuration
   }}>
-  {!!breadcrumbs && <>
+  {/* {!!breadcrumbs && <>
     <Breadcrumbs separator="›" aria-label="breadcrumb">
       {breadcrumbs.map(crumb => crumb.href 
         ? <Link href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
         : <Typography variant="body2">{crumb.text}</Typography>)}
     </Breadcrumbs>
-  </>}
+  </>} */}
   <Stack direction="row" sx={{alignItems: 'center'}}>
   <Typography variant="h6">Edit query for "{tablename}"</Typography>
       <Box sx={{flexGrow: 1}} />

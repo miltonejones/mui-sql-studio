@@ -24,7 +24,7 @@ function QueryAnalyzer () {
   const [busy, setBusy] = React.useState(null);
   const { getConfigs  } = useConfig()
   const configs = getConfigs();
-  const { setAppHistory, Alert  } = React.useContext(AppStateContext);
+  const { setAppHistory, Alert, setBreadcrumbs  } = React.useContext(AppStateContext);
   const { getQueries } = useSaveQuery();
 
 
@@ -37,6 +37,14 @@ function QueryAnalyzer () {
   React.useEffect(() => {
    
     if (loaded) return;
+
+    setBreadcrumbs([{
+      href: '/',
+      text: 'Home'
+    }, 
+      {
+        text: 'Query Analyzer'
+      }])
 
     if (listname) {
       const lists = getQueries();
