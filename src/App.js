@@ -89,7 +89,7 @@ function App() {
           />
          <Box sx={{position: 'absolute', top: 60, left: pinnedTab ? 356 : 16 }}>
          {!!breadcrumbs && <>
-            <Breadcrumbs separator="›" aria-label="breadcrumb">
+            <Breadcrumbs separator={<b style={{color: 'white'}}>›</b>} aria-label="breadcrumb">
               {breadcrumbs.map(crumb => crumb.href 
                 ? <Link sx={{color: 'white' }} href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
                 : <Typography sx={{color: 'white', fontWeight: 600 }} variant="body2">{crumb.text}</Typography>)}
