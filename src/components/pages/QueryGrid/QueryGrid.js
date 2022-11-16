@@ -31,7 +31,11 @@ function QueryGrid () {
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID);
 
 
-  const { setAppHistory, Alert, Prompt, Confirm, setPageSize, pageSize, setBreadcrumbs } = React.useContext(AppStateContext);
+  const { setAppHistory, Alert, Prompt, Confirm, setPageSize, pageSize: ps = 100, setBreadcrumbs } = React.useContext(AppStateContext);
+  const pageSize = ps === undefined || ps === 'undefined' 
+    ? 100
+    : ps;
+
   const saveEnabled = !!configuration.tables.length
 
   const { saveQuery, deleteQuery, getQueries } = useSaveQuery();
@@ -330,10 +334,10 @@ const saveMenu = saveEnabled ? [
 
     {!!data?.error && <> 
       <Typography>{data.error.code}</Typography>
-      <Alert severity="error">{JSON.stringify(data.error.sqlMessage)}</Alert>
+      {/* <Alert severity="error">{JSON.stringify(data.error.sqlMessage)}</Alert> */}
     </>}
 
-  <Collapse in={!edit}>  
+  <Collapse in={!edit}>   
     <ListGrid  
       dense
       wide

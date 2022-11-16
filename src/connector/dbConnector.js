@@ -34,7 +34,10 @@ export const describeTable = async (config, table, page = 1) => {
   return await response.json();
 };
 
-export const execQuery = async (config, query, page = 1, size = 20) => {
+export const execQuery = async (config, query, page = 1, s = 20) => {
+  const size = s === undefined || s === 'undefined' 
+    ? 20
+    : s;
   const requestOptions = {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
