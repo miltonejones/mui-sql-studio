@@ -1,0 +1,14 @@
+{
+    "canvas-nav-item--main-nav-navigation--selected--box-shadow": "var(--now￾color--primary-3)",
+    "canvas-menu--background-color": "var(--now-color--primary-0)",
+    "--now-button--border-radius": "4px",
+    "--now-color--primary-0": "228,230,231",
+    "--now-color--primary-1": "41, 62, 64",
+    "--now-color--primary-2": "129, 181, 161",
+    "--now-color--primary-3": "71, 77, 82",
+    "--now-color--primary-4": "82, 116, 255",
+    "--now-button--border-width": "2",
+    "--now-button--secondary--border-color": "var(--now-color--primary-4)",
+    "--now-button--primary--background-color": "var(--now-color--primary-4)",
+    "--now-card--border-radius": "4px"
+}

@@ -119,17 +119,16 @@ export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}
 };
 
 
-export const Area = styled(Box)(({ theme, breadcrumbs, pinned }) => ({
+export const Area = styled(Card)(({ theme, breadcrumbs, pinned }) => ({
   height: `calc(100vh - ${breadcrumbs ? 134 : 104}px)`,
-  backgroundColor: '#f5f5f5 ',
-  outline: 'dotted 1px blue',
+  backgroundColor: '#f5f5f5 ', 
   position: 'absolute',
   top: breadcrumbs ? 94 : 64,
   left: pinned ? 340 : 0,
-  width: !pinned ? 'calc(100vw - 64px)' : 'calc(100vw - 388px)',
+  width: !pinned ? 'calc(100vw - 96px)' : 'calc(100vw - 436px)',
   transition: 'left 0.1s linear', 
   margin: theme.spacing(0, 2),
-  padding: theme.spacing(1, 2),
+  padding: theme.spacing(1, 4 ),
   borderRadius: 8,
   overflow: 'auto'
 }));
@@ -144,3 +143,11 @@ export const TextBox = styled(TextField)(({ theme }) => ({
     fontFamily: 'Courier'
   }
 }));
+
+/**
+ 
+ 
+
+ * 
+ * 
+ */
