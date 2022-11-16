@@ -52,15 +52,23 @@ function App() {
   const { current } = appHistory;
 
   const [pinnedTab, setPinnedTab] = React.useState(localStorage.getItem('pinned-tab')); 
+  const [pageSize, commitPageSize] = React.useState(localStorage.getItem('page-size') || 100); 
 
   const pinTab = tab => { 
     setPinnedTab(tab);
     localStorage.setItem('pinned-tab', tab)
   }
+
+  const setPageSize = (size) => {
+    commitPageSize(size);
+    localStorage.setItem('page-size', size)
+  }
  
   return (
     <AppStateContext.Provider value={{ 
         ...appHistory, 
+        setPageSize,
+        pageSize,
         audioProp,
         setAudioProp,
         setBreadcrumbs,

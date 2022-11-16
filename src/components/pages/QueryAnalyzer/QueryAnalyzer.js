@@ -24,7 +24,7 @@ function QueryAnalyzer () {
   const [busy, setBusy] = React.useState(null);
   const { getConfigs  } = useConfig()
   const configs = getConfigs();
-  const { setAppHistory, Alert, setBreadcrumbs  } = React.useContext(AppStateContext);
+  const { setAppHistory, Alert, setPageSize, pageSize, setBreadcrumbs  } = React.useContext(AppStateContext);
   const { getQueries } = useSaveQuery();
 
 
@@ -71,10 +71,15 @@ function QueryAnalyzer () {
     value: conf[key], 
   }));
 
-  const runQuery = async (pg) => {
+  const chagePageSize = size => {
+    setPageSize(size);
+    runQuery(1, size);
+  }
+
+  const runQuery = async (pg, size) => {
     setBusy(true);  
     setData(null);  
-    const f = await execQuery(configs[configName], sqlText, pg); 
+    const f = await execQuery(configs[configName], sqlText, pg, size || pageSize); 
     setBusy(false);  
     setPage(pg);
     setData(f); 
@@ -142,6 +147,8 @@ FROM ${name}`)
         Query results
       </Divider>
       <ListGrid   
+        pageSize={pageSize}
+        setPageSize={chagePageSize}
         count={data?.count}
         setPage={runQuery} 
         page={page}  

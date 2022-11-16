@@ -14,20 +14,20 @@ import { ListRow, SearchRow, Tiles } from './components';
    
 export default function ListGrid({
   title, empty,  searchable, dense, wide,
-  searches, sorts, onClear, onSearch, 
+  searches, sorts, onClear, onSearch, pageSize = 20,
   commitRow, count = 0, page = 1, menuItems,
-  setPage, buttons, onSort, dropOrder,
+  setPage, buttons, onSort, dropOrder, setPageSize,
   breadcrumbs, onCellChange, columns = [], rows = []}) { 
   if (!rows?.length && !empty) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
   const headers = empty ? [] : [rows[0].map(row => ({value: row.field, alias: row.alias, type: 'header'}))]
-  const pageCount = Math.ceil(count / 100);
+  const pageCount = Math.ceil(count / pageSize);
 
   const handleChange = (event, value) => {
     setPage && setPage(value);
   };
 
-  const first = 1 + (100 * (page - 1));
-  const desc = `${first} to ${Math.min(first + 99, count)} of ${count} records`
+  const first = 1 + (pageSize * (page - 1));
+  const desc = `${first} to ${Math.min(first + pageSize - 1, count)} of ${count} records`
 
   return <>
 
@@ -62,9 +62,11 @@ export default function ListGrid({
   </>}
  
     {!!count && <Stack direction="row" sx={{alignItems: 'center'}}>
-      <Pagination sx={{mb: 1}}  onChange={handleChange} page={page} count={pageCount} />
+      {count > pageSize && <Pagination sx={{mb: 1}}  onChange={handleChange} page={page} count={pageCount} />}
       <Box sx={{flexGrow: 1}} />
-      <Typography variant="caption">{desc}</Typography>
+      <Typography sx={{mr: 1}} variant="caption">{desc}</Typography>
+      <Typography sx={{mr: 1}} variant="caption">Rows per page</Typography>
+      <QuickMenu options={[20,50,100,250]} label={pageSize} value={pageSize} onChange={setPageSize} />
       </Stack>
       } 
 

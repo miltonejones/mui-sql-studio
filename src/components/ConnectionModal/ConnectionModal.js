@@ -52,7 +52,6 @@ const fields = [
 
 
 export default function ConnectionModal({open, connection = {}, onChange, onClose}) {
- 
   const [checked, setChecked] = React.useState(false);
   const [db, setDb] = React.useState([])
 
@@ -75,49 +74,48 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
     </DialogTitle>
     <Divider />
     <DialogContent> 
-    <Grid container spacing={2}>
+      <Grid container spacing={2}>
 
-  {!!connection && fields.map(field => <Grid xs={12} item  key={field.label}>
-    <TextField autoComplete="off" value={connection[field.field]} onChange={(e) => {
-      onChange && onChange(field.field,  e.target.value) 
-    } } fullWidth size="small" label={field.label} type={field.type}/>
-  </Grid>)}
+      {!!connection && fields.map(field => <Grid xs={12} item  key={field.label}>
+        <TextField autoComplete="off" value={connection[field.field]} onChange={(e) => {
+          onChange && onChange(field.field,  e.target.value) 
+        } } fullWidth size="small" label={field.label} type={field.type}/>
+      </Grid>)}
 
-    <Grid item xs={5}>
-      <FormControlLabel
-        label="Choose database "
-        control={ <Switch
-        disabled={!isValid()} 
-          checked={checked}
-          onChange={handleChange}
-          inputProps={{ 'aria-label': 'controlled' }}
-        />}
-      />
-     
-
-    </Grid>
-   {!!isValid() && <Grid sx={{alignItems: 'center'}} xs={7} item>
-      {!!db.length ? <Select value={connection.database} 
-        disabled={!checked} size="small" fullWidth >
-        {db.map(d => <MenuItem
-        onClick={() => onChange('database', d)}
-        value={d}
-        key={d}>{d}</MenuItem>)}
-      </Select> : <>
-      Using <b>{connection.database}</b>{" "}
-      <AU onClick={() => handleChange({target: {checked: true}})}>Change</AU>
-      </>}
-    </Grid>}
-  
-
-  </Grid></DialogContent>
-  
-  <Divider />
-  <DialogActions sx={{pr: 3}}>
-    <Button sx={{mr: 1}} variant="outlined" onClick={() => onClose(false)}>close</Button>
-    <Button
-        disabled={!isValid()}  variant="contained" onClick={() => onClose(connection)}>save</Button>
-  </DialogActions>
+      <Grid item xs={5}>
+        <FormControlLabel
+          label="Choose database "
+          control={ <Switch
+          disabled={!isValid()} 
+            checked={checked}
+            onChange={handleChange}
+            inputProps={{ 'aria-label': 'controlled' }}
+          />}
+        />
+      
+      </Grid>
+        {!!isValid() && <Grid sx={{alignItems: 'center'}} xs={7} item>
+          {!!db.length ? <Select value={connection.database} 
+            disabled={!checked} size="small" fullWidth >
+            {db.map(d => <MenuItem
+            onClick={() => onChange('database', d)}
+            value={d}
+            key={d}>{d}</MenuItem>)}
+          </Select> : <>
+          Using <b>{connection.database}</b>{" "}
+          <AU onClick={() => handleChange({target: {checked: true}})}>Change</AU>
+          </>}
+        </Grid>}
+      </Grid>
+    
+    </DialogContent>
+    
+    <Divider />
+    <DialogActions sx={{pr: 3}}>
+      <Button sx={{mr: 1}} variant="outlined" onClick={() => onClose(false)}>close</Button>
+      <Button
+          disabled={!isValid()}  variant="contained" onClick={() => onClose(connection)}>save</Button>
+    </DialogActions>
   </Dialog>
 
 }

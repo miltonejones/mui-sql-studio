@@ -31,7 +31,7 @@ function QueryGrid () {
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID);
 
 
-  const { setAppHistory, Alert, Prompt, Confirm, setBreadcrumbs } = React.useContext(AppStateContext);
+  const { setAppHistory, Alert, Prompt, Confirm, setPageSize, pageSize, setBreadcrumbs } = React.useContext(AppStateContext);
   const saveEnabled = !!configuration.tables.length
 
   const { saveQuery, deleteQuery, getQueries } = useSaveQuery();
@@ -63,16 +63,21 @@ function QueryGrid () {
     setConfiguration(query);
   }
 
+  const chagePageSize = size => {
+    setPageSize(size);
+    loadPage(1, queryText, size);
+  }
 
-  const loadPage = React.useCallback (async (pg, sql) => {  
+
+  const loadPage = React.useCallback (async (pg, sql, size) => {  
     setData(null); 
     setEmpty(false);
-    const f = await execQuery(configs[configKey], sql || queryText, pg); 
+    const f = await execQuery(configs[configKey], sql || queryText, pg, size || pageSize); 
     setPage(pg);
     setData(f); 
     setEmpty(!f?.rows?.length)
   
-  }, [configs, configKey, queryText])
+  }, [configs, configKey, queryText, pageSize])
 
   const execQueryText = (text) => { 
     setData(null); 
@@ -332,6 +337,8 @@ const saveMenu = saveEnabled ? [
     <ListGrid  
       dense
       wide
+      pageSize={pageSize}
+      setPageSize={chagePageSize}
       onSearch={createAdHoc}
       onSort={orderAdHoc}
       onClear={dropAdHoc} 
