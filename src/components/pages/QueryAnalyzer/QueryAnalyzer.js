@@ -6,17 +6,18 @@ import { useConfig } from '../../../hooks/useConfig';
 import { AppStateContext } from '../../../hooks/AppStateContext';
 import { formatConnectName } from '../../../util';
 import { useSaveQuery } from '../../../hooks/useSaveQuery';
-import { execQuery, describeConnection, describeTable } from '../../../connector/dbConnector';
-import { Sync, PlayArrow, Close, ExpandMore } from '@mui/icons-material'; 
+import { execQuery, execCommand, describeConnection, describeTable } from '../../../connector/dbConnector';
+import { Sync, PlayArrow, Close, ExpandMore, Launch } from '@mui/icons-material'; 
  
 
 function QueryAnalyzer () {
-  const { listname, connectionID } = useParams(); 
+  const { listname, tablename, schema, connectionID } = useParams(); 
 
   const [loaded, setLoaded] = React.useState(false) ;
   const [configName, setConfigName] = React.useState(null)
   const [connect, setConnect] = React.useState(null)
   const [sqlText, setSqlText] = React.useState(null)
+  const [sqlType, setSqlType] = React.useState('SELECT')
   const [tableName, setTableName] = React.useState(null)
   const [showQuery, setShowQuery] = React.useState(true)
   const [page, setPage] = React.useState(1)
@@ -77,20 +78,46 @@ function QueryAnalyzer () {
   }
 
   const runQuery = async (pg, size) => {
+    const command = sqlType === 'SELECT'
+      ? execQuery
+      : execCommand
     setBusy(true);  
     setData(null);  
-    const f = await execQuery(configs[configName], sqlText, pg, size || pageSize); 
+    const f = await command(configs[configName], sqlText, pg, size || pageSize); 
     setBusy(false);  
+    if (f.error) {
+      return Alert(f.error.sqlMessage)
+    }
     setPage(pg);
     setData(f); 
   }
 
-  const setTable = async (name) => {
+  const setTable = async (name, type) => {
     const { rows } = await describeTable(configs[configName], name);
-    const cols = rows.map(r => r.COLUMN_NAME).join(', ') 
-    setSqlText(`SELECT ${cols} 
-FROM ${name}`)
+    const cols = rows.map(r => r.COLUMN_NAME).join(', ');
+    const deleteSQL = `DELETE FROM ${name} \nWHERE`;
+    const updateSQL = `UPDATE ${name} SET\n` + rows.map(r => ` ${r.COLUMN_NAME} = ''`).join('\n,') + '\nWHERE';
+    const selectSQL = `SELECT ${cols} \nFROM ${name}`
+
+    switch(type || sqlType) {
+      case 'SELECT':
+        setSqlText(selectSQL);
+        break;
+      case 'UPDATE':
+        setSqlText(updateSQL);
+        break;
+      case 'DELETE':
+        setSqlText(deleteSQL);
+        break;
+      default:
+        // do nothing
+    } 
     setTableName(name)
+  }
+
+  const updateSQLType = type => {
+    setSqlType(type);
+    setTable(tableName, type)
   }
 
   const Icon = busy ? Sync : PlayArrow;
@@ -104,9 +131,13 @@ FROM ${name}`)
           onChange={setConfig} label="connections" value={configName}/> 
       </Box>
 
-      {!!connect &&  <QuickSelect options={connect} 
-        onChange={setTable} label="tables" value={tableName}/> }
-
+      {!!connect &&  <>
+        <QuickSelect options={['SELECT', 'UPDATE', 'DELETE']} disableClearable={false}
+        onChange={updateSQLType} label="query type" value={sqlType}/>
+        <QuickSelect options={connect} 
+        onChange={setTable} label="tables" value={tableName}/>
+      </> }
+ 
       <TextBtn disabled={busy || !sqlText} onClick={() => runQuery(1)} variant="contained"
         color="warning" endIcon={<Icon className={busy ? 'spin' : ''} />}>
         Run
@@ -117,7 +148,11 @@ FROM ${name}`)
       <Tooltag title="Test Query" component={QueryTest} onResult={async(msg) => {
         await Alert(`Query completed ${msg.error?'with errors':'successfully'} in ${msg.since}ms.`);
         !!msg.error && Alert(`${msg.error.sqlMessage}`)
-      }}   sql={sqlText} config={configs[configName]} />
+      }} noneQuery={sqlType !== 'SELECT'} sql={sqlText} config={configs[configName]} />
+
+      {!!tableName && <IconButton href={`/query/${connectionID}/${schema}/${tableName}`}>
+          <Launch />
+        </IconButton>}
 
       {!!data && <IconButton onClick={() => setData(null)}>
         <Close />

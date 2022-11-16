@@ -72,7 +72,7 @@ function TableGrid () {
         <Box>
         Delete column "{name}"? This action cannot be undone! To confirm this action type <i>delete</i> in the box below.
         </Box>
-      </>, 'Confirm column delete');
+      </>, 'Confirm column delete', null, null, 'Type "delete"');
     if (ok === 'delete') {
       const res = await execCommand(configs[configKey], sql);
       if (res.error) {

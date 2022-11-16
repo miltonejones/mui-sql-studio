@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { describeTable, connectToDb, execQuery } from '../../connector/dbConnector';
+import { describeTable, connectToDb, execQuery, execCommand } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
 import { Divider, Box, Breadcrumbs,  Autocomplete, Card,
@@ -874,7 +874,8 @@ export const QuickSelect = ({
   value: selected, 
   options = [], 
   onChange ,
-  small
+  small,
+  ...props
 }) => {
 
   const [filterText, setFilterText] = React.useState(null); 
@@ -900,6 +901,7 @@ export const QuickSelect = ({
     value={selected} 
     options={selections}
     onChange={handleChange} 
+    {...props}
     renderInput={(params) => <TextField {...params} label={label} placeholder="Filter options" size="small" />}
  />
   </>
@@ -1032,12 +1034,13 @@ function TableMenu ({ tablename, name, fieldname }) {
   </>;
 }
 
-export const QueryTest = ({ config, sql, onResult, ...props }) => {
+export const QueryTest = ({ config, sql, onResult, noneQuery, ...props }) => {
   const [state, setState] = React.useState(0)
   const run = async () => {
+    const command = noneQuery ? execCommand : execQuery;
     setState(1);
     const now = new Date().getTime()
-    const f = await execQuery(config, sql); 
+    const f = await command(config, sql); 
     const since = new Date().getTime() - now;
 
     onResult && onResult ({

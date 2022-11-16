@@ -160,11 +160,12 @@ const ModalHeader = ({ handleClose, title, icon: Icon = Business }) => (
  </Flex>
 );
  
-const ModalPrompt = ({ onChange, title, message, defaultValue = ''}) => {
+const ModalPrompt = ({ onChange, title, message, defaultValue = '', placeholder}) => {
   const [value, setValue] = React.useState(defaultValue);
   const textProps = {
     ...modalTextProps,
     value,
+    placeholder,
     label: title,
     onChange: (e) => {
       setValue(e.target.value);
@@ -249,10 +250,11 @@ export const useModal = () => {
   * @param {string} message - message to display in the dialog
   * @param {string} title - dialog title
   */
- const Prompt = (message, title, value, enableSave) =>
+ const Prompt = (message, title, value, enableSave, placeholder) =>
    createModalMethod({
      message,
      title, 
+     placeholder: placeholder || title,
      icon: Announcement,
      defaultValue: value,
      enableSave,

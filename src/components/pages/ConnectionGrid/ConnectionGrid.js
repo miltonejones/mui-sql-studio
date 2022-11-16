@@ -43,7 +43,7 @@ function ConnectionGrid () {
         <Box>
         Delete table "{name}"? This action cannot be undone! To confirm this action type <i>delete</i> in the box below.
         </Box>
-      </>, 'Confirm table delete');
+      </>, 'Confirm table delete', null, null, 'Type "delete"');
     if (ok === 'delete') {
       const res = await execCommand(configs[configKey], sql);
       if (res.error) {
