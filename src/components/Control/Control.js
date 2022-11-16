@@ -144,10 +144,6 @@ export const TextBox = styled(TextField)(({ theme }) => ({
   }
 }));
 
-/**
- 
- 
-
- * 
- * 
- */
+export const TinyButton = ({icon: Icon, ...props}) => <IconButton {...props}  sx={{mr: 1, width: 18, height: 18}}>
+  <Icon sx={{width: 16, height: 16}} />
+</IconButton>

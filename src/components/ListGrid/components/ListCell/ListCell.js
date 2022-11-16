@@ -1,9 +1,9 @@
 import React from 'react';
-import { styled, Box, Stack, Typography } from '@mui/material';
+import { styled, Box, Stack, Typography, Popover } from '@mui/material';
 import { Cell, EditCell } from '..';
-import { QuickMenu, Tooltag } from '../../..';
+import { QuickMenu, Tooltag, Flex } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
-import { PlayCircle, Image, StopCircle  } from "@mui/icons-material";
+import { PlayCircle, Image, StopCircle, ExpandMore  } from "@mui/icons-material";
    
 const CellText = styled(Typography)(({theme, clickable, selected, active}) => ({ 
   cursor: clickable || active ? 'pointer' : 'default',
@@ -18,6 +18,7 @@ const {
   field, 
   value, 
   alias,
+  popover,
   create,
   icon, 
   odd,
@@ -39,6 +40,18 @@ const {
 } = props;
 const sortProp = sorts.find(s => s.fieldName === alias || s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
 const { Prompt, audioProp, setAudioProp } = React.useContext(AppStateContext);
+const [anchorEl, setAnchorEl] = React.useState(null);
+
+const handleClick = (event) => {
+  setAnchorEl(event.currentTarget);
+};
+
+const handleClose = () => {
+  setAnchorEl(null);
+};
+
+const open = Boolean(anchorEl);
+
 
 if (create) {
   return <EditCell {...props} />
@@ -109,14 +122,18 @@ const content = !types
   </Tooltag>
   : <QuickMenu options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
 
-return <Cell selected={cellSelected} control={!!Control} odd={odd} dense={dense} 
+return <><Cell selected={cellSelected} control={!!Control} odd={odd} dense={dense} 
   header={type === 'header'} active={edit || !!action}>
   <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
 
-   <Stack direction="row" spacing={1} sx={{alignItems: 'center'}} onClick={onClick}>  
-      {c} 
-      {cellIcon}
-      {content} 
+   <Stack direction="row" spacing={1} sx={{alignItems: 'center', width: '100%'}}>
+      <Flex onClick={onClick}>
+        {c} 
+        {cellIcon}
+        {content} 
+      </Flex>  
+      <Box sx={{flexGrow: 1}} />
+      {!!popover && <ExpandMore  onClick={handleClick}/>}
    </Stack>
 
     <Box sx={{flexGrow: 1}} />
@@ -127,6 +144,21 @@ return <Cell selected={cellSelected} control={!!Control} odd={odd} dense={dense}
     </Tooltag>} 
   </Stack>
 </Cell>
+
+  {!!popover && <Popover 
+    open={open}
+    anchorEl={anchorEl}
+    onClose={handleClose}
+    anchorOrigin={{
+      vertical: 'bottom',
+      horizontal: 'left',
+    }}
+  >
+    {popover}
+  </Popover>}
+
+
+</>
 }
 
 ListCell.defaultProps = {};

@@ -1,11 +1,11 @@
 import React from 'react'; 
-import { ListGrid } from '../../';
-import {  Box, Typography } from '@mui/material';
+import { ListGrid, TinyButton, Flex, Tooltag } from '../../';
+import { Stack, Box, Typography, Link , Divider} from '@mui/material';
 import { useNavigate, useParams } from "react-router-dom";
 import { AppStateContext } from '../../../hooks/AppStateContext';
 import { formatConnectName } from '../../../util';
 import { useConfig } from '../../../hooks/useConfig';
-import { Launch, Add, Remove, Close, Key } from '@mui/icons-material';
+import { Launch, Add, Remove, Close, Key, Delete } from '@mui/icons-material';
 import { execQuery, execCommand } from '../../../connector/dbConnector';
  
 
@@ -31,7 +31,19 @@ function TableGrid () {
         field: 'Name', 
         value: conf.COLUMN_NAME,
         icon: !!conf.CONSTRAINT_NAME ? <Key color={ conf.CONSTRAINT_NAME === 'PRIMARY' ? "primary" : "warning"} /> : '',
-        edit: !0
+        edit: !0,
+        popover: conf.CONSTRAINT_NAME && conf.CONSTRAINT_NAME !== 'PRIMARY' 
+          ? <Stack>
+          <Typography sx={{ p: t => t.spacing(2,2,0,2) }} variant="caption">Constraint <b>{conf.CONSTRAINT_NAME}</b></Typography>
+          <Typography sx={{ p: t => t.spacing(0,2,0,2) }}
+            ><Tooltag component={Link} title="Open reference table" href={`/table/${connectionID}/${schema}/${conf.REFERENCED_TABLE_NAME}`}>{conf.REFERENCED_TABLE_NAME}</Tooltag>.{conf.REFERENCED_COLUMN_NAME}</Typography>
+          <Divider sx={{mb: 1}}/>
+          <Flex sx={{ p: t => t.spacing(0,0,2,0) }}
+            ><Box sx={{flexGrow: 1}} />
+            <Typography variant="caption"><Link>Drop Constraint</Link></Typography>
+            <TinyButton icon={Delete} /> </Flex>
+          </Stack>
+          : null,
       }, 
       {
         field: 'Position',
@@ -187,8 +199,8 @@ function TableGrid () {
       allowDelete
       menuItems={saveMenu} breadcrumbs={breadcrumbs} commitRow={commitRow} title={`Columns in "${tablename}"`} 
       rows={data?.rows?.map(configRow)} />  
+{/* {JSON.stringify(data)} */}
   </>
-
 }
  
 

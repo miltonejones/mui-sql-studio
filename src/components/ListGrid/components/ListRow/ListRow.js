@@ -1,12 +1,9 @@
 import React from 'react';
 import { IconButton } from '@mui/material';
-import { Cell, ListCell } from '..'
+import { Cell, ListCell } from '..';
+import { TinyButton } from '../../..';
 import { Save, Close, Delete } from '@mui/icons-material';
- 
-const TinyButton = ({icon: Icon, ...props}) => <IconButton {...props}  sx={{mr: 1, width: 18, height: 18}}>
-  <Icon sx={{width: 16, height: 16}} />
-</IconButton>
-
+  
 
 
 function ListRow({  allowDelete, onDelete, row, sortable, create, odd, onSort, columns = [], index, dense, dropOrder, onCellChange, sorts = [], commitRow }) {
