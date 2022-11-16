@@ -7,15 +7,15 @@ import {
   Stack, Link, Breadcrumbs, 
   Pagination 
 } from '@mui/material';
-import { QuickMenu, Tooltag } from '..'; 
+import { QuickMenu, Tooltag, RotateButton } from '..'; 
 import { Sync, Menu } from '@mui/icons-material';
 import { ListRow, SearchRow, Tiles } from './components'; 
    
    
 export default function ListGrid({
-  title, empty,  searchable, dense, wide,
+  title, empty,  searchable, dense, wide, create,
   searches, sorts, onClear, onSearch, pageSize = 20,
-  commitRow, count = 0, page = 1, menuItems,
+  commitRow, count = 0, page = 1, menuItems,  allowDelete, onDelete, 
   setPage, buttons, onSort, dropOrder, setPageSize,
   breadcrumbs, onCellChange, columns = [], rows = []}) { 
   if (!rows?.length && !empty) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
@@ -51,8 +51,8 @@ export default function ListGrid({
       <Typography variant="h6">{title}</Typography>
       <Box sx={{flexGrow: 1}} />
       {buttons?.map((button, i) => <Box key={i}>{button}</Box>)}
-      {menuItems?.filter(f => !f.hide).map(({title, icon: Icon, action}, i) => <Box key={i}>
-        <Tooltag title={title} component={IconButton} onClick={action}>
+      {menuItems?.filter(f => !f.hide).map(({title, icon: Icon, action, deg = 0}, i) => <Box key={i}>
+        <Tooltag title={title} component={RotateButton} deg={deg} onClick={action}>
           <Icon />
         </Tooltag>
       </Box>)}
@@ -89,16 +89,26 @@ export default function ListGrid({
     row={headers[0]} />}
     {rows.map((row, i) => <ListRow 
           index={i} 
+          allowDelete={allowDelete}  
+          onDelete={onDelete}
           columns={columns}
           onCellChange={onCellChange} 
           dense={dense} 
           commitRow={commitRow} 
           key={row.field} 
           row={row} />)}
+
+    {!!create && <ListRow 
+      create 
+      columns={columns}
+      onCellChange={onCellChange} 
+      dense={dense} 
+      commitRow={commitRow}  
+      row={rows[0]} 
+
+    />}
   </Tiles>}
-   {/* <pre>
-   {JSON.stringify(rows,0,2)}
-   </pre> */}
+
   </>
 
 }

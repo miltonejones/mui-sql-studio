@@ -1,6 +1,6 @@
 import React from 'react';
 import { styled, Box, Stack, Typography } from '@mui/material';
-import { Cell } from '..';
+import { Cell, EditCell } from '..';
 import { QuickMenu, Tooltag } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
 import { PlayCircle, Image, StopCircle  } from "@mui/icons-material";
@@ -13,10 +13,12 @@ const CellText = styled(Typography)(({theme, clickable, selected, active}) => ({
  
 
 
-function ListCell({ 
+function ListCell(props) {
+const { 
   field, 
   value, 
   alias,
+  create,
   icon, 
   odd,
   column,
@@ -34,9 +36,14 @@ function ListCell({
   onChange ,
   sorts = [],
   dropOrder
-}) {
+} = props;
 const sortProp = sorts.find(s => s.fieldName === alias || s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
 const { Prompt, audioProp, setAudioProp } = React.useContext(AppStateContext);
+
+if (create) {
+  return <EditCell {...props} />
+}
+
 let text = value;
 if (typeof(value) === 'object') {
   try {

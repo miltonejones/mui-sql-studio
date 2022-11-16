@@ -1,10 +1,11 @@
 import React from 'react'; 
 import { ListGrid } from '../../';
+import {  Box, Typography } from '@mui/material';
 import { useNavigate, useParams } from "react-router-dom";
 import { useConfig } from '../../../hooks/useConfig';
 import { AppStateContext } from '../../../hooks/AppStateContext';
 import { formatConnectName } from '../../../util';
-import { describeConnection } from '../../../connector/dbConnector';
+import { describeConnection, execCommand } from '../../../connector/dbConnector';
 import { Launch, Add, Close } from '@mui/icons-material';
  
 function ConnectionGrid () {
@@ -17,16 +18,57 @@ function ConnectionGrid () {
   const navigate = useNavigate();
 
 
-  const { setAppHistory, setBreadcrumbs, Alert } = React.useContext(AppStateContext);
+  const { setAppHistory, setBreadcrumbs, Prompt, Alert } = React.useContext(AppStateContext);
   
+  
+  const loadConnection = React.useCallback(async() => {
+    setData(null)
+    const f = await describeConnection(configs[configKey])
+    setData(f);
+  }, [configs, configKey]);
+
   React.useEffect(() => {
     if (!!data) return;
-    (async() => {
-      const f = await describeConnection(configs[configKey])
-      setData(f);
-    })()
+    loadConnection()
   }, [configs, configKey, data])
 
+  const locate = (row, key) => row.find(f => f.field === key).value;
+
+  const dropTable = async (data) => {
+    const name = locate(data, 'Table');
+ 
+    const sql = `DROP TABLE ${name}`;
+    const ok = await Prompt(<>
+        <Typography variant="caption">{sql}</Typography>
+        <Box>
+        Delete table "{name}"? This action cannot be undone! To confirm this action type <i>delete</i> in the box below.
+        </Box>
+      </>, 'Confirm table delete');
+    if (ok === 'delete') {
+      const res = await execCommand(configs[configKey], sql);
+      if (res.error) {
+        return Alert('Could not complete request. Error: "' + res.error.sqlMessage + '"', 'SQL ERROR')
+      }
+      return await loadConnection();
+    }
+    Alert ('operation cancelled')
+  }
+
+  const addTable = async () => {
+    const name = await Prompt("What is the name of the new table?");
+    if (!name) return;
+    const sql = `CREATE TABLE ${name} (
+      ID INT PRIMARY KEY 
+      );`
+ 
+    
+    const res = await execCommand(configs[configKey], sql);
+    if (res.error) {
+      await Alert('Could not complete request. Error: "' + res.error.sqlMessage + '"', 'SQL ERROR')
+    }
+    loadConnection();
+    // navigate(`/query/${connectionID}/${configs[configKey].database}/${name}`)
+  }
 
   const configRow = (conf) => [
     {
@@ -77,7 +119,7 @@ function ConnectionGrid () {
     {
       title: "Add Table",
       icon: Add,
-      action: () => Alert('Add table not implemented')
+      action: addTable// () => Alert('Add table not implemented')
     },
     {
       title: 'Return to Home',
@@ -100,7 +142,7 @@ function ConnectionGrid () {
   
     }, [configKey, connectionID, breadcrumbs, loaded, setAppHistory])
     
-  return <ListGrid breadcrumbs={breadcrumbs} title={`Tables in "${configKey}"`} menuItems={saveMenu} rows={data?.rows?.map(configRow)} /> 
+  return <ListGrid allowDelete onDelete={dropTable} breadcrumbs={breadcrumbs} title={`Tables in "${configKey}"`} menuItems={saveMenu} rows={data?.rows?.map(configRow)} /> 
 
 } 
 

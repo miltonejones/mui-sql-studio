@@ -1,23 +1,25 @@
 import React from 'react'; 
 import { ListGrid } from '../../';
+import {  Box, Typography } from '@mui/material';
 import { useNavigate, useParams } from "react-router-dom";
 import { AppStateContext } from '../../../hooks/AppStateContext';
 import { formatConnectName } from '../../../util';
 import { useConfig } from '../../../hooks/useConfig';
-import { Launch, Add, Close, Key } from '@mui/icons-material';
-import { execQuery } from '../../../connector/dbConnector';
+import { Launch, Add, Remove, Close, Key } from '@mui/icons-material';
+import { execQuery, execCommand } from '../../../connector/dbConnector';
  
 
 function TableGrid () {
   const [loaded, setLoaded] = React.useState(false) ;
   const navigate = useNavigate();
   const [data, setData] = React.useState(null)
+  const [create, setCreate] = React.useState(false)
   const { schema,  tablename, connectionID } = useParams();
   const { getConfigs  } = useConfig()
   const configs = getConfigs();
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID)
 
-  const { Alert, Confirm, setAppHistory, setBreadcrumbs } = React.useContext(AppStateContext);
+  const { Alert, Confirm, Prompt, setAppHistory, setBreadcrumbs } = React.useContext(AppStateContext);
   
 
   
@@ -58,12 +60,39 @@ function TableGrid () {
     ]
   }
 
-  const commitRow = async ({ data: new_def, row: old_def}) => {  
-    const locate = (row, key) => row.find(f => f.field === key).value;
+  const locate = (row, key) => row.find(f => f.field === key).value;
+
+  const dropRow = async (data) => {
+    const command = [`ALTER TABLE ${tablename}`]; 
+    const name = locate(data, 'Name');
+    command.push(`DROP COLUMN ${name}`)
+    const sql = command.join(' ');
+    const ok = await Prompt(<>
+        <Typography variant="caption">{sql}</Typography>
+        <Box>
+        Delete column "{name}"? This action cannot be undone! To confirm this action type <i>delete</i> in the box below.
+        </Box>
+      </>, 'Confirm column delete');
+    if (ok === 'delete') {
+      const res = await execCommand(configs[configKey], sql);
+      if (res.error) {
+        return Alert('Could not complete request. Error: "' + res.error.sqlMessage + '"', 'SQL ERROR')
+      }
+      return await loadTable();
+    }
+    Alert ('operation cancelled')
+  }
+
+  const commitRow = async ({ data: new_def, row: old_def, create}) => {  
     const command = [`ALTER TABLE ${tablename}`];
+
+    // if (create) {
+   console.log ({ new_def, old_def })
+    // }
+
     command.push (
-      locate(old_def, "Name") === locate(new_def, "Name") 
-        ? `MODIFY COLUMN ${locate(old_def, "Name")}`
+      locate(old_def, "Name") === locate(new_def, "Name") || create
+        ? `${create ? 'ADD' : 'MODIFY'} COLUMN ${locate(create ? new_def : old_def, "Name")}`
         : `CHANGE COLUMN ${locate(old_def, "Name")} ${locate(new_def, "Name")}`,
       locate(new_def, "Type")
     );
@@ -74,11 +103,16 @@ function TableGrid () {
     const sql = command.join(' ');
     const ok = await Confirm(sql);
     if (!ok) return;
-    await execQuery(configs[configKey], sql);
+    const res = await execCommand(configs[configKey], sql);
+    if (res.error) {
+      return Alert('Could not complete request. Error: "' + res.error.sqlMessage + '"', 'SQL ERROR')
+    }
+    setCreate(false)
     await loadTable();
   }
   
   const loadTable = React.useCallback(async() => {
+    setData(null)
     const f = await execQuery(configs[configKey], `SELECT
     u.CONSTRAINT_NAME, u.REFERENCED_TABLE_NAME, u.REFERENCED_COLUMN_NAME, 
     t.COLUMN_NAME,	t.ORDINAL_POSITION,	t.COLUMN_DEFAULT,	t.IS_NULLABLE,t.COLUMN_TYPE	 ,
@@ -120,8 +154,9 @@ function TableGrid () {
     },  
     {
       title: "Add Column",
-      icon: Add,
-      action: () => Alert('Add column not implemented')
+      icon: create ? Remove : Add,
+      deg: create ? 0 : 180,
+      action: () => setCreate(!create), // Alert('Add column not implemented')
     },
     {
       title: 'Return to Connection',
@@ -147,7 +182,10 @@ function TableGrid () {
   }, [configKey, loaded, breadcrumbs, connectionID, schema, tablename, setAppHistory])
  
   return <> 
-  <ListGrid menuItems={saveMenu} breadcrumbs={breadcrumbs} commitRow={commitRow} title={`Columns in "${tablename}"`} 
+  <ListGrid create={create} 
+      onDelete={dropRow}
+      allowDelete
+      menuItems={saveMenu} breadcrumbs={breadcrumbs} commitRow={commitRow} title={`Columns in "${tablename}"`} 
       rows={data?.rows?.map(configRow)} />  
   </>
 

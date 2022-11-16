@@ -873,7 +873,8 @@ export const QuickSelect = ({
   error, 
   value: selected, 
   options = [], 
-  onChange 
+  onChange ,
+  small
 }) => {
 
   const [filterText, setFilterText] = React.useState(null); 
@@ -894,7 +895,7 @@ export const QuickSelect = ({
     disableClearable
     autoComplete
     autoHighlight
-    sx={{mr: 1, minWidth: 220}}
+    sx={{mr: 1, minWidth: small ? 120 : 220}}
     size="small"
     value={selected} 
     options={selections}
