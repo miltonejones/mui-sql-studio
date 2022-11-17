@@ -1,7 +1,7 @@
 import React from 'react';
 import { styled, Box, Stack, Typography, Popover } from '@mui/material';
 import { Cell, EditCell } from '..';
-import { QuickMenu, Tooltag, Flex } from '../../..';
+import { QuickMenu, Tooltag, Flex, TinyButton } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
 import { PlayCircle, Image, StopCircle, ExpandMore  } from "@mui/icons-material";
    
@@ -133,7 +133,7 @@ return <><Cell selected={cellSelected} control={!!Control} odd={odd} dense={dens
         {content} 
       </Flex>  
       <Box sx={{flexGrow: 1}} />
-      {!!popover && <ExpandMore  onClick={handleClick}/>}
+      {!!popover && <TinyButton icon={ExpandMore} deg={!open?0:180}  onClick={handleClick}/>}
    </Stack>
 
     <Box sx={{flexGrow: 1}} />

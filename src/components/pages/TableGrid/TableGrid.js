@@ -198,8 +198,7 @@ function TableGrid () {
       onDelete={dropRow}
       allowDelete
       menuItems={saveMenu} breadcrumbs={breadcrumbs} commitRow={commitRow} title={`Columns in "${tablename}"`} 
-      rows={data?.rows?.map(configRow)} />  
-{/* {JSON.stringify(data)} */}
+      rows={data?.rows?.map(configRow)} />   
   </>
 }
  
