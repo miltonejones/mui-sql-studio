@@ -93,7 +93,7 @@ export function useClipboard() {
 }
 
 export const RotateButton = styled(IconButton)(({ deg = 0 }) => ({
-  transition: 'transform 0.2s linear', 
+  transition: 'transform 0.125s linear', 
   transform: `rotate(${deg}deg)`
 }));
 

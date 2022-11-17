@@ -10,7 +10,7 @@ import { Add, UnfoldMore, Speed, Remove,  Sync, CheckCircle,
   Error, Delete, ExpandMore, PlayArrow, Close, Menu as MenuIcon} from '@mui/icons-material';
 
 import { ColumnSettingsGrid } from './components'
-import { Tooltag, RotateButton, TextBtn  } from '..'
+import { Tooltag, RotateButton, TextBtn, Flex, TinyButton  } from '..'
 import '../ListGrid/ListGrid.css';
 
 
@@ -922,7 +922,10 @@ export const QuickMenu = ({ label, error, value: selected, icons = [], options, 
   };
   // const arrow = open ? <>&#9650;</> : <>&#9660;</>
   return <>
-  <AU style={{marginRight: 4}} active error={error} onClick={handleClick}>{label || 'Choose'}</AU> 
+
+
+<AU style={{marginRight: 4}} active error={error} onClick={handleClick}>{label || 'Choose'}</AU> 
+  <TinyButton icon={ExpandMore} deg={open ? 180 : 0} />
  
   <Menu 
     anchorEl={anchorEl}

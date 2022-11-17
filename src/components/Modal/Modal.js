@@ -16,6 +16,7 @@ const modalTextProps = {
  size: "small",
  fullWidth: true,
  autoFocus: true,
+ autoComplete: 'off',
  sx: { mt: 2 },
 };
  
