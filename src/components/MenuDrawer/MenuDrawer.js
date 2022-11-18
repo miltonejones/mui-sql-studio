@@ -60,8 +60,9 @@ export default function MenuDrawer({
     <div>
       <Collapse orientation="horizontal" in={!pinned}>
      <Button
-      sx={{mr: 1}}
-        color="inherit"
+        sx={{mr: 1, borderRadius: t => t.spacing(1,1,0,0),
+          backgroundColor: t => open ? 'white' : t.palette.primary.dark }}
+        color={open ? "primary" : "inherit"}
         id="demo-positioned-button"
         aria-controls={open ? 'demo-positioned-menu' : undefined}
         aria-haspopup="true"
@@ -71,7 +72,7 @@ export default function MenuDrawer({
         {label}
       </Button> </Collapse>
       <Tag
-        sx={{maxWidth: pinned?320:'inherit'}}
+        sx={{maxWidth: pinned?320:'inherit', boxShadow: null }}
         dense
         id="demo-positioned-menu"
         aria-labelledby="demo-positioned-button"
@@ -80,11 +81,11 @@ export default function MenuDrawer({
         onClose={handleClose}
         anchorOrigin={{
           vertical: 'bottom',
-          horizontal: 'left',
+          horizontal: 'center',
         }}
         transformOrigin={{
           vertical: 'top',
-          horizontal: 'left',
+          horizontal: 'center',
         }}
       >
 

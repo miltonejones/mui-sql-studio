@@ -3,7 +3,7 @@ import { styled, Box, Stack, TextField, Typography, Popover } from '@mui/materia
 import { Cell, EditCell } from '..';
 import { QuickMenu, Tooltag, Flex, TinyButton } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
-import { PlayCircle, Image, StopCircle, ExpandMore, Close, Save  } from "@mui/icons-material"; 
+import { PlayCircle, MoreVert, Image, StopCircle, ExpandMore, Close, Save  } from "@mui/icons-material"; 
 import { Spacer } from '../../..';
    
 const CellText = styled(Typography)(({theme, clickable, selected, active}) => ({ 
@@ -54,6 +54,7 @@ const {
   type,
   types, 
   control: Control,
+  menu,
   controlProps,
   edit, 
   dense,
@@ -134,7 +135,7 @@ const cellText = type === 'password' ? '********' : text;
 
 // const deg = ask ? 180 : 0;
 const arrow = !ask ? <>&#9650;</> : <>&#9660;</>
-const c = (!!Control)
+const control = (!!Control)
   ? <Control {...controlProps} />
   : ''
 
@@ -159,8 +160,15 @@ return <><Cell selected={cellSelected} control={!!Control} odd={odd} dense={dens
   <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
 
    <Stack direction="row" spacing={1} sx={{alignItems: 'center', width: '100%'}}>
+      {!!menu && <Box>
+        <QuickMenu options={menu.map(f => f.label)} onChange={(e) => {
+          const f = menu.find(m => m.label === e);
+          f.action()
+        }} 
+              label={<TinyButton icon={MoreVert} />}/>
+        </Box>}
       <Flex onClick={onClick}>
-        {c} 
+        {control} 
         {cellIcon}
         {content} 
       </Flex>  

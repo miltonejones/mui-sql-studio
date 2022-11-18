@@ -114,6 +114,24 @@ function QueryGrid () {
   const configRow = (conf, fields) => Object.keys(conf).map(key => ({
     field: key,
     value: conf[key],
+    menu: [
+      {
+        label: `Find ${key} matching "${conf[key]}"`,
+        action: () => createAdHoc(key, `${conf[key]}`)
+      },
+      {
+        label: `Find ${key} containing "${conf[key]}"`,
+        action: () => createAdHoc(key, `*${conf[key]}*`)
+      },
+      { 
+        label: `Find ${key} starting with "${conf[key]}"`,
+        action: () => createAdHoc(key, `${conf[key]}*`)
+      },
+      { 
+          label: `Find ${key} ending with "${conf[key]}"`,
+        action: () => createAdHoc(key, `*${conf[key]}`)
+      }
+  ],
     alias: (() => {
       const field = fields.find(f => f.name === key);
       if (!field) return key;
