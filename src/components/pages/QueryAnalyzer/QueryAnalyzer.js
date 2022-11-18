@@ -1,6 +1,6 @@
 import React from 'react';
-import {  Stack, Box, IconButton , Collapse, Typography, Divider } from '@mui/material';
-import { ListGrid, QuickSelect, TextBox, TextBtn, Tooltag, QueryTest,RotateButton } from '../../';
+import { Link, Stack, Box, IconButton , Collapse, Typography, Divider } from '@mui/material';
+import { DATA_TYPES, ListGrid, QuickSelect, TextBox, TextBtn, Tooltag, QueryTest,RotateButton } from '../../';
 import {  useParams } from "react-router-dom";
 import { useConfig } from '../../../hooks/useConfig';
 import { AppStateContext } from '../../../hooks/AppStateContext';
@@ -41,7 +41,7 @@ function QueryAnalyzer () {
 
     setBreadcrumbs([{
       href: '/',
-      text: 'Home'
+      text: 'Home',
     }, 
       {
         text: 'Query Analyzer'
@@ -70,6 +70,9 @@ function QueryAnalyzer () {
   const configRow = (conf) => Object.keys(conf).map(key => ({
     field: key,
     value: conf[key], 
+    popover: !0 ? null : <Stack sx={{p: 2}} spacing={1}>
+      {DATA_TYPES.map(d => <Box onClick={() => runQuery(page)} sx={{cursor: 'pointer'}}><Link>{d}</Link></Box>)}
+    </Stack>
   }));
 
   const chagePageSize = size => {
@@ -151,7 +154,7 @@ function QueryAnalyzer () {
       }} noneQuery={sqlType !== 'SELECT'} sql={sqlText} config={configs[configName]} />
 
       {!!tableName && <IconButton href={`/query/${connectionID}/${schema}/${tableName}`}>
-          <Launch />
+           <Launch />
         </IconButton>}
 
       {!!data && <IconButton onClick={() => setData(null)}>
@@ -181,7 +184,7 @@ function QueryAnalyzer () {
       <Divider sx={{mb: 1}} >
         Query results
       </Divider>
-      <ListGrid   
+      <ListGrid    
         pageSize={pageSize}
         setPageSize={chagePageSize}
         count={data?.count}

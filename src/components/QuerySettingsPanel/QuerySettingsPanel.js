@@ -909,7 +909,7 @@ export const QuickSelect = ({
 }
 
 
-export const QuickMenu = ({ label, error, value: selected, icons = [], options, onChange }) => {
+export const QuickMenu = ({ label, error, value: selected, caret, icons = [], options, onChange }) => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -925,7 +925,7 @@ export const QuickMenu = ({ label, error, value: selected, icons = [], options, 
 
 
 <AU style={{marginRight: 4}} active error={error} onClick={handleClick}>{label || 'Choose'}</AU> 
-  <TinyButton icon={ExpandMore} deg={open ? 180 : 0} />
+  {!!caret && <TinyButton icon={ExpandMore} deg={open ? 180 : 0} />}
  
   <Menu 
     anchorEl={anchorEl}

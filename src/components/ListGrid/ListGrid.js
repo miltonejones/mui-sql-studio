@@ -16,7 +16,7 @@ export default function ListGrid({
   title, empty,  searchable, dense, wide, create,
   searches, sorts, onClear, onSearch, pageSize = 20,
   commitRow, count = 0, page = 1, menuItems,  allowDelete, onDelete, 
-  setPage, buttons, onSort, dropOrder, setPageSize,
+  setPage, buttons, onSort, dropOrder, setPageSize, settings,
   breadcrumbs, onCellChange, columns = [], rows = []}) { 
   if (!rows?.length && !empty) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
   const headers = empty ? [] : [rows[0].map(row => ({value: row.field, alias: row.alias, type: 'header'}))]
@@ -75,6 +75,8 @@ export default function ListGrid({
 
   {!empty && <Tiles cellSpacing="1" wide={wide}>
     {headers.map(row => <ListRow 
+    header={settings}
+    setSettings={window.alert}
     dense={dense} 
     dropOrder={dropOrder} 
     sorts={sorts} 

@@ -2,11 +2,28 @@ import React from 'react';
 import { IconButton } from '@mui/material';
 import { Cell, ListCell } from '..';
 import { TinyButton } from '../../..';
-import { Save, Close, Delete } from '@mui/icons-material';
+import { Save, Close, Delete, Settings } from '@mui/icons-material';
   
 
 
-function ListRow({  allowDelete, onDelete, row, sortable, create, odd, onSort, columns = [], index, dense, dropOrder, onCellChange, sorts = [], commitRow }) {
+function ListRow({  
+  allowDelete, 
+  onDelete, 
+  row, 
+  sortable, 
+  create, 
+  odd, 
+  onSort, 
+  columns = [], 
+  index, 
+  header,
+  dense, 
+  dropOrder, 
+  onCellChange, 
+  sorts = [], 
+  commitRow ,
+  setSettings
+}) {
   const [data, setData] = React.useState(row)
   const [dirty, setDirty] = React.useState(false);
   
@@ -22,6 +39,7 @@ function ListRow({  allowDelete, onDelete, row, sortable, create, odd, onSort, c
     {...cell}  
     column={columns[i]}/>)}
     <Cell header dense={dense}> 
+      {header && <TinyButton icon={Settings} onClick={setSettings} />}
       {allowDelete && <TinyButton icon={Delete} onClick={() => onDelete(row)}/>}
       {dirty ? <><TinyButton icon={Save} onClick={() => {
         commitRow && commitRow({data, row, create})

@@ -340,7 +340,7 @@ const saveMenu = saveEnabled ? [
   <Collapse in={!edit}>   
     <ListGrid  
       dense
-      wide
+      wide 
       pageSize={pageSize}
       setPageSize={chagePageSize}
       onSearch={createAdHoc}
