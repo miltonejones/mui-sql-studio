@@ -54,7 +54,7 @@ const ColumnSettingsGrid = ({ onSelect, onChange, onConfig, columns = [] }) => {
 
 
   const rows = columns.map(configRow);
- return <ListGrid title="Set field order" onCellChange={onChange} rows={rows} selectable/>;
+ return <ListGrid onCellChange={onChange} rows={rows} selectable/>;
 }
 ColumnSettingsGrid.defaultProps = {};
 export default ColumnSettingsGrid;

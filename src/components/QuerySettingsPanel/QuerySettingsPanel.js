@@ -12,6 +12,7 @@ import { Add, UnfoldMore, Speed, Remove,  Sync, CheckCircle,
 import { ColumnSettingsGrid } from './components'
 import { Tooltag, RotateButton, TextBtn, Flex, TinyButton  } from '..'
 import '../ListGrid/ListGrid.css';
+import { QueryColumn } from './components';
 
 
 
@@ -348,27 +349,25 @@ export default function QuerySettingsPanel({
     collated.map((column, i) => { 
       const error = collated.filter(n => !!n.alias && n.alias === column.alias).length > 1;
       const { objectname, objectalias, name, alias, selected, expression } = column;
-      const last = i === (collated.length - 1)
+      const last = i === (collated.length - 1);
 
-      return p.push(<>
-      {!!expression ? <>{expression}</> : <>
-      {objectalias}.<Tooltag component={AU}
-          title={passThru ? "Add to column list" : "Remove from column list"}
-          active={selected} 
-          onClick={() => setColumnSelected(objectname, name)}>{name}</Tooltag>
-      </>}
+      const args = {
+        expression,
+        objectalias,
+        columnname: name,
+        columnalias: alias,
+        small,
+        title: !!expression 
+        ? <em>{expression}</em>
+        : <>{objectalias}.{name}</>,
+        icon: passThru ? Add : Delete ,
+        aliasAction: !!expression 
+        ? () => configureExpr(column)
+        : () => setColumnAlias(objectname, name),
+        deleteAction: () => setColumnSelected(objectname, name)
+      };
 
-          
-          {!small && <> 
-          {" "}<i>as</i>{" "}
-          <AU active error={error} onClick={() => !!expression 
-            ? configureExpr(column)
-            : setColumnAlias(objectname, name)
-            }>{alias || name}</AU>
-
-
-          </>}{!last && <>, </>} {" "}
-        </>)
+      return p.push (<QueryColumn {...args} />) 
     }) 
 
     return p.length ? p : ['*'];
@@ -531,7 +530,7 @@ export default function QuerySettingsPanel({
 
  {!showSQL && <SectionHeader expanded={showFieldNames} blank 
     buttons={[
-      <Tooltag title="Set field order" component={RotateButton} sx={{mr: 2}} deg={orderMode ? 0 : 180}
+      <Tooltag title={orderMode ? "Close field settings" : "Set field order"} component={RotateButton} sx={{mr: 2}} deg={orderMode ? 0 : 180}
         onClick={openColumnOrderPanel}>
         {orderMode ? <Close /> : <UnfoldMore />}
       </Tooltag>
@@ -543,9 +542,9 @@ export default function QuerySettingsPanel({
   <Collapse in={!showSQL}>
     
     <Collapse in={!orderMode}>
-      <Box sx={{m: theme => theme.spacing(1, 0)}}>
+      <Flex wrap sx={{m: theme => theme.spacing(1, 0)}}>
         {columnList(z => !!z.selected)} 
-      </Box>
+      </Flex>
     </Collapse>
     
 
@@ -587,12 +586,12 @@ export default function QuerySettingsPanel({
 
         {!!columns.length && <>
           <Typography variant="caption">Available fields</Typography>
-          <Box>
+          <Flex wrap>
           {columnList(z => !z.selected, !0, !0)}
-          </Box>
+          </Flex>
         </>}
 
-        <TextBtn endIcon={<Add />} size="small" variant="outlined"  
+        <TextBtn endIcon={<Add />} size="small" variant="contained"  
           onClick={async () => {
             const b = await ExpressionModal({})
             if (!b) return; 
@@ -640,8 +639,8 @@ export default function QuerySettingsPanel({
       {configuration.wheres.map((where) => <WhereItem key={where.index} {...where} />)}
 
       {!!configuration.wheres.length && <>
-        <TextBtn endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</TextBtn>
-        <TextBtn endIcon={<Add />} size="small" variant="outlined" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</TextBtn>
+        <TextBtn endIcon={<Add />} size="small" variant="contained" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</TextBtn>
+        <TextBtn endIcon={<Add />} size="small" variant="contained" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</TextBtn>
       </>}
 
       <Collapse in={configuration.orders.filter(f => !!f.fieldName).length}>
@@ -687,7 +686,7 @@ export default function QuerySettingsPanel({
 
   <Collapse in={showSQL}>
  
-    <Card sx={{ p: 2, maxWidth: 640 }}>
+    <Card sx={{ p: 2, mt: 2, maxWidth: 640 }}>
       <Typography><b>SQL Code</b></Typography>
       <Divider />
       <pre>
@@ -909,7 +908,14 @@ export const QuickSelect = ({
 }
 
 
-export const QuickMenu = ({ label, error, value: selected, caret, icons = [], options, onChange }) => {
+export const QuickMenu = ({ 
+    label, 
+    error, 
+    value: selected, 
+    caret, icons = [], 
+    options, 
+    onChange 
+  }) => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const open = Boolean(anchorEl);
@@ -919,25 +925,29 @@ export const QuickMenu = ({ label, error, value: selected, caret, icons = [], op
   const handleClose = (value) => {  
     setAnchorEl(null);
     onChange && onChange(value)
-  };
-  // const arrow = open ? <>&#9650;</> : <>&#9660;</>
+  }; 
+  const { MenuComponent } = React.useContext(AppStateContext);
+
   return <>
 
 
-<AU style={{marginRight: 4}} active error={error} onClick={handleClick}>{label || 'Choose'}</AU> 
+<AU style={{marginRight: 4}} 
+    active error={error || open} onClick={handleClick}>{label || 'Choose'}</AU> 
   {!!caret && <TinyButton icon={ExpandMore} deg={open ? 180 : 0} />}
  
-  <Menu 
+  <MenuComponent 
     anchorEl={anchorEl}
+    anchor="bottom"
     open={open}
     onClose={() => handleClose()} 
   > 
     {options?.map ((option, index) => {
       const Icon = icons[index];
       return <MenuItem key={option} onClick={() => handleClose(option)}
+      sx={{fontWeight: selected === option ? 600 : 400}}
       >{!!Icon && <><Icon sx={{mr: 1}} /></>}{selected === option && <>&bull;{" "}</>}{option}</MenuItem>
     })} 
-  </Menu>
+  </MenuComponent>
   </>
 
 }
@@ -954,23 +964,19 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
  
 
   if (first) {
-    return <>
-    <AU active onClick={() => addTable(table.name)}>
-      {table.name}
-    </AU> <i>as</i> <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
-    </>
+    return <QueryColumn columnname={table.name} columnalias={table.alias} title={table.name} 
+    aliasAction={() => setTableAlias(table.name)}
+    deleteAction={() => addTable(table.name)}/> 
   }
-  return <Box >
-    <Tooltag  component={IconButton} title="Delete table join"  onClick={() => dropTable(table.ID)}>
-    <Delete />
-   </Tooltag>
+  return <Box sx={{mt: 1}} > 
 
   {" "}<QuickMenu options={['JOIN', 'LEFT JOIN']} 
       onChange={handleType} value={type} label={type}/>
   {" "}
-  <AU active onClick={() => addTable(table.name)}>
-    {table.name} 
-  </AU> <i>as</i> <AU active onClick={() => setTableAlias(table.name)}>{table.alias}</AU>  
+  <QueryColumn columnname={table.name} columnalias={table.alias} title={table.name} 
+    aliasAction={() => setTableAlias(table.name)}
+    deleteAction={() => dropTable(table.ID)}/>
+ 
   {" "}<i>ON</i> {table.alias}.<ColumnMenu fieldname="srcCol" source={table.name} tablename={table.name} columnname={srcCol} /> 
   {" "}={" "} 
   <TableMenu fieldname="destTable" tablename={table.name} name={destTable} />
@@ -998,17 +1004,7 @@ function ColumnMenu ({ tablename, source, columnname, fieldname }) {
   }
   const columns = selectedTable.columns;
   const label = columnname || <i>choose column</i> 
-  return <>
-    <AU active error={!columnname} onClick={handleClick}>{label}</AU>
-   
-    <Menu 
-        anchorEl={anchorEl}
-        open={open}
-        onClose={() => handleClose()} 
-      > 
-        {columns?.map (column => <MenuItem key={column.name} onClick={() => handleClose(column.name)}>{column.name}</MenuItem>)} 
-      </Menu>
-  </>;
+  return <QuickMenu options={columns.map(n => n.name)} label={label} value={columnname} onChange={handleClose}  />  
 }
 
 function TableMenu ({ tablename, name, fieldname }) {
@@ -1024,17 +1020,9 @@ function TableMenu ({ tablename, name, fieldname }) {
   };
 
 
-  const label = name || <i>choose table</i> 
-  return <>
-    <AU active error={!name} onClick={handleClick}>{label}</AU>
-    <Menu 
-        anchorEl={anchorEl}
-        open={open}
-        onClose={() => handleClose()} 
-      >
-        {tables?.map (table => <MenuItem key={table.name} onClick={() => handleClose(table.name)}>{table.name}</MenuItem>)} 
-      </Menu>
-  </>;
+  const label = name || <i>choose table</i> ;
+
+  return <QuickMenu options={tables.map(n => n.name)} label={label} value={name} onChange={handleClose}  />   
 }
 
 export const QueryTest = ({ config, sql, onResult, noneQuery, ...props }) => {

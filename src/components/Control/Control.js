@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button, Card, TextField, IconButton, InputAdornment, styled } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip"; 
-import { ExpandMore, FilterAlt, Close } from "@mui/icons-material";
+import { ExpandMore, FilterAlt, Close, Add, Remove } from "@mui/icons-material";
  
 export const Flex = styled(Box)(({ baseline, wrap }) => ({
  display: "flex",
@@ -21,11 +21,23 @@ export const Tooltag = ({
  title,
  children,
  ...props
-}) => (
- <Tooltip  placement="left-start" arrow title={title}>
-   <Component {...props}>{children}</Component>
- </Tooltip>
-);
+}) => {
+  const [open, setOpen] = React.useState(false)
+  return (
+    <Tooltip placement="left-start" arrow title={title}>
+      <Box sx={{position: 'relative'}}>
+        
+       {/* <TinyButton onClick={() => setOpen(!open)} icon={open ? Remove : Add} sx={{position: 'absolute', top: 8, left: -16}}>
+        
+        </TinyButton> */}
+
+      <Component {...props}>
+       {children}</Component>
+
+      </Box>
+    </Tooltip>
+   )
+};
  
 export const Spacer = styled(Box)(() => ({
  flexGrow: 1,
