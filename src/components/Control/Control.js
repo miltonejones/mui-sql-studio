@@ -3,10 +3,10 @@ import { Box, Button, Card, TextField, IconButton, InputAdornment, styled } from
 import Tooltip from "@mui/material/Tooltip"; 
 import { ExpandMore, FilterAlt, Close, Add, Remove } from "@mui/icons-material";
  
-export const Flex = styled(Box)(({ baseline, wrap }) => ({
+export const Flex = styled(Box)(({ theme, baseline, wrap, spacing = 1 }) => ({
  display: "flex",
  alignItems: baseline ? "flex-start" : "center",
- gap: 4,
+ gap: theme.spacing(spacing),
  flexWrap: wrap ? "wrap" : "nowrap",
 }));
  
@@ -24,17 +24,11 @@ export const Tooltag = ({
 }) => {
   const [open, setOpen] = React.useState(false)
   return (
-    <Tooltip placement="left-start" arrow title={title}>
-      <Box sx={{position: 'relative'}}>
-        
-       {/* <TinyButton onClick={() => setOpen(!open)} icon={open ? Remove : Add} sx={{position: 'absolute', top: 8, left: -16}}>
-        
-        </TinyButton> */}
+    <Tooltip placement="left-start" arrow title={title}> 
 
       <Component {...props}>
        {children}</Component>
-
-      </Box>
+ 
     </Tooltip>
    )
 };

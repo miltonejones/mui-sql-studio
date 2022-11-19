@@ -58,6 +58,7 @@ const Modal = ({
  maxWidth = 420,
  minWidth = 360,
  
+ anchor = 'right',
  // * Modal input
  // * NOTE: input properties pass through to the injected component
  // ------------------------------------------------------------------- *
@@ -78,7 +79,7 @@ const Modal = ({
    submitClicked,
  };
  return (
-   <Tag anchor="right" onClose={handleClose} open={open}>
+   <Tag anchor={anchor} onClose={handleClose} open={open}>
      <Stack sx={{ maxWidth, minWidth, height: "100%" }}>
        {/* modal header */}
  

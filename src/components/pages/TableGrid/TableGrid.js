@@ -78,7 +78,7 @@ function ConstraintInfo({
     </Stack>
   }
   return <>
-  <Stack>
+  <Stack sx={{minWidth: 300}}>
     <Typography sx={{ p: t => t.spacing(2,2,0,2) }} variant="caption">Constraint <b>{conf.CONSTRAINT_NAME}</b></Typography> 
     <Typography sx={{ p: t => t.spacing(0,2,0,2) }}
       ><Tooltag component={Link} title="Open reference table" 

@@ -2,8 +2,9 @@
 import * as React from 'react';
 import { BrowserRouter, Routes, Route, } from "react-router-dom";
 import Modal, { useModal } from './components/Modal/Modal';
-import { ToggleToolbar, Area, ConnectionModal, RotateButton, Flex, Spacer } from './components'
-import { Box, Stack, FormControlLabel, Popover, Switch, Typography, Link, Menu, Drawer, Breadcrumbs, styled } from '@mui/material'; 
+import { QuickSelect, ToggleToolbar, Area, ConnectionModal, RotateButton, Flex, Spacer } from './components'
+import { Box, Stack, FormControlLabel, Popover, Switch, Typography, Link, 
+  Dialog, Menu, Drawer, Breadcrumbs, styled } from '@mui/material'; 
 import { useAppHistory } from './hooks/useAppHistory';
 import { AppStateContext } from './hooks/AppStateContext';  
 import { Helmet } from "react-helmet";
@@ -27,11 +28,7 @@ const Footer = styled(Stack)(() => ({
   position: "absolute", 
   bottom: 0, 
   color: 'white'
-}));
-
-const MobileMenu = styled(Drawer)(() => ({
-  maxWidth: 400
-}))
+})); 
  
  
   
@@ -55,6 +52,7 @@ function App() {
   const appHistory = useAppHistory(); 
   const { current } = appHistory;
   const [anchorEl, setAnchorEl] = React.useState(null);
+  const [menuPos, setMenuPos] = React.useState(localStorage.getItem('menu-pos') || 'bottom'); 
   const [useMenus, setUseMenus] = React.useState(localStorage.getItem('use-menus')); 
   const [pinnedTab, setPinnedTab] = React.useState(localStorage.getItem('pinned-tab')); 
   const [pageSize, commitPageSize] = React.useState(localStorage.getItem('page-size') || 100); 
@@ -67,6 +65,11 @@ function App() {
   const handlePopoverClose = () => {
     setAnchorEl(null); 
   };
+
+  const commitMenuPos = (pos) =>{
+    setMenuPos(pos)
+    localStorage.setItem('menu-pos', pos)
+  }
 
   const handleChange = async (event) => {
     const checked = event.target.checked ? '1' : '0';
@@ -84,7 +87,9 @@ function App() {
     localStorage.setItem('page-size', size)
   }
 
-  const MenuComponent = useMenus === '1' ? Menu : MobileMenu;
+  const MenuComponent = useMenus === '1' ? Menu : Drawer;
+  const PopComponent = useMenus === '1' ? Popover : Drawer;
+  const ModalTag = useMenus === '1' ? Dialog : Drawer;
   const width = !pinnedTab ? 'calc(100vw - 24px)' : 'calc(100vw - 364px)'
  
   return (
@@ -94,6 +99,8 @@ function App() {
         pageSize,
         audioProp,
         setAudioProp,
+        PopComponent,
+        menuPos,
         setBreadcrumbs,
         Alert,
         Confirm,
@@ -131,15 +138,16 @@ function App() {
                 <RotateButton deg={open ? 0 : 360} onClick={handlePopoverClick}>
                   <Settings sx={{color: 'white'}} />
                 </RotateButton>
-                <Popover
+                <PopComponent
                     open={open}
+                    anchor={menuPos}
                     anchorEl={anchorEl}
                     onClose={handlePopoverClose}
                     anchorOrigin={{
                       vertical: 'bottom',
                       horizontal: 'left',
                     }} >
-                    <Box sx={{p: 2}}>
+                    <Stack spacing={1} sx={{p: 2, height: useMenus !== '1' ? 240 : 'inherit'}}>
 
                 <FormControlLabel
                   label="Use menus"
@@ -148,9 +156,12 @@ function App() {
                     onChange={handleChange} 
                   />}
                 />
-
-                    </Box>
-                </Popover>
+                    <QuickSelect options={['top','bottom','left','right']} 
+                        label="Menu Position" value={menuPos} 
+                        disabled={useMenus === '1'}
+                        onChange={commitMenuPos}/>
+                    </Stack>
+                </PopComponent>
 
             </Box>
           </Flex>}
@@ -181,7 +192,7 @@ function App() {
         </Footer>
 
         {/* general global modal  */}
-        <Modal {...modalProps} />
+        <Modal {...modalProps} tag={ModalTag} anchor={menuPos}  />
 
         {/* connection settings dialog  */}
         <ConnectionModal onChange={(key, val) => {

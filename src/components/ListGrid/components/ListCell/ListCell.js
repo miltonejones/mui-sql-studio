@@ -19,7 +19,7 @@ const CellText = styled(Typography)(({theme, clickable, selected, active}) => ({
 
 function PopoverTextBox ({ field, value, onChange, handlePopoverClose }) {
   const [typedVal, setTypedVal] = React.useState(value);
-  return <Stack sx={{p: 2, width: 280}} spacing={1}>
+  return <Stack sx={{p: 2, minWidth: 300}} spacing={1}>
     <Typography>Set value for "{field}"</Typography>
     <TextField label={field + ' value'} size="small" value={typedVal} onChange={ (e) => { 
       setTypedVal(e.target.value) 
@@ -63,7 +63,7 @@ function ListCell(props) {
     dropOrder
   } = props;
   const sortProp = sorts.find(s => s.fieldName === alias || s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
-  const { Prompt, audioProp, setAudioProp } = React.useContext(AppStateContext);
+  const { Prompt, PopComponent, menuPos, audioProp, setAudioProp } = React.useContext(AppStateContext);
 
   // popover content defaults to user-defined Component
   const [popoverContent, setPopoverContent] = React.useState(popover);
@@ -241,17 +241,18 @@ function ListCell(props) {
     </Cell>
 
     {/* in-line custom popover   */}
-    {!!popoverContent && <Popover 
+    {!!popoverContent && <PopComponent 
       open={open}
       anchorEl={anchorEl}
       onClose={handlePopoverClose}
+      anchor={menuPos}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'left',
       }}
     >
       {popoverContent}
-    </Popover>}
+    </PopComponent>}
 
 
   </>

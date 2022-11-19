@@ -8,12 +8,14 @@ const QueryColumn = ({
   columnalias,
   small,
   title,
+  error,
   aliasAction,
   deleteAction,
+  clickAction,
   icon: Icon = Delete
 }) => {
  
-  const inner = <>{title} {!small && (<>
+  const inner = <>{title} {!small && !!aliasAction && (<>
    as <Link sx={{cursor: 'pointer'}} onClick={aliasAction}><b>{columnalias || columnname}</b></Link>
   </>)}</>
    
@@ -21,8 +23,9 @@ const QueryColumn = ({
      <Chip label={inner}  
      size="small"
      sx={{color: t => t.palette.primary.dark}}
+      onClick={() => clickAction && clickAction()}
         onDelete={deleteAction}
-        color="primary" variant="outlined" 
+        color={error ? "error" : "primary"} variant="outlined" 
               deleteIcon={<Icon />}/> 
  );
 }

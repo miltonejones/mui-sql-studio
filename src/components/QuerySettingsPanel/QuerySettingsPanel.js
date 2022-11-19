@@ -352,6 +352,7 @@ export default function QuerySettingsPanel({
       const last = i === (collated.length - 1);
 
       const args = {
+        error,
         expression,
         objectalias,
         columnname: name,
@@ -619,11 +620,13 @@ export default function QuerySettingsPanel({
           
             <Typography variant="caption">Available tables</Typography>
 
-            <Box>
+            <Flex wrap>
               {tableNames.filter(t => !configuration.tables.find(c => c.name === t)).map(tname => <>
-                <AU onClick={() => addTable(tname)}>{tname}</AU>, {" "}
+                <QueryColumn title={tname} icon={Add} clickAction={() => addTable(tname)}
+                 deleteAction={() => addTable(tname)}/> 
+                {/* <AU onClick={() => addTable(tname)}>{tname}</AU>, {" "} */}
               </>)}
-            </Box>
+            </Flex>
           </>
         </Collapse>
 
@@ -926,7 +929,7 @@ export const QuickMenu = ({
     setAnchorEl(null);
     onChange && onChange(value)
   }; 
-  const { MenuComponent } = React.useContext(AppStateContext);
+  const { MenuComponent, menuPos } = React.useContext(AppStateContext);
 
   return <>
 
@@ -935,16 +938,16 @@ export const QuickMenu = ({
     active error={error || open} onClick={handleClick}>{label || 'Choose'}</AU> 
   {!!caret && <TinyButton icon={ExpandMore} deg={open ? 180 : 0} />}
  
-  <MenuComponent 
+  <MenuComponent  
     anchorEl={anchorEl}
-    anchor="bottom"
+    anchor={menuPos}
     open={open}
     onClose={() => handleClose()} 
   > 
     {options?.map ((option, index) => {
       const Icon = icons[index];
       return <MenuItem key={option} onClick={() => handleClose(option)}
-      sx={{fontWeight: selected === option ? 600 : 400}}
+      sx={{fontWeight: selected === option ? 600 : 400, minWidth: 300}}
       >{!!Icon && <><Icon sx={{mr: 1}} /></>}{selected === option && <>&bull;{" "}</>}{option}</MenuItem>
     })} 
   </MenuComponent>
