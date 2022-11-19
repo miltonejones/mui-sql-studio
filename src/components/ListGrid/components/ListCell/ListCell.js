@@ -17,20 +17,19 @@ const CellText = styled(Typography)(({theme, clickable, selected, active}) => ({
 }));
  
 
-function PopoverText ({ field, value, onChange, handleClose }) {
+function PopoverTextBox ({ field, value, onChange, handlePopoverClose }) {
   const [typedVal, setTypedVal] = React.useState(value);
-
   return <Stack sx={{p: 2, width: 280}} spacing={1}>
-  <Typography>Set value for "{field}"</Typography>
-  <TextField label={field + ' value'} size="small" value={typedVal} onChange={ (e) => { 
-    setTypedVal(e.target.value) 
-  } } autoComplete="off"/>
-  <Flex> 
+    <Typography>Set value for "{field}"</Typography>
+    <TextField label={field + ' value'} size="small" value={typedVal} onChange={ (e) => { 
+      setTypedVal(e.target.value) 
+    } } autoComplete="off"/>
+    <Flex> 
     <Spacer />
-    <TinyButton icon={Close} onClick={handleClose} />
+    <TinyButton icon={Close} onClick={handlePopoverClose} />
     <TinyButton icon={Save} onClick={() => {  
         !!typedVal && onChange && onChange(typedVal);
-        handleClose()
+        handlePopoverClose()
     }}/>
   </Flex>
 </Stack>
@@ -38,167 +37,224 @@ function PopoverText ({ field, value, onChange, handleClose }) {
 
 
 function ListCell(props) {
-const { 
-  field, 
-  value, 
-  alias,
-  popover,
-  create,
-  icon, 
-  odd,
-  column,
-  selected,
-  action, 
-  sortable, 
-  sorted, 
-  type,
-  types, 
-  control: Control,
-  menu,
-  controlProps,
-  edit, 
-  dense,
-  onSort,
-  onChange ,
-  sorts = [],
-  dropOrder
-} = props;
-const sortProp = sorts.find(s => s.fieldName === alias || s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
-const { Prompt, audioProp, setAudioProp } = React.useContext(AppStateContext);
-const [popoverContent, setPopoverContent] = React.useState(popover);
-const [typedVal, setTypedVal] = React.useState(null);
-const [anchorEl, setAnchorEl] = React.useState(null);
+  const { 
+    field, 
+    value, 
+    alias,
+    popover,
+    create,
+    icon, 
+    odd,
+    column,
+    selected,
+    action, 
+    sortable, 
+    sorted, 
+    type,
+    types, 
+    control: Control,
+    menu,
+    controlProps,
+    edit, 
+    dense,
+    onSort,
+    onChange ,
+    sorts = [],
+    dropOrder
+  } = props;
+  const sortProp = sorts.find(s => s.fieldName === alias || s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
+  const { Prompt, audioProp, setAudioProp } = React.useContext(AppStateContext);
 
-const handleClick = (event) => {
-  setAnchorEl(event.currentTarget);
-};
+  // popover content defaults to user-defined Component
+  const [popoverContent, setPopoverContent] = React.useState(popover);
+  const [typedVal, setTypedVal] = React.useState(null);
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [show, setShow] = React.useState(null);
 
-const handleClose = () => {
-  setAnchorEl(null);
-  setPopoverContent(popover);
-};
-
-const open = Boolean(anchorEl);
-
-
-if (create) {
-  return <EditCell {...props} />
-}
-
-let text = value;
-if (typeof(value) === 'object') {
-  try {
-    text = JSON.stringify(value);
-  } catch(e) {
-    console.log (e)
+  // when create is specified, this is an EditCell
+  if (create) {
+    return <EditCell {...props} />
   }
-}
 
-if (!(!!text || !!text?.length) && !Control && type !== 'header') {
-  text = '[empty]'
-}
+  /**
+   * EVENT HANDLERS
+   * *********************************************************************** 
+   */
 
-const ask = sortProp?.direction === 'ASC';
+  const handleMenu = e => {
+    setShow(false)
+    const f = menu.find(m => m.label === e);
+    f.action()
+  }
 
-const onClick = async (event) => {
-  if (edit) { 
-    setPopoverContent(<PopoverText {...props} onChange={onChange} handleClose={handleClose} />) 
+  const handlePopoverClick = (event) => {
     setAnchorEl(event.currentTarget);
-    return
+  };
+
+  const handlePopoverClose = () => {
+    setAnchorEl(null);
+
+    // restore popover content to default when menu closes
+    setPopoverContent(popover);
+  };
+
+  const handleEditClick = event => {
+    // change popover content to textbox when editing
+    setPopoverContent(<PopoverTextBox {...props} onChange={onChange} handlePopoverClose={handlePopoverClose} />) 
+    setAnchorEl(event.currentTarget);
   }
-  if (column?.type === 'image') {
-    return window.open(value)
+
+  const handleSortClick = () => {
+    if (sortProp?.index) {
+      return alert ('Hard-coded columns cannot be quick-sorted. Use the edit panel!')
+    }
+    return onSort(text, ascending ? 'DESC' : 'ASC')
   }
-  if (column?.type === 'audio') {
+
+  const handleAudioClick = () => {
     setAudioProp(null);
     if (value === audioProp) return;
     return setTimeout(() => {
       setAudioProp(value)
     }, 9)
   }
-  if (onSort) { 
-    if (sortProp?.index) {
-      return alert ('Hard-coded columns cannot be quick-sorted. Use the edit panel!')
+
+  const open = Boolean(anchorEl);
+
+  // transform value to string or [empty], if needed
+  let text = value;
+  if (typeof(value) === 'object') {
+    try {
+      text = JSON.stringify(value);
+    } catch(e) {
+      console.log (e)
     }
-    return onSort(text, ask ? 'DESC' : 'ASC')
   }
-  if (edit) {
-     const ok = await Prompt(`Enter value for ${field}`, 'Set value', value );
-     if (!ok) return; 
-     onChange && onChange(ok)
-     return
+
+  if (!(!!text || !!text?.length) && !Control && type !== 'header') {
+    text = '[empty]'
   }
-  action && action ()
-}
-// https://s3.amazonaws.com/box.import/
-const cellText = type === 'password' ? '********' : text;
 
-// const deg = ask ? 180 : 0;
-const arrow = !ask ? <>&#9650;</> : <>&#9660;</>
-const control = (!!Control)
-  ? <Control {...controlProps} />
-  : ''
+  const ascending = sortProp?.direction === 'ASC';
 
-const cellSelected = selected || (audioProp && (value === audioProp));
-const audioIcon = value === audioProp ? <StopCircle /> : <PlayCircle />
-const mediaIcon = column?.type === 'image' ? <Image /> : audioIcon;
-const cellIcon = column?.type === 'audio' || column?.type === 'image' ? mediaIcon : icon;
-const imageContent = <img alt={cellText} src={cellText} style={{width: 160, height: 'auto'}}  />;
+  // cell body click event
+  const onClick = async (event) => {
+    if (edit) {  
+      return handleEditClick(event);
+    }
 
-const content = !types 
-  ?  <Tooltag title={column?.type === 'image' ? imageContent : cellText} 
-      selected={cellSelected}
-      component={CellText} active={!!action || !!sortProp?.direction} 
-      clickable={type === 'header'} 
-      variant={type === 'header' ? 'subtitle2' : 'body2'}>
-    {cellText} {sortable && arrow}
-  </Tooltag>
-  : <QuickMenu options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
+    if (column?.type === 'image') {
+      return window.open(value);
+    }
 
-return <><Cell selected={cellSelected} control={!!Control} odd={odd} dense={dense} 
-  header={type === 'header'} active={edit || !!action}>
-  <Stack direction="row" spacing={1} sx={{alignItems: 'center'}}> 
+    if (column?.type === 'audio') {
+      return handleAudioClick();
+    }
 
-   <Stack direction="row" spacing={1} sx={{alignItems: 'center', width: '100%'}}>
-      {!!menu && <Box>
-        <QuickMenu options={menu.map(f => f.label)} onChange={(e) => {
-          const f = menu.find(m => m.label === e);
-          f.action()
-        }} 
-              label={<TinyButton icon={MoreVert} />}/>
+    if (onSort) {  
+      return handleSortClick()
+    } 
+
+    // fire any custom action
+    action && action ()
+  }
+
+  // mask any password text
+  const cellText = type === 'password' ? '********' : text;
+  
+  const arrow = !ascending ? <>&#9650;</> : <>&#9660;</>
+  const control = (!!Control)
+    ? <Control {...controlProps} />
+    : ''
+
+  const cellSelected = selected || (audioProp && (value === audioProp));
+  const audioIcon = value === audioProp ? <StopCircle /> : <PlayCircle />
+  const mediaIcon = column?.type === 'image' ? <Image /> : audioIcon;
+  const cellIcon = column?.type === 'audio' || column?.type === 'image' ? mediaIcon : icon;
+  const imageContent = <img alt={cellText} src={cellText} style={{width: 160, height: 'auto'}}  />;
+
+  // when types array is present, render a menu
+  const content = !types 
+    ?  <Tooltag 
+        title={column?.type === 'image' ? imageContent : cellText} 
+        selected={cellSelected}
+        component={CellText} 
+        active={!!action || !!sortProp?.direction} 
+        clickable={type === 'header'} 
+        variant={type === 'header' ? 'subtitle2' : 'body2'}>
+      {cellText} {sortable && arrow}
+    </Tooltag>
+    : <QuickMenu caret options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
+
+
+
+  return <>
+    <Cell 
+      selected={cellSelected} 
+      control={!!Control} 
+      odd={odd} 
+      dense={dense} 
+      header={type === 'header'} 
+      active={edit || !!action}
+      onMouseEnter={() => setShow(!0)}
+      onMouseLeave={() => setShow(!1)}
+    >  
+    
+      {/* in-line options menu */}
+      {!!(menu && show) && <Box sx={{position: 'absolute', right: 4, top: 4}}>
+        <QuickMenu  
+          options={menu.map(f => f.label)} 
+          onChange={handleMenu} 
+          label={<TinyButton icon={MoreVert} />}
+          />
         </Box>}
-      <Flex onClick={onClick}>
-        {control} 
-        {cellIcon}
-        {content} 
-      </Flex>  
-      <Box sx={{flexGrow: 1}} />
-      {!!popover && <TinyButton icon={ExpandMore} deg={!open?0:180}  onClick={handleClick}/>}
-   </Stack>
 
-    <Box sx={{flexGrow: 1}} />
+        <Stack direction="row" sx={{alignItems: 'center'}}> 
 
-    {sortProp?.direction && <Tooltag onClick={() => dropOrder(text)} 
-      component={Box} title="Remove column sort" sx={{ cursor: 'pointer' }}>
-      &times;
-    </Tooltag>} 
-  </Stack>
-</Cell>
+          {/* main cell content  */}
+          <Stack direction="row" spacing={1} sx={{alignItems: 'center', width: '100%'}}>
+            <Flex onClick={onClick}>
 
-  {!!popoverContent && <Popover 
-    open={open}
-    anchorEl={anchorEl}
-    onClose={handleClose}
-    anchorOrigin={{
-      vertical: 'bottom',
-      horizontal: 'left',
-    }}
-  >
-    {popoverContent}
-  </Popover>}
+              {/* custom controls, if any  */}
+              {control} 
+
+              {/* custom or media type icon  */}
+              {cellIcon}
+
+              {/* cell value, transformed as needed */}
+              {content} 
+            </Flex>  
+            <Box sx={{flexGrow: 1}} />
+
+            {/* popover trigger */}
+            {!!popover && <TinyButton icon={ExpandMore} deg={!open?0:180}  onClick={handlePopoverClick}/>}
+          </Stack>
+
+          <Box sx={{flexGrow: 1}} />
+
+          {/* column sort remove button  */}
+          {sortProp?.direction && <Tooltag onClick={() => dropOrder(text)} 
+            component={Box} title="Remove column sort" sx={{ cursor: 'pointer' }}>
+            &times;
+          </Tooltag>} 
+        </Stack>
+    </Cell>
+
+    {/* in-line custom popover   */}
+    {!!popoverContent && <Popover 
+      open={open}
+      anchorEl={anchorEl}
+      onClose={handlePopoverClose}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'left',
+      }}
+    >
+      {popoverContent}
+    </Popover>}
 
 
-</>
+  </>
 }
 
 ListCell.defaultProps = {};

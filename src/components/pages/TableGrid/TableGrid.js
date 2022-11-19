@@ -56,7 +56,7 @@ function ConstraintInfo({
       }} /></Box></>}
     </Stack>
     <Divider sx={{mb: 1, mt: 1}}/>
-    <Flex sx={{ p: t => t.spacing(0,0,2,0) }}
+    <Flex sx={{ p: t => t.spacing(0,2,2,0) }}
     ><Box sx={{flexGrow: 1}} /> 
     <TinyButton onClick={() => {
       setState({

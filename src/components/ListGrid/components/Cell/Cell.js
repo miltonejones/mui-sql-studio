@@ -10,6 +10,7 @@ const Cell = styled('td')(({theme, selected, control, header, odd, dense, active
   backgroundColor: header ? 'rgb(240, 240, 240)' : `rgb(${selected ? 230 : 255}, 255, 255)`, 
   color: !active ? 'black' : 'blue',
   cursor: !active ? 'default' : 'pointer',
+  position: 'relative',
   '&:hover': {
     textDecoration: !active ? 'none' : 'underline',
   }

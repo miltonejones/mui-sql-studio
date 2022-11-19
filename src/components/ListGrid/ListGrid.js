@@ -66,7 +66,9 @@ export default function ListGrid({
       <Box sx={{flexGrow: 1}} />
       <Typography sx={{mr: 1}} variant="caption">{desc}</Typography>
       <Typography sx={{mr: 1}} variant="caption">Rows per page</Typography>
-      <QuickMenu options={[20,50,100,250]} label={pageSize} value={pageSize} onChange={setPageSize} />
+      <QuickMenu options={[20,50,100,250]} label={pageSize} value={pageSize} onChange={e => {
+        !!e && setPageSize(e)
+      }} />
       </Stack>
       } 
 

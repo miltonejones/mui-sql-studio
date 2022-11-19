@@ -144,6 +144,6 @@ export const TextBox = styled(TextField)(({ theme }) => ({
   }
 }));
 
-export const TinyButton = ({icon: Icon, ...props}) => <RotateButton {...props}  sx={{mr: 1, width: 18, height: 18}}>
+export const TinyButton = ({icon: Icon, ...props}) => <RotateButton {...props}  sx={{ ...props.sx, width: 18, height: 18}}>
   <Icon sx={{width: 16, height: 16}} />
 </RotateButton>

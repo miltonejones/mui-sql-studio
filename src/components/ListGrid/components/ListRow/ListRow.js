@@ -39,9 +39,9 @@ function ListRow({
     {...cell}  
     column={columns[i]}/>)}
     <Cell header dense={dense}> 
-      {header && <TinyButton icon={Settings} onClick={setSettings} />}
-      {allowDelete && <TinyButton icon={Delete} onClick={() => onDelete(row)}/>}
-      {dirty ? <><TinyButton icon={Save} onClick={() => {
+      {header && <TinyButton sx={{ mr: 1 }} icon={Settings} onClick={setSettings} />}
+      {allowDelete && <TinyButton sx={{ mr: 1 }} icon={Delete} onClick={() => onDelete(row)}/>}
+      {dirty ? <><TinyButton sx={{ mr: 1 }} icon={Save} onClick={() => {
         commitRow && commitRow({data, row, create})
         setDirty(false);
         setData(row)
