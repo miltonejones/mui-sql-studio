@@ -184,7 +184,7 @@ function ListCell(props) {
         variant={type === 'header' ? 'subtitle2' : 'body2'}>
       {cellText} {sortable && arrow}
     </Tooltag>
-    : <QuickMenu caret options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
+    : <QuickMenu caret title={`Value for "${field}"`} options={types} onChange={(e) => !!e && onChange && onChange(e)} value={text} label={text}/>
 
 
 
