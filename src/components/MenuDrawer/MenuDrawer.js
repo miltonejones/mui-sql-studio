@@ -4,7 +4,7 @@ import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Logo from './components/Logo/Logo';
 import Panel from './components/Panel/Panel';
-import { RotateButton } from '..';
+import { RotateButton, TinyButton } from '..';
 import { InputAdornment, Box, Stack, Collapse, IconButton, TextField, Typography, styled} from '@mui/material'; 
 
 import { PushPin, ExpandMore , Close, FilterAlt} from '@mui/icons-material';
@@ -15,6 +15,14 @@ const FilterBox = styled(TextField)(({ white }) => ({
     color: white ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)'
   }
 }));  
+
+const MenuNoShade = styled(Menu)(() => ({
+  '& .MuiPaper-root': {
+    boxShadow: `
+      0px 4px 1px 1px rgb(0 0 0 / 20%), 
+      2px 5px 1px 0px rgb(0 0 0 / 14%)`
+  }
+}))
 
 
 export default function MenuDrawer({ 
@@ -38,7 +46,7 @@ export default function MenuDrawer({
     setAnchorEl(null);
   }; 
 
-  const Tag = pinned ? Panel : Menu;
+  const Tag = pinned ? Panel : MenuNoShade;
  
   const startAdornment = pinned ? null  : <InputAdornment position="start">
   <IconButton sx={{width: 18, height: 18}} size="small">
@@ -60,7 +68,7 @@ export default function MenuDrawer({
     <div>
       <Collapse orientation="horizontal" in={!pinned}>
      <Button
-        sx={{mr: 1, borderRadius: t => t.spacing(1,1,0,0),
+        sx={{mr: 1, borderRadius: t => t.spacing(.5,.5,0,0),
           backgroundColor: t => open ? 'white' : t.palette.primary.dark }}
         color={open ? "primary" : "inherit"}
         id="demo-positioned-button"
@@ -72,7 +80,7 @@ export default function MenuDrawer({
         {label}
       </Button> </Collapse>
       <Tag
-        sx={{maxWidth: pinned?320:'inherit', boxShadow: null }}
+        sx={{maxWidth: pinned?320:'inherit', boxShadow: 0 }}
         dense
         id="demo-positioned-menu"
         aria-labelledby="demo-positioned-button"
@@ -115,13 +123,14 @@ export default function MenuDrawer({
 
      
         <Box sx={{p: 2}}>
-          <Stack spacing={2} direction="row">
+          <Stack spacing={2} sx={{alignItems: 'center'}} direction="row">
             <FilterBox white={pinned} size="small" label="Filter" value={filterText} autoComplete="off"
               onChange={e => setFilterText(e.target.value)} 
               InputProps={adornment}/>
-            <RotateButton color="inherit" onClick={() => setPinnedTab(pinnedTab === label ? '' : label)} deg={pinned ? 45 : 0}>
-              <PushPin />
-            </RotateButton>
+            <TinyButton
+            icon={PushPin}
+            color="inherit" onClick={() => setPinnedTab(pinnedTab === label ? '' : label)} deg={pinned ? 45 : 0}/>
+              
           </Stack> 
         </Box>
         <MenuTree filterText={filterText} pinned={pinned} options={options} handleClose={handleClose}/> 
