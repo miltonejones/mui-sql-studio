@@ -22,35 +22,16 @@ const uniqueId = () => Date.now().toString(36) + Math.random().toString(36).subs
  
 
 
-const AU = styled('u')(({ active, error }) => ({
+const AU = styled('u')(({ theme, active, error }) => ({
   cursor: 'pointer',
-  fontWeight: 600,
+  fontWeight: active ? 600 : 400,
   fontStyle: 'italic',
-  color: error ? 'red' : (active ? '#37a' : 'gray'), 
+  color: error ? theme.palette.error.main : theme.palette.primary.main, 
   '&:hover': {
     textDecoration: 'underlined',
-    color: '#73a'
+    color: theme.palette.primary.dark
   }
-}))
-
-// const Pane = styled(Box)(({ theme }) => ({
-//   width: 320,
-//   height: 300, 
-//   overflow: 'auto', 
-//   border: 'solid 1px #d5d5d5',
-//   padding: theme.spacing(0.5), 
-//   borderRadius: 5
-// }))
- 
-// const Item = styled(Box)(({ theme, active }) => ({
-//   borderRadius: 5,
-//   padding: theme.spacing(0.5), 
-//   margin: theme.spacing(0.5, 0), 
-//   cursor: 'default', 
-//   fontWeight: active ? 600 : 400,
-//   border: active ? 'solid 1px #d5d5d5' : 'solid 1px white',
-//   backgroundColor: active ? 'aliceblue' : ''
-// }))
+})) 
  
 export default function QuerySettingsPanel({ 
     config, 
@@ -347,7 +328,7 @@ export default function QuerySettingsPanel({
     const collated = collateTables(filter, passThru); 
 
     collated.map((column, i) => { 
-      const error = collated.filter(n => !!n.alias && n.alias === column.alias).length > 1;
+      const error = !small && collated.filter(n => !!n.alias && n.alias === column.alias).length > 1;
       const { objectname, objectalias, name, alias, selected, expression } = column;
       const last = i === (collated.length - 1);
 
@@ -622,7 +603,7 @@ export default function QuerySettingsPanel({
 
             <Flex wrap>
               {tableNames.filter(t => !configuration.tables.find(c => c.name === t)).map(tname => <>
-                <QueryColumn title={tname} icon={Add} clickAction={() => addTable(tname)}
+                <QueryColumn title={tname} icon={Add} aliasAction={() => addTable(tname)}
                  deleteAction={() => addTable(tname)}/> 
                 {/* <AU onClick={() => addTable(tname)}>{tname}</AU>, {" "} */}
               </>)}
@@ -914,6 +895,7 @@ export const QuickSelect = ({
 export const QuickMenu = ({ 
     label, 
     error, 
+    title,
     value: selected, 
     caret, icons = [], 
     options, 
@@ -935,8 +917,8 @@ export const QuickMenu = ({
 
 
 <AU style={{marginRight: 4}} 
-    active error={error || open} onClick={handleClick}>{label || 'Choose'}</AU> 
-  {!!caret && <TinyButton icon={ExpandMore} deg={open ? 180 : 0} />}
+    active={open} error={error || open} onClick={handleClick}>{label || 'Choose'}</AU> 
+  {!!caret && <TinyButton onClick={handleClick} icon={ExpandMore} deg={open ? 180 : 0} />}
  
   <MenuComponent  
     anchorEl={anchorEl}
@@ -944,6 +926,8 @@ export const QuickMenu = ({
     open={open}
     onClose={() => handleClose()} 
   > 
+  {!!title && <Flex sx={{m: t => t.spacing(1,0)}}><Divider sx={{width: '100%'}}><Typography variant="caption">{title}</Typography></Divider></Flex>}
+
     {options?.map ((option, index) => {
       const Icon = icons[index];
       return <MenuItem key={option} onClick={() => handleClose(option)}
@@ -973,7 +957,7 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
   }
   return <Box sx={{mt: 1}} > 
 
-  {" "}<QuickMenu options={['JOIN', 'LEFT JOIN']} 
+  {" "}<QuickMenu caret title="Join type" options={['JOIN', 'LEFT JOIN']} 
       onChange={handleType} value={type} label={type}/>
   {" "}
   <QueryColumn columnname={table.name} columnalias={table.alias} title={table.name} 
@@ -1007,7 +991,7 @@ function ColumnMenu ({ tablename, source, columnname, fieldname }) {
   }
   const columns = selectedTable.columns;
   const label = columnname || <i>choose column</i> 
-  return <QuickMenu options={columns.map(n => n.name)} label={label} value={columnname} onChange={handleClose}  />  
+  return <QuickMenu caret title={`Columns in ${selectedTable.name}`} options={columns.map(n => n.name)} label={label} value={columnname} onChange={handleClose}  />  
 }
 
 function TableMenu ({ tablename, name, fieldname }) {
@@ -1025,7 +1009,7 @@ function TableMenu ({ tablename, name, fieldname }) {
 
   const label = name || <i>choose table</i> ;
 
-  return <QuickMenu options={tables.map(n => n.name)} label={label} value={name} onChange={handleClose}  />   
+  return <QuickMenu caret title="Available tables" options={tables.map(n => n.name)} label={label} value={name} onChange={handleClose}  />   
 }
 
 export const QueryTest = ({ config, sql, onResult, noneQuery, ...props }) => {

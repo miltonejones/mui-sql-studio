@@ -1,6 +1,6 @@
 import React from 'react';
 import { Chip, Link } from '@mui/material';
-import { Delete } from '@mui/icons-material';
+import { Delete, Error } from '@mui/icons-material';
   
  
 const QueryColumn = ({ 
@@ -10,8 +10,7 @@ const QueryColumn = ({
   title,
   error,
   aliasAction,
-  deleteAction,
-  clickAction,
+  deleteAction, 
   icon: Icon = Delete
 }) => {
  
@@ -22,8 +21,9 @@ const QueryColumn = ({
  return ( 
      <Chip label={inner}  
      size="small"
-     sx={{color: t => t.palette.primary.dark}}
-      onClick={() => clickAction && clickAction()}
+     icon={error ? <Error /> : null }
+     sx={{color: t => t.palette[error ? 'error' : 'primary'].dark}}
+      onClick={aliasAction}
         onDelete={deleteAction}
         color={error ? "error" : "primary"} variant="outlined" 
               deleteIcon={<Icon />}/> 

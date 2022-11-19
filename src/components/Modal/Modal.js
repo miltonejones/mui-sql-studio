@@ -201,7 +201,7 @@ const ExpressionPrompt = ({ onChange, title, message, defaultValue = {} }) => {
       }} multiline rows={4} sx={{mb: 1}}/>
 
       <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}>
-        <Typography>Type:</Typography> <QuickMenu options={DATA_TYPES} onChange={e => { 
+        <Typography>Type:</Typography> <QuickMenu caret options={DATA_TYPES} onChange={e => { 
             if (!e) return;
             const val = { ...value, type: e }
             setValue(val);
