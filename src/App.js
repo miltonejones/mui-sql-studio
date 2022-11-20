@@ -19,6 +19,7 @@ import {
 } from './components/pages';
 import './App.css';
 import './components/ListGrid/ListGrid.css';
+import { useLocalStorage } from './hooks/useLocalStorage';
   
 
 const Footer = styled(Stack)(() => ({
@@ -52,10 +53,27 @@ function App() {
   const appHistory = useAppHistory(); 
   const { current } = appHistory;
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const [menuPos, setMenuPos] = React.useState(localStorage.getItem('menu-pos') || 'bottom'); 
-  const [useMenus, setUseMenus] = React.useState(localStorage.getItem('use-menus')); 
-  const [pinnedTab, setPinnedTab] = React.useState(localStorage.getItem('pinned-tab')); 
-  const [pageSize, commitPageSize] = React.useState(localStorage.getItem('page-size') || 100); 
+ 
+
+  const store = useLocalStorage([
+    'menu-pos',
+    'use-menus',
+    'use-modals',
+    'pinned-tab',
+    'page-size'
+  ], {
+    'menu-pos': 'bottom',
+    'page-size': 100,
+    'use-menus': '1',
+  })
+
+  const menuPos = store.getItem('menu-pos');
+  const useMenus = store.getItem('use-menus');
+  const useModals = store.getItem('use-modals');
+  const pinnedTab = store.getItem('pinned-tab');
+  const pageSize = store.getItem('page-size');
+
+  
   const open = Boolean(anchorEl);
 
   const handlePopoverClick = (event) => {
@@ -66,30 +84,26 @@ function App() {
     setAnchorEl(null); 
   };
 
-  const commitMenuPos = (pos) =>{
-    setMenuPos(pos)
-    localStorage.setItem('menu-pos', pos)
+  const commitMenuPos = (pos) =>{ 
+    store.setItem('menu-pos', pos)
   }
 
-  const handleChange = async (event) => {
-    const checked = event.target.checked ? '1' : '0';
-    setUseMenus(checked); 
-    localStorage.setItem('use-menus', checked)
+  const handleChange = (key) => async (event) => {
+    const checked = event.target.checked ? '1' : '0'; 
+    store.setItem(key, checked)
   };
 
-  const pinTab = tab => { 
-    setPinnedTab(tab);
-    localStorage.setItem('pinned-tab', tab)
+  const pinTab = tab => {  
+    store.setItem('pinned-tab', tab)
   }
 
-  const setPageSize = (size) => {
-    commitPageSize(size);
-    localStorage.setItem('page-size', size)
+  const setPageSize = (size) => { 
+    store.setItem('page-size', size)
   }
 
   const MenuComponent = useMenus === '1' ? Menu : Drawer;
   const PopComponent = useMenus === '1' ? Popover : Drawer;
-  const ModalTag = useMenus === '1' ? Dialog : Drawer;
+  const ModalComponent = useModals === '1' ? Dialog : Drawer;
   const width = !pinnedTab ? 'calc(100vw - 24px)' : 'calc(100vw - 364px)'
  
   return (
@@ -126,17 +140,18 @@ function App() {
             pinnedTab={pinnedTab}
             setPinnedTab={pinTab}
           />
-         <Box sx={{position: 'absolute', top: 54, left: pinnedTab ? 356 : 16 }}>
-         {!!breadcrumbs && <Flex sx={{ width }}>
-            <Breadcrumbs separator={<b style={{color: 'white'}}>›</b>} aria-label="breadcrumb">
-              {breadcrumbs.map(crumb => crumb.href 
-                ? <Link sx={{color: 'white' }} href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
-                : <Typography sx={{color: 'white', fontWeight: 600 }} variant="body2">{crumb.text}</Typography>)}
-            </Breadcrumbs>
-            <Spacer />
-            <Box>
-                <RotateButton deg={open ? 0 : 360} onClick={handlePopoverClick}>
-                  <Settings sx={{color: 'white'}} />
+
+          <Box sx={{ position: 'absolute', top: 48, left: pinnedTab ? 356 : 16 }}>
+            {!!breadcrumbs && <Flex sx={{ width }}>
+              <Breadcrumbs separator={<b style={{ color: 'white' }}>›</b>} aria-label="breadcrumb">
+                {breadcrumbs.map(crumb => crumb.href 
+                  ? <Link sx={{ color: 'white' }} href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
+                  : <Typography sx={{ color: 'white', fontWeight: 600 }} variant="body2">{crumb.text}</Typography>)}
+              </Breadcrumbs>
+              <Spacer />
+              <Box>
+                <RotateButton deg={ open ? 0 : 360 } onClick={handlePopoverClick}>
+                  <Settings sx={{ color: 'white' }} />
                 </RotateButton>
                 <PopComponent
                     open={open}
@@ -147,27 +162,42 @@ function App() {
                       vertical: 'bottom',
                       horizontal: 'left',
                     }} >
-                    <Stack spacing={1} sx={{p: 2, height: useMenus !== '1' ? 240 : 'inherit'}}>
+                    <Stack spacing={1.5} sx={{p: 2, height: useMenus !== '1' || useModals !== '1' 
+                      ? 280 : 'inherit'}}>
 
-                <FormControlLabel
-                  label="Use menus"
-                  control={ <Switch  
-                    checked={useMenus === '1'}
-                    onChange={handleChange} 
-                  />}
-                />
-                    <QuickSelect options={['top','bottom','left','right']} 
+                    <Box>
+                      <FormControlLabel
+                        label="Use dialogs"
+                        control={ <Switch  
+                          checked={useModals  === '1'}
+                          onChange={handleChange('use-modals')} 
+                        />}
+                      />
+                    </Box>
+                    
+                    <Box>
+                      <FormControlLabel
+                        label="Use menus"
+                        control={ <Switch  
+                          checked={useMenus === '1'}
+                          onChange={handleChange('use-menus')} 
+                        />}
+                      />
+                    </Box>
+
+
+                    <QuickSelect sx={{mt: 1}} options={['top','bottom','left','right']} 
                         label="Menu Position" value={menuPos} 
-                        disabled={useMenus === '1'}
+                        disabled={useMenus === '1' && useModals === '1'}
                         onChange={commitMenuPos}/>
                     </Stack>
                 </PopComponent>
+              </Box>
+            </Flex>}
+          </Box>
 
-            </Box>
-          </Flex>}
-         </Box>
           {/* work surface  */}
-          <Area pinned={!!pinnedTab} breadcrumbs={breadcrumbs}>  
+          <Area pinned={!!pinnedTab} breadcrumbs={breadcrumbs}>   
             <Routes>
               <Route path="/" element={<HomePage pinned={!!pinnedTab} />} /> 
               <Route path="/connection/:connectionID" element={<ConnectionGrid  />} /> 
@@ -192,7 +222,7 @@ function App() {
         </Footer>
 
         {/* general global modal  */}
-        <Modal {...modalProps} tag={ModalTag} anchor={menuPos}  />
+        <Modal {...modalProps} tag={ModalComponent} anchor={menuPos}  />
 
         {/* connection settings dialog  */}
         <ConnectionModal onChange={(key, val) => {

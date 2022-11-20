@@ -198,6 +198,7 @@ function ListCell(props) {
       active={edit || !!action}
       onMouseEnter={() => setShow(!0)}
       onMouseLeave={() => setShow(!1)}
+      style={{ position: 'relative' }}
     >  
     
       {/* in-line options menu */}

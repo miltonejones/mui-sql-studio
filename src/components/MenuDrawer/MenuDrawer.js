@@ -155,24 +155,31 @@ const MenuTree = ({options, spaces = 0, pinned, handleClose, filterText}) => {
 
   return <>
     {options
-    .filter(opt => !filterText || opt.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
-    .map((opt, i) => <>
+      .filter(opt => !filterText || opt.title.toLowerCase().indexOf(filterText.toLowerCase()) > -1)
+      .map((opt, i) => <>
       <MenuItem key={i} sx={{ml: spaces, borderLeft }} onClick={e => execClose(e, opt)}>
-        <Stack>
+        <Stack sx={{ width: '100%'  }}>
           <Stack sx={{ width: '100%', alignItems: 'center' }} direction="row">
             {opt.active && <Box sx={{mr: 1}}>&bull;</Box>}
             <Typography sx={{ fontWeight: opt.active ? 600 : 400}}>
               {opt.title}
             </Typography>
             <Box sx={{flexGrow: 1}} />
-          {   !!opt.descendants &&  <RotateButton deg={open ? 180 : 0} onClick={() => setOpen(!open)} >
+          {!!opt.descendants && <RotateButton deg={open ? 180 : 0} onClick={() => setOpen(!open)}>
               <ExpandMore />
             </RotateButton>}
           </Stack>
           {!!opt.subtext && <Typography sx={{ml: opt.active ? 2 : 0}} variant="caption">{opt.subtext}</Typography>}
         </Stack>
       </MenuItem>
-      {opt.descendants && <Collapse in={open}><MenuTree filterText={filterText} pinned={pinned} handleClose={handleClose} options={opt.descendants} spaces={spaces + 4}/></Collapse>}
+      {opt.descendants && <Collapse in={open}
+        ><MenuTree 
+          filterText={filterText} 
+          pinned={pinned} 
+          handleClose={handleClose} 
+          options={opt.descendants} 
+          spaces={spaces + 4}
+          /></Collapse>}
     </>)} 
   </>
 }

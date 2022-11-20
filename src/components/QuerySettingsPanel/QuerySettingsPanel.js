@@ -879,12 +879,12 @@ export const QuickSelect = ({
     disableClearable
     autoComplete
     autoHighlight
-    sx={{mr: 1, minWidth: small ? 120 : 220}}
     size="small"
     value={selected} 
     options={selections}
     onChange={handleChange} 
     {...props}
+    sx={{...props.sx, mr: 1, minWidth: small ? 120 : 220}}
     renderInput={(params) => <TextField {...params} label={label} placeholder="Filter options" size="small" />}
  />
   </>
