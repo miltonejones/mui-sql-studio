@@ -230,7 +230,8 @@ function App() {
             ...modalState.connection,
             [key]: val
           }})
-        }} {...modalState} />
+        }} {...modalState} 
+        component={ModalComponent}/>
         
         {/* hidden audio player */}
         {!!audioProp && <audio controls autoPlay style={{display: 'none'}}> 

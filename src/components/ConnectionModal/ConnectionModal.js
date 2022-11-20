@@ -51,7 +51,7 @@ const fields = [
 ]
 
 
-export default function ConnectionModal({open, connection = {}, onChange, onClose}) {
+export default function ConnectionModal({open, connection = {}, onChange, onClose, component: Component = Dialog}) {
   const [checked, setChecked] = React.useState(false);
   const [db, setDb] = React.useState([])
 
@@ -61,25 +61,25 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
       const b = await execQuery(connection, 'select SCHEMA_NAME from information_schema.SCHEMATA');
       const rows = b.rows.map(e => e.SCHEMA_NAME)
       setDb(rows)
-     
     }
   };
 
   const isValid = () => !!connection && !Object.keys(connection).some(f => !connection[f])
  
- 
-  return <Dialog open={open}>
-    <DialogTitle>
+  const maxWidth = 500;
+  
+  return <Component onClose={() => onClose(false)}   open={open}>
+    <DialogTitle sx={{ maxWidth }} >
       <Typography sx={{mb: 0}} variant="h6">Connection Setup</Typography> 
     </DialogTitle>
     <Divider />
-    <DialogContent> 
+    <DialogContent sx={{ maxWidth }} > 
       <Grid container spacing={2}>
 
       {!!connection && fields.map(field => <Grid xs={12} item  key={field.label}>
         <TextField autoComplete="off" value={connection[field.field]} onChange={(e) => {
           onChange && onChange(field.field,  e.target.value) 
-        } } fullWidth size="small" label={field.label} type={field.type}/>
+        } } fullWidth  sx={{ maxWidth }}  size="small" label={field.label} type={field.type}/>
       </Grid>)}
 
       <Grid item xs={5}>
@@ -116,7 +116,7 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
       <Button
           disabled={!isValid()}  variant="contained" onClick={() => onClose(connection)}>save</Button>
     </DialogActions>
-  </Dialog>
+  </Component>
 
 }
  
