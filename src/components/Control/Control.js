@@ -126,7 +126,7 @@ export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}
 
 
 export const Area = styled(Card)(({ theme, breadcrumbs, pinned }) => ({
-  height: `calc(100vh - ${breadcrumbs ? 134 : 104}px)`,
+  height: `calc(100vh - ${breadcrumbs ? 212 : 182}px)`,
   backgroundColor: '#f5f5f5 ', 
   position: 'absolute',
   top: breadcrumbs ? 94 : 64,
@@ -134,7 +134,7 @@ export const Area = styled(Card)(({ theme, breadcrumbs, pinned }) => ({
   width: !pinned ? 'calc(100vw - 96px)' : 'calc(100vw - 436px)',
   transition: 'left 0.1s linear', 
   margin: theme.spacing(0, 2),
-  padding: theme.spacing(1, 4 ),
+  padding: theme.spacing(1, 4, 10, 4),
   borderRadius: 8,
   overflow: 'auto'
 }));
