@@ -59,16 +59,12 @@ function App() {
   const [anchorEl, setAnchorEl] = React.useState(null);
  
 
-  const store = useLocalStorage([
-    'menu-pos',
-    'use-menus',
-    'use-modals',
-    'pinned-tab',
-    'page-size'
-  ], {
+  const store = useLocalStorage({
     'menu-pos': 'bottom',
     'page-size': 100,
     'use-menus': '1',
+    'use-modals': null,
+    'pinned-tab': null,
   })
 
   const menuPos = store.getItem('menu-pos');
@@ -150,9 +146,9 @@ function App() {
           <Box sx={{ position: 'absolute', top: 48, left: pinnedTab ? 356 : 16 }}>
             {!!breadcrumbs && <Flex sx={{ width }}>
               <Breadcrumbs separator={<b style={{ color: 'white' }}>›</b>} aria-label="breadcrumb">
-                {breadcrumbs.map(crumb => crumb.href 
-                  ? <Link sx={{ color: 'white' }} href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
-                  : <Typography sx={{ color: 'white', fontWeight: 600 }} variant="body2">{crumb.text}</Typography>)}
+                {breadcrumbs.map((crumb, o) => crumb.href 
+                  ? <Link key={o} sx={{ color: 'white' }} href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
+                  : <Typography key={o} sx={{ color: 'white', fontWeight: 600 }} variant="body2">{crumb.text}</Typography>)}
               </Breadcrumbs>
               <Spacer />
               <Box>
@@ -203,7 +199,7 @@ function App() {
           </Box>
 
           {/* work surface  */}
-          <Area pinned={!!pinnedTab} breadcrumbs={breadcrumbs}>   
+          <Area pinned={!!pinnedTab ? 1 : 0} breadcrumbs={breadcrumbs}>   
             <Routes>
               <Route path="/" element={<HomePage pinned={!!pinnedTab} />} /> 
               <Route path="/connection/:connectionID" element={<ConnectionGrid  />} /> 

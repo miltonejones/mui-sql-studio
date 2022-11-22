@@ -1,3 +1,5 @@
+import { useLocalStorage } from "./useLocalStorage";
+
  
 
 
@@ -6,10 +8,13 @@ const COOKIE = 'mysql-query-list'
 
 
 export const useSaveQuery = () => { 
-  
-  const getQueries = () => JSON.parse(localStorage.getItem(COOKIE) ?? '{}');
 
-  const setQueries = (json) => localStorage.setItem(COOKIE, JSON.stringify(json));
+  const store = useLocalStorage({
+    [COOKIE]: '{}'
+  })
+  
+  const getQueries = () => JSON.parse(store.getItem(COOKIE));
+  const setQueries = (json) => store.setItem(COOKIE, JSON.stringify(json));
 
   const saveQuery = (query) => {
     const { title, ...config } = query;

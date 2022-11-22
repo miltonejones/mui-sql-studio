@@ -162,8 +162,8 @@ function ListCell(props) {
         title={column?.type === 'image' ? imageContent : cellText} 
         selected={cellSelected}
         component={CellText} 
-        active={!!action || !!sortProp?.direction} 
-        clickable={type === 'header'} 
+        active={!!action || !!sortProp?.direction ? 1 : 0} 
+        clickable={type === 'header' ? 1 : 0} 
         variant={type === 'header' ? 'subtitle2' : 'body2'}>
       {cellText} {sortable && arrow}
     </Tooltag>
@@ -178,7 +178,7 @@ function ListCell(props) {
       odd={odd} 
       dense={dense} 
       header={type === 'header'} 
-      active={edit || !!action}
+      active={edit || !!action ? 1 : 0}
       onMouseEnter={() => setShow(!0)}
       onMouseLeave={() => setShow(!1)}
       style={{ position: 'relative' }}

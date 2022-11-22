@@ -31,14 +31,7 @@ export default function ListGrid({
   const desc = `${first} to ${Math.min(first + pageSize - 1, count)} of ${count} records`
 
   return <>
-
-  {/* {!!breadcrumbs && <>
-    <Breadcrumbs separator="›" aria-label="breadcrumb">
-      {breadcrumbs.map(crumb => crumb.href 
-        ? <Link href={crumb.href}><Typography variant="body2">{crumb.text}</Typography></Link> 
-        : <Typography variant="body2">{crumb.text}</Typography>)}
-    </Breadcrumbs>
-  </>} */}
+ 
 
   {!!title && <>
     <Stack direction="row" sx={{alignItems: 'center'}}>
@@ -77,41 +70,49 @@ export default function ListGrid({
       >Query returned no results. <u>Click here to clear filter</u>.</Box></Alert>}
 
   {!empty && <Tiles cellSpacing="1" wide={wide}>
-    {headers.map(row => <ListRow 
-    header={settings}
-    setSettings={window.alert}
-    dense={dense} 
-    dropOrder={dropOrder} 
-    sorts={sorts} 
-    onSort={onSort} 
-    sortable={searchable} 
-    key={row.field} 
-    row={row} 
-    />)}
-    {!!searchable && <SearchRow  searches={searches} 
-      onClear={(key, val) => onClear && onClear(key, val)} 
-      onChange={(key, val) => onSearch && onSearch(key, val)} 
-    row={headers[0]} />}
-    {rows.map((row, i) => <ListRow 
-          index={i} 
-          allowDelete={allowDelete}  
-          onDelete={onDelete}
-          columns={columns}
-          onCellChange={onCellChange} 
-          dense={dense} 
-          commitRow={commitRow} 
-          key={row.field} 
-          row={row} />)}
-
-    {!!create && <ListRow 
-      create 
-      columns={columns}
-      onCellChange={onCellChange} 
+    <thead>
+        {headers.map((row, i) => <ListRow 
+      header={settings}
+      setSettings={window.alert}
       dense={dense} 
-      commitRow={commitRow}  
-      row={rows[0]} 
+      dropOrder={dropOrder} 
+      sorts={sorts} 
+      onSort={onSort} 
+      sortable={searchable} 
+      key={i} 
+      row={row} 
+      />)}  
+    </thead>
 
-    />}
+    <tbody>
+
+      {!!searchable && <SearchRow  searches={searches} 
+        onClear={(key, val) => onClear && onClear(key, val)} 
+        onChange={(key, val) => onSearch && onSearch(key, val)} 
+      row={headers[0]} />}
+      {rows.map((row, i) => <ListRow 
+            index={i} 
+            allowDelete={allowDelete}  
+            onDelete={onDelete}
+            columns={columns}
+            onCellChange={onCellChange} 
+            dense={dense} 
+            commitRow={commitRow} 
+            key={i} 
+            row={row} />)}
+
+      {!!create && <ListRow 
+        create 
+        columns={columns}
+        onCellChange={onCellChange} 
+        dense={dense} 
+        commitRow={commitRow}  
+        row={rows[0]} 
+
+      />}
+
+    </tbody>
+
   </Tiles>}
 
   </>

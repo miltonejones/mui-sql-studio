@@ -925,7 +925,7 @@ export const QuickMenu = ({
 
 
 <AU style={{marginRight: 4}} 
-    active={open} error={error || open} onClick={handleClick}>{label || 'Choose'}</AU> 
+    active={open ? 1 : 0} error={error || open} onClick={handleClick}>{label || 'Choose'}</AU> 
   {!!caret && <TinyButton onClick={handleClick} icon={ExpandMore} deg={open ? 180 : 0} />}
  
   <MenuComponent  
@@ -945,7 +945,11 @@ export const QuickMenu = ({
       value={selected}
       onChange={handleClose}
     />
+
       </Box>}
+
+
+
 {/* otherwise make a menu item list  */}
     {options?.length !== 2 && options?.map ((option, index) => {
       const Icon = icons[index];

@@ -1,16 +1,23 @@
 import * as React from 'react';
+import { useLocalStorage } from './useLocalStorage';
 
 const COOKIE = 'mysql-history-items'
 
 export const useAppHistory = () => {
-  const [current, setCurrent] = React.useState(null)
+  const [current, setCurrent] = React.useState(null);
+
+
+  const store = useLocalStorage({
+    [COOKIE]: '{}'
+  })
   
-  const getAppHistory = () => JSON.parse(localStorage.getItem(COOKIE) ?? '[]');
+  
+  const getAppHistory = () => JSON.parse(store.getItem(COOKIE));
 
   const setFavorite = path => { 
     const old = getAppHistory();
     const add = old.map(h => h.path === path ? {...h, favorite: !h.favorite} : h)
-    localStorage.setItem(COOKIE, JSON.stringify(add));
+    store.setItem(COOKIE, JSON.stringify(add));
   }
 
   const getFavorite = React.useCallback( path => {
@@ -33,7 +40,7 @@ export const useAppHistory = () => {
       ? old.map(f => f.path === node.path ? item : f)
       : old.concat(item); 
     setCurrent(item);
-    localStorage.setItem(COOKIE, JSON.stringify(add));
+    store.setItem(COOKIE, JSON.stringify(add));
   }
  
   return { getAppHistory, setAppHistory, getFavorite, getFavorites, setFavorite, current }

@@ -28,7 +28,7 @@ function SearchRow({
         </InputAdornment>,
       } 
   
-      return (<Cell dense>
+      return (<Cell key={i} dense>
         <TextField 
           fullWidth 
           autoComplete="off" 

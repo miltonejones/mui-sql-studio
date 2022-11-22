@@ -1,7 +1,7 @@
 import React from "react";
 import { 
   FormControlLabel, 
-  Switch, 
+  Switch, ToggleButtonGroup, ToggleButton,
   Box, 
   Button, 
   Card, 
@@ -79,16 +79,32 @@ export const OptionSwitch = ({ options = [], value, onChange }) => {
 
   const [checked, setChecked] = React.useState(options[0] === value)
 
-  return   <FormControlLabel
-      label={checked ? options[0] : options[1]}
-      control={ <Switch  
-        checked={checked}
-        onChange={e => {
-          setChecked(e.target.checked);
-          onChange(e.target.checked ? options[0] : options[1])
-        }} 
-      />}
-    />
+  return  <ToggleButtonGroup exclusive value={checked ? options[0] : options[1]}
+  color="primary" 
+  onChange={(e, n) => {
+    setChecked(options[0] === n);
+    onChange(n)
+  }} size="small">
+  <ToggleButton value={ options[0]}>
+ { options[0]}
+  </ToggleButton>
+  <ToggleButton value={options[1]}>
+    {options[1]}
+  </ToggleButton>
+</ToggleButtonGroup>  
+
+
+
+  // return   <FormControlLabel
+  //     label={checked ? options[0] : options[1]}
+  //     control={ <Switch  
+  //       checked={checked}
+  //       onChange={e => {
+  //         setChecked(e.target.checked);
+  //         onChange(e.target.checked ? options[0] : options[1])
+  //       }} 
+  //     />}
+  //   />
 }
 
 export const Flex = styled(Box)(({ theme, baseline, wrap, spacing = 1 }) => ({
@@ -215,7 +231,7 @@ export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}
 };
 
 
-export const Area = styled(Card)(({ theme, breadcrumbs, pinned }) => ({
+export const Area = styled(Card)(({ theme, breadcrumbs, pinned = false }) => ({
   height: `calc(100vh - ${breadcrumbs ? 212 : 182}px)`,
   backgroundColor: '#f5f5f5 ', 
   position: 'absolute',
