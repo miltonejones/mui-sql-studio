@@ -21,6 +21,10 @@ const QuerySettingsContext = React.createContext({});
 const uniqueId = () => Date.now().toString(36) + Math.random().toString(36).substring(2);
 
  
+const Well = styled('fieldset')(({ theme }) => ({
+  border: 'solid 1px ' + theme.palette.primary.dark,
+  borderRadius: 4
+}))
 
 
 const AU = styled('u')(({ theme, active, error }) => ({
@@ -577,12 +581,12 @@ export default function QuerySettingsPanel({
 
       <Collapse in={showFieldNames}>
 
-        {!!columns.length && <>
-          <Typography variant="caption">Available fields</Typography>
+        {!!columns.length && <Well style={{border: 'solid 1px gray'}}>
+          <legend><Typography variant="caption">Available fields</Typography></legend>
           <Flex wrap>
           {columnList(z => !z.selected, !0, !0)}
           </Flex>
-        </>}
+        </Well>}
 
         <TextBtn startIcon={<Add />} size="small" variant="contained"  
           onClick={async () => {
@@ -607,9 +611,9 @@ export default function QuerySettingsPanel({
         </Box>
 
         <Collapse in={showTableNames}>
-          <>
+          <Well>
           
-            <Typography variant="caption">Available tables</Typography>
+            <legend><Typography variant="caption">Available tables</Typography></legend>
 
             <Flex wrap>
               {tableNames.filter(t => !configuration.tables.find(c => c.name === t)).map(tname => <>
@@ -618,7 +622,7 @@ export default function QuerySettingsPanel({
                 {/* <AU onClick={() => addTable(tname)}>{tname}</AU>, {" "} */}
               </>)}
             </Flex>
-          </>
+          </Well>
         </Collapse>
       </Stack>
       
@@ -1008,7 +1012,7 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
     aliasAction={handler(2)} 
     deleteAction={() => dropTable(table.ID)}/>
  
-  {" "}<i>ON</i> <QueryColumn input={anchors[0]} deleteAction={handler(0)} icon={RotateExpand}
+  {" "}<i>ON</i> <QueryColumn error={!srcCol} input={anchors[0]} deleteAction={handler(0)} icon={RotateExpand}
     title={<>{table.alias}.<ColumnMenu 
       onClose={close} 
       input={anchors[0]} 
@@ -1018,7 +1022,7 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
       columnname={srcCol} /></>} degrees={!!anchors[0] ? 180 : 0}/> 
   {" "}<i>EQUALS</i>{" "} 
   
-  <QueryColumn input={anchors[1]} deleteAction={handler(1)} icon={RotateExpand} degrees={!!anchors[1] ? 180 : 0}
+  <QueryColumn error={!(destTable && destCol)} input={anchors[1]} deleteAction={handler(1)} icon={RotateExpand} degrees={!!anchors[1] ? 180 : 0}
     title={<><TableMenu fieldname="destTable" tablename={table.name} name={destTable} />
     .<ColumnMenu 
       onClose={close} 

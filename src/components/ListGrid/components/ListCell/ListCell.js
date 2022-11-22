@@ -1,7 +1,7 @@
 import React from 'react';
 import { styled, Box, Stack, TextField, Typography } from '@mui/material';
 import { Cell, EditCell } from '..';
-import { QuickMenu, Tooltag, Flex, TinyButton } from '../../..';
+import { QuickMenu, Tooltag, Flex, TinyButton, PopoverTextBox } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
 import { PlayCircle, MoreVert, Image, StopCircle, ExpandMore, Close, Save  } from "@mui/icons-material"; 
 import { Spacer } from '../../..';
@@ -16,24 +16,7 @@ const CellText = styled(Typography)(({theme, clickable, selected, active}) => ({
   fontWeight: selected ? 600 : 400
 }));
  
-
-function PopoverTextBox ({ field, value, onChange, handlePopoverClose }) {
-  const [typedVal, setTypedVal] = React.useState(value);
-  return <Stack sx={{p: 2, minWidth: 300}} spacing={1}>
-    <Typography>Set value for "{field}"</Typography>
-    <TextField label={field + ' value'} size="small" value={typedVal} onChange={ (e) => { 
-      setTypedVal(e.target.value) 
-    } } autoComplete="off"/>
-    <Flex> 
-    <Spacer />
-    <TinyButton icon={Close} onClick={handlePopoverClose} />
-    <TinyButton icon={Save} onClick={() => {  
-        !!typedVal && onChange && onChange(typedVal);
-        handlePopoverClose()
-    }}/>
-  </Flex>
-</Stack>
-}
+ 
 
 
 function ListCell(props) {
@@ -98,7 +81,9 @@ function ListCell(props) {
 
   const handleEditClick = event => {
     // change popover content to textbox when editing
-    setPopoverContent(<PopoverTextBox {...props} onChange={onChange} handlePopoverClose={handlePopoverClose} />) 
+    setPopoverContent(<PopoverTextBox {...props} 
+      label={`Set value for "${field}"`}
+        onChange={onChange} handlePopoverClose={handlePopoverClose} />) 
     setAnchorEl(event.currentTarget);
   }
 

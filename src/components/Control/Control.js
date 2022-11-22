@@ -35,7 +35,7 @@ export const PopoverTextBox = ({ label, value, onChange, handlePopoverClose }) =
 }
 
 
-export const PopoverInput = ( { label, value, onChange, anchorEl, setAnchorEl } ) => { 
+export const PopoverInput = ( { label, value, onChange, anchorEl, setAnchorEl, children } ) => { 
   const { PopComponent, menuPos } = React.useContext(AppStateContext);
 
   const open = Boolean(anchorEl);
@@ -55,14 +55,14 @@ export const PopoverInput = ( { label, value, onChange, anchorEl, setAnchorEl } 
         horizontal: 'left',
       }}
     >
-      <PopoverTextBox 
+      {children || <PopoverTextBox 
         label={label}
         value={value}
         handlePopoverClose={handlePopoverClose}
         onChange={value => {
           onChange && onChange(value)
         }}
-      />
+      />}
     </PopComponent>
 }
 
