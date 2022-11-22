@@ -20,7 +20,7 @@ const QueryColumn = ({
   </>)}</>
    
  return ( 
-     <Coin label={inner}  
+    <Coin label={inner}  
      size="small"
      degrees={degrees}
      small={small}
@@ -82,7 +82,7 @@ const Coin = ({
 }) => {
   return <Chit small={small} error={error}>
     {Icon}
-    <Start error={error} onClick={() => onClick && onClick()}>{label}</Start>
+    <Start error={error} onClick={(e) => onClick && onClick(e)}>{label}</Start>
     {!!onDelete && <End onClick={onDelete}>{deleteIcon}</End>}
   </Chit>
 }

@@ -13,7 +13,7 @@ import { ColumnSettingsGrid } from './components'
 import { Tooltag, RotateButton, TextBtn, Flex, TinyButton  } from '..'
 import '../ListGrid/ListGrid.css';
 import { QueryColumn } from './components';
-import { OptionSwitch, RotateExpand } from '..';
+import { OptionSwitch, RotateExpand, PopoverInput } from '..';
 
 
 
@@ -51,6 +51,7 @@ export default function QuerySettingsPanel({
   const [orderMode, setOrderMode] = React.useState(false);
   const [showSQL, setShowSQL] = React.useState(false);
   const { Alert, Prompt, Confirm, ExpressionModal } = React.useContext(AppStateContext);
+ 
 
   const transformer = useQueryTransform()
 
@@ -174,9 +175,9 @@ export default function QuerySettingsPanel({
     });
   };
   
-  const setTableAlias = (name) => {
+  const setTableAlias = (name, nickname) => {
     editTable(name, async (table) => {
-      const alias = await Prompt(
+      const alias = nickname || await Prompt(
         `Enter an alias for ${name}`,
         table.alias,
         table.alias
@@ -186,9 +187,9 @@ export default function QuerySettingsPanel({
     });
   };
 
-  const setColumnAlias = (name, field) => {
+  const setColumnAlias = (name, field, nickname) => {
     editColumn(name, field, async (col, table) => {
-      const alias = await Prompt(
+      const alias = nickname || await Prompt(
         `Enter an alias for ${col.name}`,
         col.alias,
         col.alias
@@ -339,11 +340,7 @@ export default function QuerySettingsPanel({
     collated.map((column, i) => { 
       const error = !small && collated.filter(n => !!n.alias && n.alias === column.alias).length > 1;
       const { objectname, objectalias, name, alias, expression } = column; 
-
-      const aliasAction = !!expression 
-        ? () => configureExpr(column)
-        : () => setColumnAlias(objectname, name);
-
+ 
       const deleteAction = () => setColumnSelected(objectname, name)
 
       const args = {
@@ -352,16 +349,18 @@ export default function QuerySettingsPanel({
         objectalias,
         columnname: name,
         columnalias: alias,
+        objectname,
         small,
         title: !!expression 
         ? <em>{expression}</em>
         : <>{objectalias}.{name}</>,
         icon: passThru ? Add : Delete ,
-        aliasAction: small ? deleteAction : aliasAction,
+        setColumnAlias, 
+        configure: () => configureExpr(column),
         deleteAction 
       };
 
-      return p.push (<QueryColumn {...args} />) 
+      return p.push (<ColumnItem args={args}/>) 
     }) 
 
     return p.length ? p : ['*'];
@@ -961,64 +960,106 @@ export const QuickMenu = ({
 function TableItem ({ first, table, comma , addTable, setTableAlias}) {
   const { dropTable, setTableJoin } = React.useContext(QuerySettingsContext);
   const { destTable, srcCol, destCol, type = 'JOIN' } = table.join ?? {}; 
+  const [anchors, setAnchors] = React.useState([null, null, null])
+ 
+   
 
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [anchorEl2, setAnchorEl2] = React.useState(null);
-  const open = Boolean(anchorEl);
+  const handler = index => event => { 
+    const hooks = anchors.map((a, i) => i === index ? event.currentTarget : null); 
+    setAnchors(hooks);
+  }
 
-
-
-  const handleClick = (event) => { 
-    setAnchorEl(event.currentTarget);
-  };
-  const handleClick2 = (event) => { 
-    setAnchorEl2(event.currentTarget);
-  };
-  const handleClose = (value) => {  
-    setAnchorEl(null); 
-    setAnchorEl2(null); 
-  }; 
+  const close = () => {
+    setAnchors(e => e.map(() => null));
+  } 
 
 
   const handleType = (e) => {  
     if (!e) return;
     setTableJoin(table.name, 'type', e) 
   };
+
+  const popover =   <PopoverInput label={`Set alias for ${table.name}`} 
+    value={table.alias} 
+        onChange={value => {
+          if (!value) return close();
+          setTableAlias(table.name, value);
+          close();
+        }} anchorEl={anchors[2]} setAnchorEl={handler(2)}/>
  
 
   if (first) {
-    return <QueryColumn columnname={table.name} columnalias={table.alias} title={table.name} 
-    aliasAction={() => setTableAlias(table.name)}
-    deleteAction={() => addTable(table.name)}/> 
+    return <><QueryColumn columnname={table.name} 
+    columnalias={table.alias} title={table.name} 
+    aliasAction={handler(2)} 
+    deleteAction={() => addTable(table.name)}/>
+    
+   {popover}
+     </>
   }
-  return <Box sx={{mt: 1}} > 
+
+  
+  return <><Box sx={{mt: 1}} > 
 
   {" "}<QuickMenu caret title="Join type" options={['JOIN', 'LEFT JOIN']} 
       onChange={handleType} value={type} label={type}/>
   {" "}
   <QueryColumn columnname={table.name} columnalias={table.alias} title={table.name} 
-    aliasAction={() => setTableAlias(table.name)} 
+    aliasAction={handler(2)} 
     deleteAction={() => dropTable(table.ID)}/>
  
-  {" "}<i>ON</i> <QueryColumn input={anchorEl} deleteAction={handleClick} icon={RotateExpand}
+  {" "}<i>ON</i> <QueryColumn input={anchors[0]} deleteAction={handler(0)} icon={RotateExpand}
     title={<>{table.alias}.<ColumnMenu 
-      onClose={handleClose} 
-      input={anchorEl} 
+      onClose={close} 
+      input={anchors[0]} 
       fieldname="srcCol" 
       source={table.name} 
       tablename={table.name} 
-      columnname={srcCol} /></>} degrees={!!anchorEl ? 180 : 0}/> 
+      columnname={srcCol} /></>} degrees={!!anchors[0] ? 180 : 0}/> 
   {" "}<i>EQUALS</i>{" "} 
   
-  <QueryColumn input={anchorEl2} deleteAction={handleClick2} icon={RotateExpand} degrees={!!anchorEl2 ? 180 : 0}
+  <QueryColumn input={anchors[1]} deleteAction={handler(1)} icon={RotateExpand} degrees={!!anchors[1] ? 180 : 0}
     title={<><TableMenu fieldname="destTable" tablename={table.name} name={destTable} />
     .<ColumnMenu 
-      onClose={handleClose} 
-      input={anchorEl2} 
+      onClose={close} 
+      input={anchors[1]} 
       fieldname="destCol" source={destTable} tablename={table.name} columnname={destCol} /> </>}
   />
   
-  </Box>
+  </Box> 
+   {popover}
+  </>
+}
+
+function ColumnItem ({ args }) {
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const { columnname, columnalias, objectname, setColumnAlias } = args;
+ 
+  const handleAliasOpen = event => {
+    setAnchorEl(event.currentTarget)
+  } 
+
+  const handleAliasClose = event => {
+    setAnchorEl(null)
+  } 
+
+
+  const aliasAction = !!args.expression 
+      ? args.configure
+      : handleAliasOpen 
+  
+
+  return <><QueryColumn {...args} aliasAction={aliasAction}/>
+      
+  <PopoverInput label={`Set alias for ${columnname}`} 
+    value={columnalias} 
+    onChange={value => {
+      if (!value) return handleAliasClose(); 
+      setColumnAlias(objectname, columnname, value) // alert(value)
+     handleAliasClose();
+    }} anchorEl={anchorEl} setAnchorEl={setAnchorEl}/>
+  </>
+
 }
 
 

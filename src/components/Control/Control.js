@@ -1,7 +1,71 @@
 import React from "react";
-import { FormControlLabel, Switch, Box, Button, Card, TextField, IconButton, InputAdornment, styled } from "@mui/material";
+import { 
+  FormControlLabel, 
+  Switch, 
+  Box, 
+  Button, 
+  Card, 
+  TextField, 
+  Stack,
+  Typography,
+  IconButton, 
+  InputAdornment,  
+  styled } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip"; 
-import { ExpandMore, FilterAlt, Close } from "@mui/icons-material";
+import { ExpandMore, FilterAlt, Save, Close } from "@mui/icons-material";
+import { AppStateContext } from '../../hooks/AppStateContext';
+ 
+
+export const PopoverTextBox = ({ label, value, onChange, handlePopoverClose }) => {
+  const [typedVal, setTypedVal] = React.useState(value);
+  return <Stack sx={{p: 2, minWidth: 300}} spacing={1}>
+    <Typography>{label}</Typography>
+    <TextField label={label} size="small" value={typedVal} onChange={ (e) => { 
+      setTypedVal(e.target.value) 
+    } } autoComplete="off"/>
+    <Flex> 
+    <Spacer />
+    <TinyButton icon={Close} onClick={handlePopoverClose} />
+    <TinyButton icon={Save} onClick={() => {  
+        !!typedVal && onChange && onChange(typedVal);
+        handlePopoverClose()
+    }}/>
+  </Flex>
+</Stack>
+}
+
+
+export const PopoverInput = ( { label, value, onChange, anchorEl, setAnchorEl } ) => { 
+  const { PopComponent, menuPos } = React.useContext(AppStateContext);
+
+  const open = Boolean(anchorEl);
+ 
+
+  const handlePopoverClose = () => { 
+    onChange(false);
+  };
+
+  return <PopComponent 
+      open={open}
+      anchorEl={anchorEl}
+      onClose={handlePopoverClose}
+      anchor={menuPos}
+      anchorOrigin={{
+        vertical: 'bottom',
+        horizontal: 'left',
+      }}
+    >
+      <PopoverTextBox 
+        label={label}
+        value={value}
+        handlePopoverClose={handlePopoverClose}
+        onChange={value => {
+          onChange && onChange(value)
+        }}
+      />
+    </PopComponent>
+}
+
 
 
 export const OptionSwitch = ({ options = [], value, onChange }) => {
@@ -19,8 +83,6 @@ export const OptionSwitch = ({ options = [], value, onChange }) => {
       />}
     />
 }
- 
-
 
 export const Flex = styled(Box)(({ theme, baseline, wrap, spacing = 1 }) => ({
  display: "flex",
@@ -59,7 +121,8 @@ export const TextBtn = styled(Button)(({ theme }) => ({
  textTransform: "capitalize",
  whiteSpace: "nowrap",
  borderRadius: '1rem',
- padding: theme.spacing(0.5, 2)
+ padding: theme.spacing(0.5, 2),
+ boxShadow: 'none'
 }));
  
 export const UL = styled("ul")(({ theme, margin, collapsed }) => ({
