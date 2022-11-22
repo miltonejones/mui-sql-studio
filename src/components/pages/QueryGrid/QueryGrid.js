@@ -1,7 +1,7 @@
 import React from 'react';
 import { Typography, Collapse } from '@mui/material';
 import { ListGrid, QuerySettingsPanel } from '../../';
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useConfig } from '../../../hooks/useConfig';
 import { AppStateContext } from '../../../hooks/AppStateContext';
 import { formatConnectName, EMPTY_CONFIGURATION } from '../../../util';
@@ -9,11 +9,12 @@ import { useSaveQuery } from '../../../hooks/useSaveQuery';
 import { execQuery } from '../../../connector/dbConnector';
 import { Launch, Close, Delete, Save, Info, FilterAlt } from '@mui/icons-material';
 import { useQueryTransform } from '../../../hooks/useQueryTransform';
+import { useNavigation } from '../../../hooks/AppStateContext';
  
 
 function QueryGrid () {
 
-  const navigate = useNavigate();
+  const { navigate } = useNavigation(); 
 
   const { schema, tablename, listname, connectionID } = useParams();
   const { createTSQL } = useQueryTransform()

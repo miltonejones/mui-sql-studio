@@ -35,7 +35,14 @@ export const PopoverTextBox = ({ label, value, onChange, handlePopoverClose }) =
 }
 
 
-export const PopoverInput = ( { label, value, onChange, anchorEl, setAnchorEl, children } ) => { 
+export const PopoverInput = ( { 
+    label, 
+    value, 
+    onChange, 
+    anchorEl, 
+    setAnchorEl, 
+    children 
+  } ) => { 
   const { PopComponent, menuPos } = React.useContext(AppStateContext);
 
   const open = Boolean(anchorEl);

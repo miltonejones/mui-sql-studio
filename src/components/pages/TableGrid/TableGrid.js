@@ -1,12 +1,13 @@
 import React from 'react'; 
 import { ListGrid, QuickMenu, TinyButton, Flex, Tooltag, TextBtn } from '../../';
 import { Stack, Box, Typography, Link , Divider} from '@mui/material';
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { AppStateContext } from '../../../hooks/AppStateContext';
 import { formatConnectName } from '../../../util';
 import { useConfig } from '../../../hooks/useConfig';
 import { Launch, Add, Save, Remove, Close, Key, Delete } from '@mui/icons-material';
 import { execQuery, execCommand, describeConnection, describeTable } from '../../../connector/dbConnector';
+import { useNavigation } from '../../../hooks/AppStateContext';
  
 function ConstraintInfo({ 
       connectionID, 
@@ -95,11 +96,10 @@ function ConstraintInfo({
   </>
 }
 
-function TableGrid () {
-  // const [loaded, setLoaded] = React.useState(false) ;
-  // const [data, setData] = React.useState(null);
+function TableGrid () { 
 
-  const navigate = useNavigate();
+  const { navigate } = useNavigation();
+ 
   const [create, setCreate] = React.useState(false)
   const { schema,  tablename, connectionID } = useParams();
   const { getConfigs  } = useConfig()

@@ -1,14 +1,12 @@
 
-import { Box, Stack } from '@mui/material';
-import {  
-  useNavigate, 
-} from "react-router-dom";
+import { Box, Stack } from '@mui/material'; 
+import { useNavigation } from '../../../../hooks/AppStateContext';
   
  
 export const LogoURL = 'https://associate-ui.s3.amazonaws.com/kisspng-mysql-relational-database-management-system-logo-m-mysql-instalaci%C3%B3n-y-creaci%C3%B3n-usuario-atrum-5b649e7bb60bf3.4045674715333208277457.png';
 
 const Logo = ({ short }) =>{ 
-  const navigate = useNavigate()
+  const { navigate } = useNavigation(); 
   return <Stack onClick={() => navigate('/')} sx={{
         cursor: 'pointer', ml: 2, mr: 4, width: short ? 144 : 300 , alignItems: 'center'}} 
         spacing={1} direction="row" >

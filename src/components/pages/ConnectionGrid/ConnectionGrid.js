@@ -1,12 +1,13 @@
 import React from 'react'; 
 import { ListGrid } from '../../';
 import {  Box, Typography } from '@mui/material';
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useConfig } from '../../../hooks/useConfig';
 import { AppStateContext } from '../../../hooks/AppStateContext';
 import { formatConnectName } from '../../../util';
 import { describeConnection, execCommand } from '../../../connector/dbConnector';
 import { Launch, Add, Close } from '@mui/icons-material';
+import { useNavigation } from '../../../hooks/AppStateContext';
  
 function ConnectionGrid () {
   const [loaded, setLoaded] = React.useState(false) ;
@@ -15,7 +16,9 @@ function ConnectionGrid () {
   const { getConfigs  } = useConfig()
   const configs = getConfigs();
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID)
-  const navigate = useNavigate();
+ 
+  const { navigate } = useNavigation();
+
 
 
   const { setAppHistory, setBreadcrumbs, Prompt, Alert } = React.useContext(AppStateContext);

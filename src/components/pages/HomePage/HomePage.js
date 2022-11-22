@@ -1,11 +1,11 @@
 import React from 'react'; 
 import { TextBtn, ListGrid } from '../../';
-import { Alert } from '@mui/material';
-import { useNavigate } from "react-router-dom";
+import { Alert } from '@mui/material'; 
 import { useConfig } from '../../../hooks/useConfig';
 import { AppStateContext } from '../../../hooks/AppStateContext';
 import { formatConnectName } from '../../../util';
 import { Settings, Launch, Add } from '@mui/icons-material';
+import { useNavigation } from '../../../hooks/AppStateContext';
  
 
 
@@ -13,8 +13,9 @@ function HomePage ({ pinned }) {
   
   const [loaded, setLoaded] = React.useState(false) ;
   const { getConfigs, saveConfig  } = useConfig();
-  const configs = getConfigs();
-  const navigate = useNavigate();
+  const configs = getConfigs(); 
+  const { navigate } = useNavigation();
+
 
  
   const { setAppHistory, setModalState, setBreadcrumbs } = React.useContext(AppStateContext);

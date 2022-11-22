@@ -9,8 +9,7 @@ import {
 } from "@mui/material";
 import { ExpandMore, Star, StarBorder } from "@mui/icons-material";
 import { RotateButton, TinyButton, Tooltag } from "../../..";
-import { AppStateContext } from "../../../../hooks/AppStateContext";
-import { useNavigate } from "react-router-dom"; 
+import { AppStateContext, useNavigation } from "../../../../hooks/AppStateContext"; 
 
 const Truncate = styled(Box)(() => ({
   maxWidth: 280,
@@ -87,13 +86,13 @@ const MenuTree = ({ options, spaces = 0, pinned, handleClose, filterText }) => {
   const [open, setOpen] = React.useState(true);
   const hue = pinned ? "white" : "gray";
   const borderLeft = !spaces ? "" : "solid 1px " + hue;
-  const navigateTo = useNavigate();
+   
 
-  const { getFavorite, setQueryState, setFavorite } = React.useContext(AppStateContext);
-  const navigate = (href) => {
-    setQueryState((s) => ({ ...s, data: null, loaded: false }));
-    navigateTo(href);
-  };
+  const { getFavorite, setFavorite } = React.useContext(AppStateContext);
+   
+  const { navigate } = useNavigation();
+
+
   const execClose = (e, opt) => {
     if (!!opt.descendants) {
       return setOpen(!open);
