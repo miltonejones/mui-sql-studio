@@ -1,8 +1,27 @@
 import React from "react";
-import { Box, Button, Card, TextField, IconButton, InputAdornment, styled } from "@mui/material";
+import { FormControlLabel, Switch, Box, Button, Card, TextField, IconButton, InputAdornment, styled } from "@mui/material";
 import Tooltip from "@mui/material/Tooltip"; 
-import { ExpandMore, FilterAlt, Close, Add, Remove } from "@mui/icons-material";
+import { ExpandMore, FilterAlt, Close } from "@mui/icons-material";
+
+
+export const OptionSwitch = ({ options = [], value, onChange }) => {
+
+  const [checked, setChecked] = React.useState(options[0] === value)
+
+  return   <FormControlLabel
+      label={checked ? options[0] : options[1]}
+      control={ <Switch  
+        checked={checked}
+        onChange={e => {
+          setChecked(e.target.checked);
+          onChange(e.target.checked ? options[0] : options[1])
+        }} 
+      />}
+    />
+}
  
+
+
 export const Flex = styled(Box)(({ theme, baseline, wrap, spacing = 1 }) => ({
  display: "flex",
  alignItems: baseline ? "flex-start" : "center",
@@ -21,8 +40,7 @@ export const Tooltag = ({
  title,
  children,
  ...props
-}) => {
-  const [open, setOpen] = React.useState(false)
+}) => { 
   return (
     <Tooltip placement="left-start" arrow title={title}> 
 
@@ -37,10 +55,11 @@ export const Spacer = styled(Box)(() => ({
  flexGrow: 1,
 }));
  
-export const TextBtn = styled(Button)(() => ({
+export const TextBtn = styled(Button)(({ theme }) => ({
  textTransform: "capitalize",
  whiteSpace: "nowrap",
- borderRadius: 0
+ borderRadius: '1rem',
+ padding: theme.spacing(0.5, 2)
 }));
  
 export const UL = styled("ul")(({ theme, margin, collapsed }) => ({
@@ -64,11 +83,7 @@ export const Text = styled(Box)(({ small, on }) => ({
  "&:hover": {
    textDecoration: "underline",
    color: "#37a",
- },
- // "&:before": {
- //   content: on ? `"Forms / "` : `""`,
- //   fontWeight: 400,
- // },
+ }, 
 }));
  
 export const Arrow = styled(ExpandMore)(({ on }) => ({

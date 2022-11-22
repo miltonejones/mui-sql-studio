@@ -4,11 +4,11 @@ import './ListGrid.css';
 import { 
   Alert, Box, Typography, Divider, 
   IconButton, 
-  Stack, Link, Breadcrumbs, 
+  Stack, 
   Pagination 
 } from '@mui/material';
 import { QuickMenu, Tooltag, RotateButton } from '..'; 
-import { Sync, Menu } from '@mui/icons-material';
+import { DonutLarge, Menu } from '@mui/icons-material';
 import { ListRow, SearchRow, Tiles } from './components'; 
    
    
@@ -18,7 +18,8 @@ export default function ListGrid({
   commitRow, count = 0, page = 1, menuItems,  allowDelete, onDelete, 
   setPage, buttons, onSort, dropOrder, setPageSize, settings,
   breadcrumbs, onCellChange, columns = [], rows = []}) { 
-  if (!rows?.length && !empty) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}><Sync className="spin" /> Loading...</Stack>
+  if (!rows?.length && !empty) return <Stack direction="row" sx={{alignItems: 'center'}} spacing={1}
+    ><DonutLarge className="spin" /> <Box>Loading...</Box></Stack>
   const headers = empty ? [] : [rows[0].map(row => ({value: row.field, alias: row.alias, type: 'header'}))]
   const pageCount = Math.ceil(count / pageSize);
 

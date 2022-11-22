@@ -11,7 +11,7 @@ import { Sync, PlayArrow, Close, ExpandMore, Launch } from '@mui/icons-material'
  
 
 function QueryAnalyzer () {
-  const { listname, tablename, schema, connectionID } = useParams(); 
+  const { listname, schema, connectionID } = useParams(); 
 
   const [loaded, setLoaded] = React.useState(false) ;
   const [configName, setConfigName] = React.useState(null)
@@ -64,7 +64,7 @@ function QueryAnalyzer () {
   
     setLoaded(true)
 
-  }, [ setAppHistory, loaded, configs, connectionID, getQueries, listname, setConfig ])
+  }, [ setAppHistory, loaded, configs, connectionID, getQueries, listname, setBreadcrumbs, setConfig ])
   
  
   const configRow = (conf) => Object.keys(conf).map(key => ({

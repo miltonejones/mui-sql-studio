@@ -30,7 +30,7 @@ function ConnectionGrid () {
   React.useEffect(() => {
     if (!!data) return;
     loadConnection()
-  }, [configs, configKey, data])
+  }, [configs, configKey, data, loadConnection])
 
   const locate = (row, key) => row.find(f => f.field === key).value;
 
@@ -104,7 +104,7 @@ function ConnectionGrid () {
     },
   ]
  
-  const breadcrumbs = [
+  const breadcrumbs = React.useMemo(() => [
     {
       text: 'Home',
       href: '/'
@@ -112,7 +112,7 @@ function ConnectionGrid () {
     {
       text: configKey
     }
-  ]
+  ], [configKey])
 
 
   const saveMenu =  [ 
@@ -140,7 +140,7 @@ function ConnectionGrid () {
       setBreadcrumbs(breadcrumbs);
       setLoaded(true)
   
-    }, [configKey, connectionID, breadcrumbs, loaded, setAppHistory])
+    }, [configKey, connectionID, breadcrumbs, loaded, setAppHistory, setBreadcrumbs])
     
   return <ListGrid allowDelete onDelete={dropTable} breadcrumbs={breadcrumbs} title={`Tables in "${configKey}"`} menuItems={saveMenu} rows={data?.rows?.map(configRow)} /> 
 

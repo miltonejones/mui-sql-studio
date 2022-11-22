@@ -35,6 +35,10 @@ const Footer = styled(Stack)(() => ({
   
 function App() { 
   
+  const [queryState, setQueryState] = React.useState({
+    loaded: false,
+    data: null
+  })
   const [breadcrumbs, setBreadcrumbs] = React.useState(null) ;
   const [audioProp, setAudioProp] = React.useState(null) ;
   const [modalState, setModalState] = React.useState({
@@ -116,6 +120,8 @@ function App() {
         PopComponent,
         menuPos,
         setBreadcrumbs,
+        queryState, 
+        setQueryState,
         Alert,
         Confirm,
         Prompt,

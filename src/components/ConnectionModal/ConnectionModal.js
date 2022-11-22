@@ -13,13 +13,14 @@ import {
   DialogContent, 
   Typography,
   Divider,
+  Link,
   styled} from '@mui/material';
 
 import { execQuery } from '../../connector/dbConnector';
 
-const AU = styled('u')(() => ({
+const AU = styled(Link)(({ theme }) => ({
   cursor: 'pointer',
-  color: '#37a',
+  color: theme.palette.primary.dark,
   marginLeft: 30,
   '&:hover': {
     textDecoration: 'underlined'
@@ -113,8 +114,7 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
     <Divider />
     <DialogActions sx={{pr: 3}}>
       <Button sx={{mr: 1}} variant="outlined" onClick={() => onClose(false)}>close</Button>
-      <Button
-          disabled={!isValid()}  variant="contained" onClick={() => onClose(connection)}>save</Button>
+      <Button disabled={!isValid()}  variant="contained" onClick={() => onClose(connection)}>save</Button>
     </DialogActions>
   </Component>
 

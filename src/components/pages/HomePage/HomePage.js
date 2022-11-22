@@ -50,11 +50,11 @@ function HomePage ({ pinned }) {
     },
   ]  
  
-  const breadcrumbs = [
+  const breadcrumbs = React.useMemo(() => [
     {
       text: 'Home' 
     }, 
-  ];
+  ], []);
 
 
   const openConnectionModal = (conf) => {
@@ -87,7 +87,7 @@ function HomePage ({ pinned }) {
     });
     setBreadcrumbs(breadcrumbs);
     setLoaded(true)
-  }, [ setAppHistory, loaded, breadcrumbs ])
+  }, [ setAppHistory, loaded, breadcrumbs, setBreadcrumbs ])
   
   if (!rows.length) {
     return <Alert severity="warning">

@@ -1,5 +1,5 @@
 import React from 'react';
-import { styled, Box, Stack, TextField, Typography, Popover } from '@mui/material';
+import { styled, Box, Stack, TextField, Typography } from '@mui/material';
 import { Cell, EditCell } from '..';
 import { QuickMenu, Tooltag, Flex, TinyButton } from '../../..';
 import { AppStateContext } from '../../../../hooks/AppStateContext';
@@ -48,8 +48,7 @@ function ListCell(props) {
     column,
     selected,
     action, 
-    sortable, 
-    sorted, 
+    sortable,  
     type,
     types, 
     control: Control,
@@ -63,11 +62,10 @@ function ListCell(props) {
     dropOrder
   } = props;
   const sortProp = sorts.find(s => s.fieldName === alias || s.fieldName?.indexOf(value) > -1 || s.field?.indexOf(value) > -1);
-  const { Prompt, PopComponent, menuPos, audioProp, setAudioProp } = React.useContext(AppStateContext);
+  const { PopComponent, menuPos, audioProp, setAudioProp } = React.useContext(AppStateContext);
 
   // popover content defaults to user-defined Component
-  const [popoverContent, setPopoverContent] = React.useState(popover);
-  const [typedVal, setTypedVal] = React.useState(null);
+  const [popoverContent, setPopoverContent] = React.useState(popover); 
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [show, setShow] = React.useState(null);
 

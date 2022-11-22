@@ -2,8 +2,8 @@ import * as React from 'react';
 import { describeTable, connectToDb, execQuery, execCommand } from '../../connector/dbConnector';
 import { AppStateContext } from '../../hooks/AppStateContext';
 import { useQueryTransform } from '../../hooks/useQueryTransform';
-import { Divider, Box, Breadcrumbs,  Autocomplete, Card,
-  Link, FormControlLabel, Switch, Menu, Collapse, MenuItem, 
+import { Divider, Box, Autocomplete, Card,
+  FormControlLabel, Switch, Collapse, MenuItem, 
   TextField, Stack,  ToggleButtonGroup, ToggleButton, 
   IconButton, Typography, styled } from '@mui/material';
 import { Add, UnfoldMore, Speed, Remove,  Sync, CheckCircle,
@@ -13,6 +13,7 @@ import { ColumnSettingsGrid } from './components'
 import { Tooltag, RotateButton, TextBtn, Flex, TinyButton  } from '..'
 import '../ListGrid/ListGrid.css';
 import { QueryColumn } from './components';
+import { OptionSwitch } from '..';
 
 
 
@@ -49,7 +50,7 @@ export default function QuerySettingsPanel({
   const [showFieldNames, setShowFieldNames] = React.useState(false);
   const [orderMode, setOrderMode] = React.useState(false);
   const [showSQL, setShowSQL] = React.useState(false);
-  const { Alert, Prompt, Confirm, ExpressionModal, setBreadcrumbs } = React.useContext(AppStateContext);
+  const { Alert, Prompt, Confirm, ExpressionModal } = React.useContext(AppStateContext);
 
   const transformer = useQueryTransform()
 
@@ -58,13 +59,21 @@ export default function QuerySettingsPanel({
   const createTSQL = () => transformer.createTSQL(configuration); 
 
   const dropTable = React.useCallback(async(ID) => {
-    const ok = await Confirm(`Remove table?`);
+    const ex = configuration.tables.find(t => t.ID === ID);
+    if (ex) { 
+      const co = ex.columns.find(f => !!f.selected);
+      if (co) return Alert(`Cannot remove table "${ex.name}" because "${ex.name}.${co.name}" is part of your query. 
+        Remove it first and try again.`, 'Cannot remove table');
+    }
+
+    const ok = await Confirm(`Remove table "${ex.name}" from your query?`, 'Confirm table drop');
     if (!ok) return;
+
     setConfiguration(f => ({
       ...f,
       tables: f.tables.filter(e => e.ID !== ID)
     }))
-  }, [Confirm, setConfiguration])
+  }, [Confirm, setConfiguration, configuration.tables, Alert])
 
   const addTable = React.useCallback(async (name, loading) => {
     const { rows } = await describeTable(config, name);  
@@ -90,12 +99,12 @@ export default function QuerySettingsPanel({
     });
   }, [config, setConfiguration]); 
 
-  const updateTable = (table) =>
+  const updateTable = (table) =>{
     setConfiguration((f) => ({
       ...f,
       tables: f.tables.map((t) => (t.name === table.name ? table : t)),
     }));
-
+}
 
   const addClause = (clause) =>
     setConfiguration((f) => ({
@@ -329,8 +338,13 @@ export default function QuerySettingsPanel({
 
     collated.map((column, i) => { 
       const error = !small && collated.filter(n => !!n.alias && n.alias === column.alias).length > 1;
-      const { objectname, objectalias, name, alias, selected, expression } = column;
-      const last = i === (collated.length - 1);
+      const { objectname, objectalias, name, alias, expression } = column; 
+
+      const aliasAction = !!expression 
+        ? () => configureExpr(column)
+        : () => setColumnAlias(objectname, name);
+
+      const deleteAction = () => setColumnSelected(objectname, name)
 
       const args = {
         error,
@@ -343,10 +357,8 @@ export default function QuerySettingsPanel({
         ? <em>{expression}</em>
         : <>{objectalias}.{name}</>,
         icon: passThru ? Add : Delete ,
-        aliasAction: !!expression 
-        ? () => configureExpr(column)
-        : () => setColumnAlias(objectname, name),
-        deleteAction: () => setColumnSelected(objectname, name)
+        aliasAction: small ? deleteAction : aliasAction,
+        deleteAction 
       };
 
       return p.push (<QueryColumn {...args} />) 
@@ -499,7 +511,7 @@ export default function QuerySettingsPanel({
 
   <Divider >
     <ToggleButtonGroup exclusive value={showSQL ? "yes" : "no"} 
-      color="primary"
+      color="primary" 
       onChange={(e, n) =>  setShowSQL(n === 'yes')} size="small">
       <ToggleButton value="no">
         form
@@ -573,7 +585,7 @@ export default function QuerySettingsPanel({
           </Flex>
         </>}
 
-        <TextBtn endIcon={<Add />} size="small" variant="contained"  
+        <TextBtn startIcon={<Add />} size="small" variant="contained"  
           onClick={async () => {
             const b = await ExpressionModal({})
             if (!b) return; 
@@ -603,7 +615,7 @@ export default function QuerySettingsPanel({
 
             <Flex wrap>
               {tableNames.filter(t => !configuration.tables.find(c => c.name === t)).map(tname => <>
-                <QueryColumn title={tname} icon={Add} aliasAction={() => addTable(tname)}
+                <QueryColumn small title={tname} icon={Add} aliasAction={() => addTable(tname)}
                  deleteAction={() => addTable(tname)}/> 
                 {/* <AU onClick={() => addTable(tname)}>{tname}</AU>, {" "} */}
               </>)}
@@ -623,8 +635,8 @@ export default function QuerySettingsPanel({
       {configuration.wheres.map((where) => <WhereItem key={where.index} {...where} />)}
 
       {!!configuration.wheres.length && <>
-        <TextBtn endIcon={<Add />} size="small" variant="contained" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</TextBtn>
-        <TextBtn endIcon={<Add />} size="small" variant="contained" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</TextBtn>
+        <TextBtn startIcon={<Add />} size="small" variant="contained" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</TextBtn>
+        <TextBtn startIcon={<Add />} size="small" variant="contained" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</TextBtn>
       </>}
 
       <Collapse in={configuration.orders.filter(f => !!f.fieldName).length}>
@@ -655,12 +667,12 @@ export default function QuerySettingsPanel({
       <Stack direction="row" sx={{alignItems: 'center'}}>
         <Box  sx={{flexGrow: 1}}/>
 
-        <TextBtn size="small" sx={{mr: 1}} endIcon={ <Close />} onClick={() => onCancel && onCancel()}
+        <TextBtn size="small" sx={{mr: 1}} startIcon={ <Close />} onClick={() => onCancel && onCancel()}
           variant="outlined">
         close
         </TextBtn>
       {!!onCommit && <TextBtn color="warning" onClick={() => onCommit(createTSQL())} variant="contained"
-        size="small" endIcon={<PlayArrow />}
+        size="small" startIcon={<PlayArrow />}
       >run</TextBtn>}
 
     </Stack>
@@ -926,14 +938,27 @@ export const QuickMenu = ({
     open={open}
     onClose={() => handleClose()} 
   > 
-  {!!title && <Flex sx={{m: t => t.spacing(1,0)}}><Divider sx={{width: '100%'}}><Typography variant="caption">{title}</Typography></Divider></Flex>}
 
-    {options?.map ((option, index) => {
+  {/* menu title  */}
+    {!!title && <Flex sx={{m: t => t.spacing(1,0)}}><Divider sx={{width: '100%'}}><Typography variant="caption">{title}</Typography></Divider></Flex>}
+
+{/* when only 2 options use a Switch  */}
+    {options?.length === 2 && <Box sx={{m: 2, minWidth: 300}}>
+      <OptionSwitch
+      options={options}
+      value={selected}
+      onChange={handleClose}
+    />
+      </Box>}
+{/* otherwise make a menu item list  */}
+    {options?.length !== 2 && options?.map ((option, index) => {
       const Icon = icons[index];
       return <MenuItem key={option} onClick={() => handleClose(option)}
       sx={{fontWeight: selected === option ? 600 : 400, minWidth: 300}}
       >{!!Icon && <><Icon sx={{mr: 1}} /></>}{selected === option && <>&bull;{" "}</>}{option}</MenuItem>
     })} 
+
+
   </MenuComponent>
   </>
 
@@ -974,15 +999,10 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
 
 
 function ColumnMenu ({ tablename, source, columnname, fieldname }) {
-  const { tables, setTableJoin } = React.useContext(QuerySettingsContext);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const { tables, setTableJoin } = React.useContext(QuerySettingsContext); 
+  
   const handleClose = (joinedcol) => { 
-    !!joinedcol && setTableJoin(tablename, fieldname, joinedcol)
-    setAnchorEl(null);
+    !!joinedcol && setTableJoin(tablename, fieldname, joinedcol);
   };
  
   const selectedTable = tables.find(t => t.name === source);
@@ -991,19 +1011,15 @@ function ColumnMenu ({ tablename, source, columnname, fieldname }) {
   }
   const columns = selectedTable.columns;
   const label = columnname || <i>choose column</i> 
-  return <QuickMenu caret title={`Columns in ${selectedTable.name}`} options={columns.map(n => n.name)} label={label} value={columnname} onChange={handleClose}  />  
+  return <QuickMenu caret title={`Columns in ${selectedTable.name}`} 
+      options={columns.map(n => n.name)} label={label} value={columnname} onChange={handleClose}  />  
 }
 
 function TableMenu ({ tablename, name, fieldname }) {
-  const { tables, setTableJoin } = React.useContext(QuerySettingsContext);
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const { tables, setTableJoin } = React.useContext(QuerySettingsContext); 
+   
   const handleClose = (joinedtable) => { 
-    !!joinedtable && setTableJoin(tablename, fieldname, joinedtable)
-    setAnchorEl(null);
+    !!joinedtable && setTableJoin(tablename, fieldname, joinedtable);
   };
 
 

@@ -1,9 +1,8 @@
 import React from 'react';
-import { styled, Box, Autocomplete, TextField, InputAdornment, IconButton } from '@mui/material';
+import { styled, Box, Autocomplete, TextField } from '@mui/material';
 import { useConfig } from '../../hooks/useConfig';
 import { useSaveQuery } from '../../hooks/useSaveQuery';
-import { formatConnectName } from '../../util';
-import { Search } from '@mui/icons-material';
+import { formatConnectName } from '../../util'; 
  
 const Layout = styled(Box)(({ theme }) => ({
  margin: 0

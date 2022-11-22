@@ -22,19 +22,33 @@ function QueryGrid () {
   const [configuration, setConfiguration] = React.useState(EMPTY_CONFIGURATION);
   const [queryText, setQueryText] = React.useState(`SELECT * FROM ${tablename}`);
   const [empty, setEmpty] = React.useState(false);
-  const [data, setData] = React.useState(null);
+  // const [data, setData] = React.useState(null);
   const [page, setPage] = React.useState(1) ;
   const [edit, setEdit] = React.useState(false) ;
-  const [loaded, setLoaded] = React.useState(false) ;
+  // const [loaded, setLoaded] = React.useState(false) ;
   const { getConfigs  } = useConfig()
   const configs = getConfigs();
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID);
 
 
-  const { setAppHistory, Alert, Prompt, Confirm, setPageSize, pageSize: ps = 100, setBreadcrumbs } = React.useContext(AppStateContext);
+  const { 
+    queryState, 
+    setQueryState,
+    setAppHistory, 
+    Alert, 
+    Prompt, 
+    Confirm, 
+    setPageSize, 
+    pageSize: ps = 100,
+    setBreadcrumbs 
+  } = React.useContext(AppStateContext);
   const pageSize = ps === undefined || ps === 'undefined' 
     ? 100
-    : ps;
+  : ps;
+
+  const { loaded, data } = queryState;
+  const setLoaded = React.useCallback(e => setQueryState(s => ({...s, loaded: e})), [setQueryState]);
+  const setData = React.useCallback( e => setQueryState(s => ({...s, data: e})), [setQueryState]);
 
   const saveEnabled = !!configuration.tables.length
 
@@ -81,7 +95,7 @@ function QueryGrid () {
     setData(f); 
     setEmpty(!f?.rows?.length)
   
-  }, [configs, configKey, queryText, pageSize])
+  }, [configs, configKey, queryText, setData, pageSize])
 
   const execQueryText = (text) => { 
     setData(null); 
@@ -109,7 +123,7 @@ function QueryGrid () {
 
     loadPage(1, sql) ;
     setLoaded(true)
-  }, [data, loaded, loadPage, getQueries, listname]);
+  }, [data, loaded, loadPage, setLoaded, getQueries, listname]);
 
   const configRow = (conf, fields) => Object.keys(conf).map(key => ({
     field: key,
@@ -345,7 +359,7 @@ const saveMenu = saveEnabled ? [
     });
    
 
-  }, [configKey, loaded, breadcrumbs, getQueries, connectionID, tablename, schema, listname, setAppHistory])
+  }, [configKey, loaded, breadcrumbs, setBreadcrumbs, getQueries, connectionID, tablename, schema, listname, setAppHistory])
   
 
   return <> 

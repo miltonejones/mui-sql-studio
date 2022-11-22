@@ -13,10 +13,11 @@ export const useAppHistory = () => {
     localStorage.setItem(COOKIE, JSON.stringify(add));
   }
 
-  const getFavorite = path => {
+  const getFavorite = React.useCallback( path => {
     const old = getAppHistory();
-    return old.find(f => f.path === path).favorite;
-  }
+    const source = old.find(f => f.path === path);
+    return !!source?.favorite;
+  }, [])
 
   const getFavorites = path => {
     const old = getAppHistory();
@@ -30,7 +31,7 @@ export const useAppHistory = () => {
     const item = {...rep, when: new Date().toString()}
     const add = old.find(h => h.path === node.path) 
       ? old.map(f => f.path === node.path ? item : f)
-      : old.concat(item);
+      : old.concat(item); 
     setCurrent(item);
     localStorage.setItem(COOKIE, JSON.stringify(add));
   }

@@ -96,17 +96,23 @@ function ConstraintInfo({
 }
 
 function TableGrid () {
-  const [loaded, setLoaded] = React.useState(false) ;
+  // const [loaded, setLoaded] = React.useState(false) ;
+  // const [data, setData] = React.useState(null);
+
   const navigate = useNavigate();
-  const [data, setData] = React.useState(null)
   const [create, setCreate] = React.useState(false)
   const { schema,  tablename, connectionID } = useParams();
   const { getConfigs  } = useConfig()
   const configs = getConfigs();
   const configKey = Object.keys(configs).find(f => formatConnectName(f) === connectionID)
 
-  const { Alert, Confirm, Prompt, setAppHistory, setBreadcrumbs } = React.useContext(AppStateContext);
+  const { queryState, setQueryState, Alert, Confirm, Prompt, setAppHistory, setBreadcrumbs } = React.useContext(AppStateContext);
   
+
+  const { loaded, data } = queryState;
+  const setLoaded = React.useCallback(e => setQueryState(s => ({...s, loaded: e})), [setQueryState]);
+  const setData = React.useCallback( e => setQueryState(s => ({...s, data: e})), [setQueryState]);
+
 
   
   const configRow = (conf) => {
@@ -232,7 +238,7 @@ function TableGrid () {
     WHERE t.TABLE_NAME = '${tablename}' 
     GROUP BY t.ORDINAL_POSITION ORDER BY t.ORDINAL_POSITION `)
     setData(f);
-  }, [configs, configKey, tablename]);
+  }, [configs, configKey, tablename, setData]);
 
   React.useEffect(() => {
     if (!!data) return;
@@ -240,7 +246,7 @@ function TableGrid () {
   }, [ data, loadTable ])
  
 
-  const breadcrumbs = [
+  const breadcrumbs = React.useMemo(() => [
     {
       text: 'Home',
       href: '/'
@@ -252,10 +258,10 @@ function TableGrid () {
     {
       text: tablename
     }
-  ] 
+  ] , [configKey, tablename, connectionID])
 
   const saveMenu =  [
-    {
+    { 
       title: 'Open Table',
       icon: Launch,
       action:  () => {
@@ -289,7 +295,7 @@ function TableGrid () {
 
     setBreadcrumbs(breadcrumbs);
     setLoaded(true)
-  }, [configKey, loaded, breadcrumbs, connectionID, schema, tablename, setAppHistory])
+  }, [configKey, loaded, breadcrumbs, connectionID, setLoaded, schema, tablename, setBreadcrumbs, setAppHistory])
  
   return <> 
   <ListGrid create={create} 
