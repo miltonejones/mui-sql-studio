@@ -241,9 +241,9 @@ function TableGrid () {
   }, [configs, configKey, tablename, setData]);
 
   React.useEffect(() => {
-    if (!!data) return;
+    if (loaded || !!data) return;
     loadTable();
-  }, [ data, loadTable ])
+  }, [ data, loadTable, loaded ])
  
 
   const breadcrumbs = React.useMemo(() => [

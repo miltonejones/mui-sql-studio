@@ -603,7 +603,6 @@ export default function QuerySettingsPanel({
   
 
       <Stack>
-        
         <Box sx={{mb: 1}}>
           {configuration.tables.map((t, k) => <TableItem first={k === 0} comma={k < (configuration.tables.length - 1)} key={t.name} table={t} addTable={addTable} setTableAlias={setTableAlias}/>)}
         </Box>
@@ -622,8 +621,6 @@ export default function QuerySettingsPanel({
             </Flex>
           </>
         </Collapse>
-
-
       </Stack>
       
 
@@ -640,16 +637,11 @@ export default function QuerySettingsPanel({
       </Box>}
 
       <Collapse in={configuration.orders.filter(f => !!f.fieldName).length}>
-        
-
         <SectionHeader inactive={!configuration.groups.length} actionText="Add group by" onAdd={() => newGroup({index: uniqueId()})}>
           GROUP BY
         </SectionHeader> 
 
-
         {configuration.groups.map((group) => <GroupItem key={group.index} {...group} />)}
-
-
       </Collapse>
 
 
