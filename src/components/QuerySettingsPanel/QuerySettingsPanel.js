@@ -13,7 +13,7 @@ import { ColumnSettingsGrid } from './components'
 import { Tooltag, RotateButton, TextBtn, Flex, TinyButton  } from '..'
 import '../ListGrid/ListGrid.css';
 import { QueryColumn } from './components';
-import { OptionSwitch } from '..';
+import { OptionSwitch, RotateExpand } from '..';
 
 
 
@@ -591,7 +591,7 @@ export default function QuerySettingsPanel({
             if (!b) return; 
             addExpression(b)
           }}
-          sx={{mr: 1, mt: 1}}
+          sx={{mr: 1, mt: 2}}
           >add expression</TextBtn>
       
       </Collapse> 
@@ -634,10 +634,10 @@ export default function QuerySettingsPanel({
 
       {configuration.wheres.map((where) => <WhereItem key={where.index} {...where} />)}
 
-      {!!configuration.wheres.length && <>
+      {!!configuration.wheres.length && <Box sx={{ mt: 2 }}>
         <TextBtn startIcon={<Add />} size="small" variant="contained" onClick={() => newClause({operator: 'AND', index: uniqueId()})} sx={{mr: 1}}>AND</TextBtn>
         <TextBtn startIcon={<Add />} size="small" variant="contained" onClick={() => newClause({operator: 'OR', index: uniqueId()})}>OR</TextBtn>
-      </>}
+      </Box>}
 
       <Collapse in={configuration.orders.filter(f => !!f.fieldName).length}>
         
@@ -911,11 +911,12 @@ export const QuickMenu = ({
     value: selected, 
     caret, icons = [], 
     options, 
+    input,
     onChange 
   }) => {
 
   const [anchorEl, setAnchorEl] = React.useState(null);
-  const open = Boolean(anchorEl);
+  const open = Boolean(anchorEl) || !!input;
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
   };
@@ -933,7 +934,7 @@ export const QuickMenu = ({
   {!!caret && <TinyButton onClick={handleClick} icon={ExpandMore} deg={open ? 180 : 0} />}
  
   <MenuComponent  
-    anchorEl={anchorEl}
+    anchorEl={anchorEl || input}
     anchor={menuPos}
     open={open}
     onClose={() => handleClose()} 
@@ -969,6 +970,24 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
   const { dropTable, setTableJoin } = React.useContext(QuerySettingsContext);
   const { destTable, srcCol, destCol, type = 'JOIN' } = table.join ?? {}; 
 
+  const [anchorEl, setAnchorEl] = React.useState(null);
+  const [anchorEl2, setAnchorEl2] = React.useState(null);
+  const open = Boolean(anchorEl);
+
+
+
+  const handleClick = (event) => { 
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClick2 = (event) => { 
+    setAnchorEl2(event.currentTarget);
+  };
+  const handleClose = (value) => {  
+    setAnchorEl(null); 
+    setAnchorEl2(null); 
+  }; 
+
+
   const handleType = (e) => {  
     if (!e) return;
     setTableJoin(table.name, 'type', e) 
@@ -986,23 +1005,37 @@ function TableItem ({ first, table, comma , addTable, setTableAlias}) {
       onChange={handleType} value={type} label={type}/>
   {" "}
   <QueryColumn columnname={table.name} columnalias={table.alias} title={table.name} 
-    aliasAction={() => setTableAlias(table.name)}
+    aliasAction={() => setTableAlias(table.name)} 
     deleteAction={() => dropTable(table.ID)}/>
  
-  {" "}<i>ON</i> {table.alias}.<ColumnMenu fieldname="srcCol" source={table.name} tablename={table.name} columnname={srcCol} /> 
-  {" "}={" "} 
-  <TableMenu fieldname="destTable" tablename={table.name} name={destTable} />
-  .
-  <ColumnMenu fieldname="destCol" source={destTable} tablename={table.name} columnname={destCol} /> 
+  {" "}<i>ON</i> <QueryColumn input={anchorEl} deleteAction={handleClick} icon={RotateExpand}
+    title={<>{table.alias}.<ColumnMenu 
+      onClose={handleClose} 
+      input={anchorEl} 
+      fieldname="srcCol" 
+      source={table.name} 
+      tablename={table.name} 
+      columnname={srcCol} /></>} degrees={!!anchorEl ? 180 : 0}/> 
+  {" "}<i>EQUALS</i>{" "} 
+  
+  <QueryColumn input={anchorEl2} deleteAction={handleClick2} icon={RotateExpand} degrees={!!anchorEl2 ? 180 : 0}
+    title={<><TableMenu fieldname="destTable" tablename={table.name} name={destTable} />
+    .<ColumnMenu 
+      onClose={handleClose} 
+      input={anchorEl2} 
+      fieldname="destCol" source={destTable} tablename={table.name} columnname={destCol} /> </>}
+  />
+  
   </Box>
 }
 
 
-function ColumnMenu ({ tablename, source, columnname, fieldname }) {
+function ColumnMenu ({ tablename, source, columnname, fieldname, input, onClose }) {
   const { tables, setTableJoin } = React.useContext(QuerySettingsContext); 
   
   const handleClose = (joinedcol) => { 
     !!joinedcol && setTableJoin(tablename, fieldname, joinedcol);
+    onClose && onClose()
   };
  
   const selectedTable = tables.find(t => t.name === source);
@@ -1011,7 +1044,7 @@ function ColumnMenu ({ tablename, source, columnname, fieldname }) {
   }
   const columns = selectedTable.columns;
   const label = columnname || <i>choose column</i> 
-  return <QuickMenu caret title={`Columns in ${selectedTable.name}`} 
+  return <QuickMenu title={`Columns in ${selectedTable.name}`} input={input} 
       options={columns.map(n => n.name)} label={label} value={columnname} onChange={handleClose}  />  
 }
 
@@ -1025,7 +1058,7 @@ function TableMenu ({ tablename, name, fieldname }) {
 
   const label = name || <i>choose table</i> ;
 
-  return <QuickMenu caret title="Available tables" options={tables.map(n => n.name)} label={label} value={name} onChange={handleClose}  />   
+  return <QuickMenu title="Available tables" options={tables.map(n => n.name)} label={label} value={name} onChange={handleClose}  />   
 }
 
 export const QueryTest = ({ config, sql, onResult, noneQuery, ...props }) => {

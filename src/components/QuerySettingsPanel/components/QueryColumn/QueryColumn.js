@@ -11,6 +11,7 @@ const QueryColumn = ({
   error,
   aliasAction,
   deleteAction, 
+  degrees,
   icon: Icon = Delete
 }) => {
  
@@ -21,6 +22,7 @@ const QueryColumn = ({
  return ( 
      <Coin label={inner}  
      size="small"
+     degrees={degrees}
      small={small}
      error={error}
      icon={error ? <Error /> : null }
@@ -30,7 +32,7 @@ const QueryColumn = ({
       onClick={aliasAction}
         onDelete={deleteAction}
         color={error ? "error" : "primary"} variant="outlined" 
-              deleteIcon={<Icon />}/> 
+              deleteIcon={<Icon deg={degrees} />}/> 
  );
 }
 
@@ -46,8 +48,8 @@ const Chit = styled('span')(({ theme, small, error }) => ({
   padding: theme.spacing(0.125, 1),
 }))
 
-const Start = styled(Box)(({ theme }) => ({
-  color: '#222',
+const Start = styled(Box)(({ theme, error }) => ({
+  color: error ? theme.palette.error.dark :  '#222',
   fontSize: '0.85rem',
   '&:hover': {
     color: theme.palette.primary.main,
@@ -74,13 +76,13 @@ const Coin = ({
   label,
   small,
   deleteIcon,
-  onClick,
+  onClick, 
   onDelete,
   ...props
 }) => {
   return <Chit small={small} error={error}>
     {Icon}
-    <Start onClick={onClick}>{label}</Start>
+    <Start error={error} onClick={() => onClick && onClick()}>{label}</Start>
     {!!onDelete && <End onClick={onDelete}>{deleteIcon}</End>}
   </Chit>
 }

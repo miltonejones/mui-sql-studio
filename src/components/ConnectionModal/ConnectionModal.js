@@ -17,6 +17,7 @@ import {
   styled} from '@mui/material';
 
 import { execQuery } from '../../connector/dbConnector';
+import { TextBtn } from '../Control/Control';
 
 const AU = styled(Link)(({ theme }) => ({
   cursor: 'pointer',
@@ -113,8 +114,8 @@ export default function ConnectionModal({open, connection = {}, onChange, onClos
     
     <Divider />
     <DialogActions sx={{pr: 3}}>
-      <Button sx={{mr: 1}} variant="outlined" onClick={() => onClose(false)}>close</Button>
-      <Button disabled={!isValid()}  variant="contained" onClick={() => onClose(connection)}>save</Button>
+      <TextBtn sx={{mr: 1}} variant="outlined" onClick={() => onClose(false)}>close</TextBtn>
+      <TextBtn disabled={!isValid()}  variant="contained" onClick={() => onClose(connection)}>save</TextBtn>
     </DialogActions>
   </Component>
 

@@ -6,7 +6,7 @@ import QuerySettingsPanel, { QuickMenu, QuickSelect, QueryTest } from "./QuerySe
 import QuickNav from "./QuickNav/QuickNav";
 
 
-import { Flex, Tooltag, OptionSwitch, Spacer, TextBtn, TinyButton, RotateButton, Area, SearchBox, TextBox } from './Control/Control';
+import { Flex, Tooltag, RotateExpand, OptionSwitch, Spacer, TextBtn, TinyButton, RotateButton, Area, SearchBox, TextBox } from './Control/Control';
 
 const DATA_TYPES =  ['int', 'bit', 'bigint', 'text', 'mediumtext', 'varchar', 'datetime', 'image', 'audio', 'video'];
 
@@ -29,6 +29,7 @@ export {
   TextBtn ,
   QuickNav,
   TinyButton,
+  RotateExpand,
   OptionSwitch,
   DATA_TYPES
 }

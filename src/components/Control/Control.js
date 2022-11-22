@@ -118,6 +118,11 @@ export const RotateButton = styled(IconButton)(({ deg = 0 }) => ({
   transform: `rotate(${deg}deg)`
 }));
 
+export const RotateExpand = styled(ExpandMore)(({ deg = 0 }) => ({
+  transition: 'transform 0.125s linear', 
+  transform: `rotate(${deg}deg)`
+}));
+
 
 export const SearchBox = ({value, onChange, onClose, startIcon = true, ...props}) => {
   const startAdornment = !startIcon ? null  : <InputAdornment position="start">
